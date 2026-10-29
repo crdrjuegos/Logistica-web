@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Filament\Resources\Products\CatalogOptions;
+use App\Modules\Catalog\Application\FindSimilarProducts;
+use App\Modules\Catalog\Domain\CatalogException;
+use App\Modules\Catalog\Domain\SimilarProduct;
 use App\Modules\Catalog\Domain\Symbology;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -30,7 +33,9 @@ final class ProductForm
                 ->description('El SKU se genera solo al guardar (por ejemplo LIB-000231) y no se puede cambiar.')
                 ->schema([
                     TextInput::make('sku')->label('SKU')->disabled()->dehydrated(false)->visibleOn(Operation::Edit),
-                    TextInput::make('name')->label('Nombre')->required()->minLength(2)->maxLength(200)->columnSpanFull(),
+                    TextInput::make('name')->label('Nombre')->required()->minLength(2)->maxLength(200)->columnSpanFull()
+                        ->live(onBlur: true)
+                        ->helperText(static fn (?string $state, string $operation): ?string => $operation === 'create' ? self::duplicateWarning($state) : null),
                     Select::make('category_id')->label('Categoría')->options(fn (): array => CatalogOptions::categories())->searchable()->required(),
                     Select::make('brand_id')->label('Marca')->options(fn (): array => CatalogOptions::brands())->searchable(),
                     Select::make('base_unit_id')->label('Unidad base')->options(fn (): array => CatalogOptions::units())->required()
@@ -78,5 +83,24 @@ final class ProductForm
                         ])->columns(4)->defaultItems(0)->addActionLabel('Agregar política'),
                 ])->visibleOn(Operation::Create),
         ]);
+    }
+
+    /** HU-013: avisa antes de guardar si el nombre se parece a un producto ya registrado. */
+    private static function duplicateWarning(?string $name): ?string
+    {
+        try {
+            $matches = app(FindSimilarProducts::class)((string) $name, 3);
+        } catch (CatalogException) {
+            return null; // nombre vacío o demasiado corto: aún no hay nada que comparar
+        }
+
+        if ($matches === []) {
+            return null;
+        }
+
+        return 'Posible duplicado: '.implode('; ', array_map(
+            static fn (SimilarProduct $p): string => sprintf('%s %s (%d %% parecido)', $p->sku, $p->name, (int) round($p->similarity * 100)),
+            $matches,
+        )).'. Revise el catálogo antes de guardar.';
     }
 }
