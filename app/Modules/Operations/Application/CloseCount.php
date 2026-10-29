@@ -131,7 +131,8 @@ final class CloseCount
     {
         $total = count($lines);
         $withDifference = count(array_filter($lines, static fn (CountLineRecord $l): bool => $l->hasDifference()));
-        $accuracy = $total === 0 ? '100.00' : bcmul(bcdiv((string) ($total - $withDifference), (string) $total, 6), '100', 2);
+        // Porcentaje con 2 decimales, redondeo half-up (2/3 = 66.67, no 66.66).
+        $accuracy = $total === 0 ? '100.00' : bcadd(bcdiv(bcmul((string) ($total - $withDifference), '100', 6), (string) $total, 6), '0.005', 2);
 
         return ['adjustments' => $withDifference, 'lines' => $total, 'accuracyPct' => $accuracy];
     }

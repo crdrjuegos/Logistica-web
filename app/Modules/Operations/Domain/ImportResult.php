@@ -17,12 +17,13 @@ final readonly class ImportResult
         public string $units,
     ) {}
 
-    /** Reporte descargable de errores: línea;mensaje (con BOM para que Excel lo abra bien). */
+    /** Reporte descargable de errores: fila;codigo;error (con BOM para que Excel lo abra bien). */
     public function errorReportCsv(): string
     {
-        $out = "\xEF\xBB\xBFlinea;error\r\n";
+        $quote = static fn (string $v): string => '"'.str_replace('"', '""', $v).'"';
+        $out = "\xEF\xBB\xBFfila;codigo;error\r\n";
         foreach ($this->errors as $e) {
-            $out .= $e->line.';"'.str_replace('"', '""', $e->message)."\"\r\n";
+            $out .= $e->line.';'.$quote($e->code).';'.$quote($e->message)."\r\n";
         }
 
         return $out;

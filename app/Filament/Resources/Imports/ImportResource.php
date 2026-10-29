@@ -54,7 +54,8 @@ class ImportResource extends Resource
             ])
             ->recordActions([
                 Action::make('errors')->label('Descargar errores')->icon('heroicon-o-arrow-down-tray')->color('danger')
-                    ->visible(static fn (ImportJob $record): bool => $record->error_report_path !== null)
+                    ->visible(static fn (ImportJob $record): bool => self::canDownloadErrors($record))
+                    ->authorize(static fn (ImportJob $record): bool => self::canDownloadErrors($record))
                     ->action(static fn (ImportJob $record) => Storage::disk('local')->download((string) $record->error_report_path, 'errores-ventas-'.$record->id.'.csv')),
             ])
             ->defaultSort('created_at', 'desc')
@@ -70,5 +71,15 @@ class ImportResource extends Resource
     public static function getPages(): array
     {
         return ['index' => ListImports::route('/')];
+    }
+
+    /** Solo con pos.import y solo reportes generados por el sistema (sin rutas arbitrarias). CA-038-3. */
+    public static function canDownloadErrors(ImportJob $record): bool
+    {
+        $path = (string) $record->error_report_path;
+
+        return (auth()->user()?->can('pos.import') ?? false)
+            && preg_match('#^imports/errors/pos-\d+\.csv$#', $path) === 1
+            && Storage::disk('local')->exists($path);
     }
 }

@@ -89,8 +89,8 @@ it('las filas con problema van al reporte y las demás se aplican', function () 
     expect($r->errors[0]->message)->toContain('NO-EXISTE');
     expect($r->errors[1]->message)->toContain('Stock insuficiente');
     expect($k->movements->requests)->toHaveCount(1);
-    expect($r->errorReportCsv())->toContain('linea;error');
-    expect($r->errorReportCsv())->toContain('3;"No se encontró');
+    expect($r->errorReportCsv())->toContain('fila;codigo;error');
+    expect($r->errorReportCsv())->toContain(';"No se encontró');
 });
 
 it('el mismo archivo no se confirma dos veces, pero sí se puede simular o corregir con otro', function () {

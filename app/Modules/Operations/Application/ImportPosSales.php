@@ -59,12 +59,12 @@ final class ImportPosSales
             foreach ($parsed->rows as $row) {
                 $target = $this->targets->resolve($row->code);
                 if ($target === null) {
-                    $errors[] = new ImportError($row->line, "No se encontró el producto '{$row->code}' o no tiene ubicación en el piso de venta.");
+                    $errors[] = new ImportError($row->line, "No se encontró el producto '{$row->code}' o no tiene ubicación en el piso de venta.", $row->code);
 
                     continue;
                 }
                 $key = $target->productId.':'.$target->locationId;
-                $groups[$key] ??= ['target' => $target, 'line' => $row->line, 'quantity' => '0.000'];
+                $groups[$key] ??= ['target' => $target, 'line' => $row->line, 'code' => $row->code, 'quantity' => '0.000'];
                 $groups[$key]['quantity'] = bcadd($groups[$key]['quantity'], $row->quantity, 3);
             }
             uasort($groups, static fn (array $a, array $b): int => [$a['target']->productId, $a['target']->locationId] <=> [$b['target']->productId, $b['target']->locationId]);
@@ -76,7 +76,7 @@ final class ImportPosSales
                 $target = $group['target'];
 
                 if (bccomp($target->available, $group['quantity'], 3) < 0) {
-                    $errors[] = new ImportError($group['line'], "Stock insuficiente de {$target->sku} en {$target->locationCode}: disponible {$target->available}, vendido {$group['quantity']}.");
+                    $errors[] = new ImportError($group['line'], "Stock insuficiente de {$target->sku} en {$target->locationCode}: disponible {$target->available}, vendido {$group['quantity']}.", $group['code']);
                     $failedGroups++;
 
                     continue;
@@ -95,7 +95,7 @@ final class ImportPosSales
                             notes: 'Importación '.mb_substr($name, 0, 60),
                         ));
                     } catch (OperationsException $e) {
-                        $errors[] = new ImportError($group['line'], $e->getMessage());
+                        $errors[] = new ImportError($group['line'], $e->getMessage(), $group['code']);
                         $failedGroups++;
 
                         continue;

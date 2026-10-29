@@ -59,12 +59,12 @@ final class PosSalesParser
                 $rawQty = str_replace(',', '.', $rawQty); // coma decimal (Excel en español)
             }
             if (str_starts_with($rawQty, '-')) {
-                $errors[] = new ImportError($lineNumber, 'Cantidad negativa: las devoluciones no se importan aquí.');
+                $errors[] = new ImportError($lineNumber, 'Cantidad negativa: las devoluciones no se importan aquí.', $code);
 
                 continue;
             }
             if (preg_match('/^\d{1,9}(\.\d{1,3})?$/', $rawQty) !== 1 || bccomp($rawQty, '0', 3) <= 0) {
-                $errors[] = new ImportError($lineNumber, "Cantidad inválida: '{$rawQty}'.");
+                $errors[] = new ImportError($lineNumber, "Cantidad inválida: '{$rawQty}'.", $code);
 
                 continue;
             }
