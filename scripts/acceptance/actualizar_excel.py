@@ -14,6 +14,7 @@ Uso (desde la raíz del repositorio, con Python 3.10+ y lxml):
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import sys
@@ -182,6 +183,14 @@ def main() -> None:
         if sheet.get(f"{COL['pasos']}{r}").startswith(GENERIC_PASOS) or test:
             sheet.set(f"{COL['pasos']}{r}", build_steps(dado, cuando, sheet.get(f"{COL['entonces']}{r}"), test))
 
+        related = sheet.get(f"{COL['pruebas']}{r}")
+        if "audit_work/sql_acceptance.php.txt" in related:
+            parts = []
+            for part in related.replace("audit_work/sql_acceptance.php.txt", "scripts/acceptance/sql_acceptance.php").split("; "):
+                if part and part not in parts:
+                    parts.append(part)
+            sheet.set(f"{COL['pruebas']}{r}", "; ".join(parts))
+
         note = notes.get(ca, "")
         current_note = sheet.get(f"{COL['notas']}{r}")
         if test and test["status"] == "passed":
@@ -222,15 +231,15 @@ def main() -> None:
         calc = etree.SubElement(workbook_xml, M + "calcPr")
     calc.set("fullCalcOnLoad", "1")  # las hojas Backlog y Sprints recalculan sus fórmulas al abrir
 
-    tmp = Path(tempfile.mkstemp(suffix=".xlsx")[1])
+    fd, tmp_name = tempfile.mkstemp(suffix=".xlsx")
+    os.close(fd)  # en Windows el descriptor abierto impide mover el archivo
+    tmp = Path(tmp_name)
     with zipfile.ZipFile(xlsx) as zin, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zout:
         for item in zin.infolist():
             if item.filename == paths[SHEET]:
                 zout.writestr(item, sheet.xml())
             elif item.filename == "xl/workbook.xml":
                 zout.writestr(item, etree.tostring(workbook_xml, xml_declaration=True, encoding="UTF-8", standalone=True))
-            elif item.filename == "xl/calcChain.xml":
-                zout.writestr(item, zin.read(item.filename))
             else:
                 zout.writestr(item, zin.read(item.filename))
     shutil.move(str(tmp), xlsx)
