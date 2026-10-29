@@ -69,6 +69,54 @@ it('es idempotente contra la BD real', function () {
     expect(Fixtures::balance($product, $loc))->toBe('10.000');
 });
 
+it('CA-019-4 en PostgreSQL: mismo UUID y clave con cantidad 99 en vez de 10 es un conflicto', function () {
+    $user = Fixtures::user();
+    $product = Fixtures::product();
+    $loc = Fixtures::location('BOD');
+    $register = app(RegisterMovement::class);
+    $uuid = (string) Str::uuid();
+    $key = 'ca-019-4-'.$product;
+
+    $register(M::purchase($product, $loc, 10, '2', $user, uuid: $uuid, key: $key));
+
+    expect(fn () => $register(M::purchase($product, $loc, 99, '2', $user, uuid: $uuid, key: $key)))
+        ->toThrow(InventoryException::class, 'contenido distinto');
+
+    expect(DB::table('stock_movements')->where('product_id', $product)->count())->toBe(1);
+    expect((string) DB::table('stock_movements')->where('idempotency_key', $key)->value('quantity'))->toBe('10.000');
+    expect(Fixtures::balance($product, $loc))->toBe('10.000');
+});
+
+it('CA-053-2 en PostgreSQL: una segunda apertura con otra clave es rechazada y el saldo queda en 10', function () {
+    $user = Fixtures::user();
+    $product = Fixtures::product();
+    $loc = Fixtures::location('BOD');
+    $register = app(RegisterMovement::class);
+
+    $register(M::opening($product, $loc, 10, '2', $user));
+
+    expect(fn () => $register(M::opening($product, $loc, 10, '2', $user)))
+        ->toThrow(InventoryException::class, 'saldo inicial');
+
+    expect(DB::table('stock_movements')->where('product_id', $product)->where('type', 'SALDO_INICIAL')->count())->toBe(1);
+    expect(Fixtures::balance($product, $loc))->toBe('10.000');
+});
+
+it('la BD impide dos SALDO_INICIAL del mismo producto y ubicación aunque el código fallara', function () {
+    $user = Fixtures::user();
+    $product = Fixtures::product();
+    $loc = Fixtures::location();
+    $row = fn (): array => [
+        'uuid' => (string) Str::uuid(), 'type' => 'SALDO_INICIAL', 'product_id' => $product,
+        'to_location_id' => $loc, 'quantity' => 10, 'unit_cost' => 2, 'user_id' => $user,
+        'idempotency_key' => 'open-'.Str::random(12),
+    ];
+    DB::table('stock_movements')->insert($row());
+
+    expect(fn () => DB::transaction(fn () => DB::table('stock_movements')->insert($row())))
+        ->toThrow(QueryException::class, 'ux_mov_opening_balance');
+});
+
 it('rechaza ubicaciones congeladas salvo ajustes de conteo', function () {
     $user = Fixtures::user();
     $product = Fixtures::product();

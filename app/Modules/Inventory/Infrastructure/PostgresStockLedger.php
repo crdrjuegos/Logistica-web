@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Inventory\Infrastructure;
 
 use App\Modules\Inventory\Domain\LocationState;
+use App\Modules\Inventory\Domain\MovementType;
 use App\Modules\Inventory\Domain\NewMovement;
 use App\Modules\Inventory\Domain\ProductSnapshot;
 use App\Modules\Inventory\Domain\Quantity;
@@ -58,9 +59,29 @@ final class PostgresStockLedger implements StockLedger
 
     public function findByIdempotencyKey(string $key): ?RecordedMovement
     {
-        $row = DB::table('stock_movements')->where('idempotency_key', $key)->first(['id', 'uuid']);
+        $row = DB::table('stock_movements')->where('idempotency_key', $key)->first([
+            'id', 'uuid', 'type', 'product_id', 'from_location_id', 'to_location_id', 'quantity', 'unit_cost',
+        ]);
 
-        return $row === null ? null : new RecordedMovement((int) $row->id, strtolower((string) $row->uuid));
+        return $row === null ? null : new RecordedMovement(
+            (int) $row->id,
+            strtolower((string) $row->uuid),
+            MovementType::from((string) $row->type),
+            (int) $row->product_id,
+            $row->from_location_id === null ? null : (int) $row->from_location_id,
+            $row->to_location_id === null ? null : (int) $row->to_location_id,
+            Quantity::of((string) $row->quantity),
+            UnitCost::of((string) ($row->unit_cost ?? '0')),
+        );
+    }
+
+    public function hasOpeningBalance(int $productId, int $locationId): bool
+    {
+        return DB::table('stock_movements')
+            ->where('type', MovementType::OpeningBalance->value)
+            ->where('product_id', $productId)
+            ->where('to_location_id', $locationId)
+            ->exists();
     }
 
     public function lockBalance(int $productId, int $locationId): Quantity

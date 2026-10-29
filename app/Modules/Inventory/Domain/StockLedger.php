@@ -22,6 +22,9 @@ interface StockLedger
 
     public function findByIdempotencyKey(string $key): ?RecordedMovement;
 
+    /** ¿Ya existe un SALDO_INICIAL para este producto en esta ubicación? */
+    public function hasOpeningBalance(int $productId, int $locationId): bool;
+
     /** Saldo bloqueado (FOR UPDATE) de un producto en una ubicación; cero si no existe fila. */
     public function lockBalance(int $productId, int $locationId): Quantity;
 

@@ -45,11 +45,21 @@ final class RegisterMovement
                 throw InventoryException::idempotencyKeyReused($m->idempotencyKey);
             }
 
+            if (! $existing->sameContentAs($m)) {
+                throw InventoryException::idempotencyConflict($m->idempotencyKey);
+            }
+
             return new MovementRecorded($existing->id, $existing->uuid, true);
         }
 
         // 3) Ubicaciones válidas.
         $locations = $this->resolveLocations($m);
+
+        // 3b) Una sola apertura por producto y ubicación (el bloqueo del producto la serializa).
+        if ($m->type === MovementType::OpeningBalance && $m->toLocationId !== null
+            && $this->ledger->hasOpeningBalance($m->productId, $m->toLocationId)) {
+            throw InventoryException::openingBalanceExists($locations[$m->toLocationId]->code);
+        }
 
         // 4) Stock suficiente en el origen (salidas y transferencias).
         if ($m->fromLocationId !== null) {

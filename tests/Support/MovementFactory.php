@@ -27,6 +27,14 @@ final class MovementFactory
         );
     }
 
+    public static function opening(int $productId, int $to, string|int $qty, string|int $cost = '1', int $userId = 1, ?string $key = null): NewMovement
+    {
+        return new NewMovement(
+            Ids::uuid(), $key ?? Ids::key(), MovementType::OpeningBalance, $productId,
+            null, $to, Quantity::of($qty), $userId, unitCost: UnitCost::of($cost), sourceType: 'OPENING',
+        );
+    }
+
     public static function sale(int $productId, int $from, string|int $qty, int $userId = 1, ?string $uuid = null, ?string $key = null): NewMovement
     {
         return new NewMovement(

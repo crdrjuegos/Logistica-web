@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Modules\Inventory\Domain\LocationState;
+use App\Modules\Inventory\Domain\MovementType;
 use App\Modules\Inventory\Domain\NewMovement;
 use App\Modules\Inventory\Domain\ProductSnapshot;
 use App\Modules\Inventory\Domain\Quantity;
@@ -24,7 +25,7 @@ final class InMemoryStockLedger implements StockLedger
     /** @var array<string, string> "producto:ubicación" => cantidad */
     public array $balances = [];
 
-    /** @var list<array{id: int, uuid: string, key: string, type: string, productId: int, cost: string, qty: string}> */
+    /** @var list<array{id: int, uuid: string, key: string, type: string, productId: int, from: ?int, to: ?int, cost: string, qty: string}> */
     public array $movements = [];
 
     public bool $failOnIncrease = false;
@@ -52,11 +53,25 @@ final class InMemoryStockLedger implements StockLedger
     {
         foreach ($this->movements as $m) {
             if ($m['key'] === $key) {
-                return new RecordedMovement($m['id'], $m['uuid']);
+                return new RecordedMovement(
+                    $m['id'], $m['uuid'], MovementType::from($m['type']), $m['productId'],
+                    $m['from'], $m['to'], Quantity::of($m['qty']), UnitCost::of($m['cost']),
+                );
             }
         }
 
         return null;
+    }
+
+    public function hasOpeningBalance(int $productId, int $locationId): bool
+    {
+        foreach ($this->movements as $m) {
+            if ($m['type'] === MovementType::OpeningBalance->value && $m['productId'] === $productId && $m['to'] === $locationId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function lockBalance(int $productId, int $locationId): Quantity
@@ -82,6 +97,7 @@ final class InMemoryStockLedger implements StockLedger
         $this->movements[] = [
             'id' => $id, 'uuid' => $movement->uuid, 'key' => $movement->idempotencyKey,
             'type' => $movement->type->value, 'productId' => $movement->productId,
+            'from' => $movement->fromLocationId, 'to' => $movement->toLocationId,
             'cost' => $recordedCost->value, 'qty' => $movement->quantity->value,
         ];
 

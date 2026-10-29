@@ -62,4 +62,22 @@ final class InventoryException extends \DomainException
             ['key' => $key],
         );
     }
+
+    public static function openingBalanceExists(string $code): self
+    {
+        return new self(
+            "El producto ya tiene saldo inicial en {$code}; corrija con un ajuste, no con otra apertura.",
+            'OPENING_BALANCE_EXISTS',
+            ['location' => $code],
+        );
+    }
+
+    public static function idempotencyConflict(string $key): self
+    {
+        return new self(
+            "El reintento con la clave '{$key}' trae contenido distinto al movimiento original; se conserva el original.",
+            'IDEMPOTENCY_CONFLICT',
+            ['key' => $key],
+        );
+    }
 }
