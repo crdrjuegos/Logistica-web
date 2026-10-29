@@ -9,6 +9,8 @@ x-app: &app
     DB_HOST: db
     DB_USERNAME: wms_app          # la app corre SIN permiso de modificar el ledger
     DB_PASSWORD: ${WMS_APP_PASSWORD:-wms_app_dev}
+  volumes:
+    - appstorage:/app/storage/app   # reportes de errores e importaciones: sobreviven a recrear el contenedor
   depends_on:
     db: { condition: service_healthy }
   restart: unless-stopped
@@ -78,3 +80,4 @@ services:
 volumes:
   pgdata: {}
   caddy_data: {}
+  appstorage: {}
