@@ -38,9 +38,9 @@ COPY --from=assets /app/public/build /app/public/build
 RUN rm -f bootstrap/cache/*.php \
  && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
  && php artisan package:discover --ansi \
- && chown -R www-data:www-data storage bootstrap/cache
+ && mkdir -p /data/caddy /config/caddy  && chown -R www-data:www-data storage bootstrap/cache /data/caddy /config/caddy
 USER www-data
-ENV OCTANE_SERVER=frankenphp
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=3s --retries=5 CMD php -r 'exit(@file_get_contents("http://127.0.0.1:8000/up") === false ? 1 : 0);'
-CMD ["php", "artisan", "octane:start", "--server=frankenphp", "--host=0.0.0.0", "--port=8000", "--workers=auto", "--max-requests=500"]
+# FrankenPHP clásico (sin Octane): sirve public/ por HTTP en el puerto 8000; Caddy pone el HTTPS delante.
+CMD ["frankenphp", "php-server", "--listen", "0.0.0.0:8000", "--root", "/app/public"]

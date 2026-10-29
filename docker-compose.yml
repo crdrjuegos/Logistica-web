@@ -16,12 +16,15 @@ x-app: &app
 services:
   app:
     <<: *app
+    ports: ["8080:8000"]           # http://localhost:8080 (HTTPS por Caddy en 443)
   worker:
     <<: *app
     command: php artisan queue:work --tries=3 --max-time=3600
+    healthcheck: { disable: true } # no sirve HTTP
   scheduler:
     <<: *app
     command: php artisan schedule:work
+    healthcheck: { disable: true }
 
   # Herramientas de desarrollo: migraciones, pruebas, formato. No requiere PHP en su PC.
   #   docker compose run --rm tools php artisan migrate
