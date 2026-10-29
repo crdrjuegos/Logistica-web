@@ -38,7 +38,13 @@
     </div>
 
     <div>
-        <h3 style="font-weight:600;margin-bottom:6px;">Movimientos (últimos 500) — saldo inicial {{ $fmt($kardex->openingBalance) }} · saldo final {{ $fmt($kardex->closingBalance) }}</h3>
+        <h3 style="font-weight:600;margin-bottom:6px;">Movimientos — saldo final {{ $fmt($kardex->closingBalance) }}</h3>
+        @if ($kardex->totalRows > count($kardex->rows))
+            <p data-kardex-aviso style="font-size:13px;margin-bottom:8px;padding:6px 10px;border-radius:6px;background:#fef3c7;color:#92400e;">
+                Se muestran los {{ count($kardex->rows) }} movimientos más recientes de {{ $kardex->totalRows }}.
+                El saldo de cada fila y el saldo final consideran el historial completo.
+            </p>
+        @endif
         @if (count($kardex->rows) === 0)
             <p style="font-size:13px;opacity:.75;">Este producto aún no tiene movimientos.</p>
         @else

@@ -9,6 +9,7 @@ use App\Modules\Catalog\Application\DeactivateProduct;
 use App\Modules\Catalog\Application\LookupProduct;
 use App\Modules\Catalog\Domain\CatalogException;
 use App\Modules\Inventory\Application\GetKardex;
+use App\Modules\Inventory\Domain\KardexPage;
 use App\Modules\Inventory\Domain\KardexQuery;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -23,6 +24,8 @@ use Illuminate\Support\Facades\DB;
 
 final class ProductsTable
 {
+    public const KARDEX_PAGE = 500;
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -68,7 +71,7 @@ final class ProductsTable
                     ->modalCancelActionLabel('Cerrar')
                     ->modalContent(static fn (Product $record): View => view('filament.kardex', [
                         'lookup' => app(LookupProduct::class)((string) $record->sku),
-                        'kardex' => app(GetKardex::class)(new KardexQuery((int) $record->id, limit: 500)),
+                        'kardex' => self::latestKardexPage((int) $record->id),
                         'product' => $record,
                     ])),
                 EditAction::make('edit')->label('Editar'),
@@ -89,5 +92,15 @@ final class ProductsTable
             ->defaultSort('created_at', 'desc')
             ->emptyStateHeading('Aún no hay productos')
             ->emptyStateDescription('Cree el primero con el botón "Nuevo producto".');
+    }
+
+    /** Los 500 movimientos más recientes; la vista avisa si hay más (KardexPage::totalRows). */
+    public static function latestKardexPage(int $productId): KardexPage
+    {
+        $first = app(GetKardex::class)(new KardexQuery($productId, limit: self::KARDEX_PAGE));
+
+        return $first->hasMore()
+            ? app(GetKardex::class)(new KardexQuery($productId, limit: self::KARDEX_PAGE, page: $first->lastPage()))
+            : $first;
     }
 }

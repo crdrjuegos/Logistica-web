@@ -19,7 +19,12 @@ final readonly class KardexQuery
         /** Fin exclusivo. */
         public ?\DateTimeImmutable $to = null,
         public int $limit = 1000,
+        /** Página 1-based de tamaño $limit, en el orden del ledger. */
+        public int $page = 1,
     ) {
+        if ($page < 1) {
+            throw InventoryException::invalid('La página del kardex debe ser 1 o mayor.');
+        }
         if ($limit < 1 || $limit > self::MAX_ROWS) {
             throw InventoryException::invalid('El límite del kardex debe estar entre 1 y '.self::MAX_ROWS.'.');
         }

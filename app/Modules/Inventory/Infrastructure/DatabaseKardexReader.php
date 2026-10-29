@@ -36,7 +36,10 @@ final class DatabaseKardexReader implements KardexReader
             $filters[] = 'r.created_at < ?';
             $bindings[] = $this->ts($q->to);
         }
+        $where = $filters === [] ? '' : 'WHERE '.implode(' AND ', $filters);
+        $total = (int) DB::selectOne("WITH scoped AS ({$scopeSql}) SELECT COUNT(*) AS n FROM scoped r {$where}", $bindings)->n;
         $bindings[] = $q->limit;
+        $bindings[] = ($q->page - 1) * $q->limit;
 
         // El orden real es el del id del movimiento (se asigna dentro del bloqueo del producto), no la hora.
         $rows = DB::select(
@@ -48,9 +51,9 @@ final class DatabaseKardexReader implements KardexReader
                JOIN locations l ON l.id = r.location_id
                JOIN stock_movements m ON m.id = r.movement_id
                JOIN users u ON u.id = m.user_id
-              ".($filters === [] ? '' : 'WHERE '.implode(' AND ', $filters)).'
+              {$where}
               ORDER BY r.movement_id, r.location_id
-              LIMIT ?',
+              LIMIT ? OFFSET ?",
             $bindings,
         );
 
@@ -63,6 +66,9 @@ final class DatabaseKardexReader implements KardexReader
                 $r->unit_cost === null ? null : bcadd((string) $r->unit_cost, '0', 4), (string) $r->user_name,
             ), $rows),
             bcadd($closing, '0', 3),
+            $total,
+            $q->page,
+            $q->limit,
         );
     }
 
