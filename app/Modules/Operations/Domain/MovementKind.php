@@ -13,4 +13,5 @@ enum MovementKind: string
     case AdjustmentOut = 'ADJUSTMENT_OUT';
     case WriteOff = 'WRITE_OFF';
     case Sale = 'SALE';
+    case OpeningBalance = 'OPENING_BALANCE';
 }

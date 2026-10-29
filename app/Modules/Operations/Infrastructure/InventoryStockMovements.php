@@ -32,6 +32,7 @@ final class InventoryStockMovements implements StockMovements
                     MovementKind::AdjustmentOut => MovementType::AdjustmentOut,
                     MovementKind::WriteOff => MovementType::WriteOff,
                     MovementKind::Sale => MovementType::Sale,
+                    MovementKind::OpeningBalance => MovementType::OpeningBalance,
                 },
                 productId: $request->productId,
                 fromLocationId: $request->fromLocationId,
