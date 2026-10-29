@@ -311,7 +311,7 @@ it('CA-046-1 con inventario valorizado, 1 agotado, 1 bajo y 1 ajuste pendiente, 
 it('CA-046-2 sin stock, ajustes, conteos ni mermas muestra ceros sin errores', function () {
     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
 
-    Livewire::test(InventoryStats::class)->assertOk()->assertSee('S/ 0.00')->assertDontSee('null');
+    Livewire::test(InventoryStats::class)->assertOk()->assertSee('S/ 0.00')->assertDontSeeText('null');
     Livewire::test(CriticalStockTable::class)->assertOk();
 });
 
