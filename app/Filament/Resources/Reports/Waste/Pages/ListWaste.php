@@ -6,10 +6,11 @@ namespace App\Filament\Resources\Reports\Waste\Pages;
 
 use App\Filament\Resources\Reports\Waste\WasteResource;
 use App\Filament\Support\CsvExport;
+use App\Models\WasteRow;
 use Filament\Actions\Action;
-use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ListWaste extends ListRecords
 {
@@ -18,25 +19,30 @@ class ListWaste extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('export')->label('Descargar CSV')->icon('heroicon-o-arrow-down-tray')
-                ->visible(static fn (): bool => auth()->user()?->can('reports.export') ?? false)
-                ->modalHeading('Descargar mermas y ajustes negativos')
-                ->schema([
-                    DatePicker::make('from')->label('Desde')->default(now('America/Lima')->startOfMonth())->required(),
-                    DatePicker::make('until')->label('Hasta')->default(now('America/Lima'))->required(),
-                ])
-                ->action(static fn (array $data) => CsvExport::download(
-                    'mermas',
-                    ['Fecha', 'Tipo', 'SKU', 'Producto', 'Ubicación', 'Motivo', 'Cantidad', 'Costo unit.', 'Valor', 'Registró', 'Aprobó', 'Documento', 'Explicación'],
-                    DB::table('v_report_waste')
-                        ->where('created_at', '>=', substr((string) $data['from'], 0, 10).' 00:00:00-05')
-                        ->where('created_at', '<=', substr((string) $data['until'], 0, 10).' 23:59:59-05')
-                        ->orderBy('created_at')->cursor()
-                        ->map(static fn (object $r): array => [
-                            substr((string) $r->created_at, 0, 16), $r->type === 'MERMA' ? 'Merma' : 'Ajuste (-)', $r->sku, $r->product_name, $r->location_code,
-                            $r->reason_name, $r->quantity, $r->unit_cost, round((float) $r->value, 2), $r->user_name, $r->approver_name, $r->document_ref, $r->notes,
-                        ]),
-                )),
+            Action::make('export')->label('Descargar CSV (con los filtros aplicados)')->icon('heroicon-o-arrow-down-tray')
+                ->visible(static fn (): bool => CsvExport::allowed())
+                ->authorize(static fn (): bool => CsvExport::allowed())
+                ->action(fn (): StreamedResponse => $this->exportResponse()),
         ];
+    }
+
+    /** Usa los filtros de la tabla (período, tipo y motivo). */
+    public function exportResponse(): StreamedResponse
+    {
+        CsvExport::authorize();
+
+        /** @var Builder<WasteRow> $query */
+        $query = $this->getFilteredTableQuery() ?? WasteRow::query();
+
+        return CsvExport::download(
+            'mermas',
+            ['Fecha', 'Tipo', 'SKU', 'Producto', 'Ubicación', 'Motivo', 'Cantidad', 'Costo unit.', 'Valor', 'Registró', 'Aprobó', 'Documento', 'Explicación'],
+            $query->reorder()->orderBy('created_at')->orderBy('id')->cursor()->map(static fn (WasteRow $r): array => [
+                substr((string) $r->getRawOriginal('created_at'), 0, 16), $r->getAttribute('type') === 'MERMA' ? 'Merma' : 'Ajuste (-)',
+                $r->getAttribute('sku'), $r->getAttribute('product_name'), $r->getAttribute('location_code'), $r->getAttribute('reason_name'),
+                $r->getAttribute('quantity'), $r->getAttribute('unit_cost'), round((float) $r->getAttribute('value'), 2),
+                $r->getAttribute('user_name'), $r->getAttribute('approver_name'), $r->getAttribute('document_ref'), $r->getAttribute('notes'),
+            ]),
+        );
     }
 }
