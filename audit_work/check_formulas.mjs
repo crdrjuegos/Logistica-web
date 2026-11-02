@@ -1,0 +1,4 @@
+import fs from 'node:fs/promises';import {FileBlob,SpreadsheetFile}from'@oai/artifact-tool';
+const w=await SpreadsheetFile.importXlsx(await FileBlob.load('outputs/avance2_2026_10_28/Product_Backlog_WMS_Segundo_Avance.xlsx'));
+for(const [sheet,range]of[['Backlog del Producto','F8:R8'],['Criterios de Aceptación','B6:S6']])console.log((await w.inspect({kind:'table',range:`'${sheet}'!${range}`,include:'values,formulas',tableMaxCols:20,maxChars:3500})).ndjson);
+const b=w.worksheets.getItem('Backlog del Producto');b.getRange('Q90:Q92').formulas=[["=COUNTIF('Criterios de Aceptación'!$B$6:$B$195,F8)"],["=COUNTIFS('Criterios de Aceptación'!$B$6:$B$195,F8,'Criterios de Aceptación'!$Q$6:$Q$195,\"Conforme en dominio\")"],["=COUNTIF('Criterios de Aceptación'!$Q$6:$Q$195,\"Conforme en dominio\")"]];w.recalculate();console.log((await w.inspect({kind:'table',range:"'Backlog del Producto'!Q90:Q92",include:'values,formulas',maxChars:2000})).ndjson);

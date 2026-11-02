@@ -1,0 +1,236 @@
+[
+  {
+    "key": "clases_inventario",
+    "diagramId": 1,
+    "title": "Clases de aplicación y contratos de inventario",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_inventario.png"
+  },
+  {
+    "key": "clases_movimiento",
+    "diagramId": 2,
+    "title": "Clases de dominio del movimiento y valores decimales",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_movimiento.png"
+  },
+  {
+    "key": "clases_recepciones",
+    "diagramId": 3,
+    "title": "Clases del proceso de recepción",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_recepciones.png"
+  },
+  {
+    "key": "clases_objetivo",
+    "diagramId": 4,
+    "title": "Clases propuestas para importación y conciliación",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_objetivo.png"
+  },
+  {
+    "key": "clases_movil",
+    "diagramId": 5,
+    "title": "Clases objetivo del cliente móvil y sincronización",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_movil.png"
+  },
+  {
+    "key": "componentes",
+    "diagramId": 6,
+    "title": "Arquitectura lógica objetivo del WMS completo",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\componentes.png"
+  },
+  {
+    "key": "despliegue",
+    "diagramId": 7,
+    "title": "Despliegue objetivo y canales del sistema completo",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\despliegue.png"
+  },
+  {
+    "key": "cu_seguridad",
+    "diagramId": 8,
+    "title": "Casos de uso objetivo de acceso usuarios y auditoría",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_seguridad.png"
+  },
+  {
+    "key": "cu_catalogo",
+    "diagramId": 9,
+    "title": "Casos de uso objetivo de catálogo identificación y políticas",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_catalogo.png"
+  },
+  {
+    "key": "cu_inventario",
+    "diagramId": 10,
+    "title": "Casos de uso objetivo de inventario ubicaciones y proveedores",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_inventario.png"
+  },
+  {
+    "key": "cu_operaciones",
+    "diagramId": 11,
+    "title": "Casos de uso objetivo de recepciones transferencias y ajustes",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_operaciones.png"
+  },
+  {
+    "key": "cu_conteos_pos",
+    "diagramId": 12,
+    "title": "Casos de uso objetivo de conteos e importación de ventas",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_conteos_pos.png"
+  },
+  {
+    "key": "cu_reportes",
+    "diagramId": 13,
+    "title": "Casos de uso objetivo de alertas reposición y reportes",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_reportes.png"
+  },
+  {
+    "key": "cu_movil_carga",
+    "diagramId": 14,
+    "title": "Casos de uso objetivo de carga inicial y operación móvil",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_movil_carga.png"
+  },
+  {
+    "key": "cu_calidad",
+    "diagramId": 15,
+    "title": "Casos de uso objetivo de calidad publicación y continuidad",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\cu_calidad.png"
+  },
+  {
+    "key": "estados_conteo",
+    "diagramId": 16,
+    "title": "Ciclo de conteo y reglas de cierre",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\estados_conteo.png"
+  },
+  {
+    "key": "er_catalogo",
+    "diagramId": 17,
+    "title": "Modelo de datos de catálogo y códigos",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_catalogo.png"
+  },
+  {
+    "key": "er_ubicaciones",
+    "diagramId": 18,
+    "title": "Modelo de datos de almacenes ubicaciones y políticas",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_ubicaciones.png"
+  },
+  {
+    "key": "er_proveedores",
+    "diagramId": 19,
+    "title": "Modelo de datos de proveedores y abastecimiento",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_proveedores.png"
+  },
+  {
+    "key": "er_recepciones",
+    "diagramId": 20,
+    "title": "Modelo de datos de recepciones y documentos de proveedor",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_recepciones.png"
+  },
+  {
+    "key": "er_operaciones",
+    "diagramId": 21,
+    "title": "Modelo de datos de transferencias y ajustes",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_operaciones.png"
+  },
+  {
+    "key": "er_conteos",
+    "diagramId": 22,
+    "title": "Modelo de datos de conteos y alcance de ubicaciones",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_conteos.png"
+  },
+  {
+    "key": "er_ledger",
+    "diagramId": 23,
+    "title": "Modelo de datos de ledger y saldos de inventario",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_ledger.png"
+  },
+  {
+    "key": "er_seguridad",
+    "diagramId": 24,
+    "title": "Modelo de datos de usuarios roles y permisos",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_seguridad.png"
+  },
+  {
+    "key": "er_control",
+    "diagramId": 25,
+    "title": "Modelo de datos de auditoría importaciones y alertas",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_control.png"
+  },
+  {
+    "key": "er_soporte",
+    "diagramId": 26,
+    "title": "Modelo de datos de soporte y persistencia operativa",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_soporte.png"
+  },
+  {
+    "key": "er_infraestructura",
+    "diagramId": 27,
+    "title": "Modelo de datos de infraestructura de colas y caché",
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\er_infraestructura.png"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_usuarios.png",
+    "title": "Clases de usuarios roles y creación de cuentas",
+    "diagramId": 28,
+    "key": "clases_usuarios"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_autenticacion.png",
+    "title": "Clases de contraseñas y control de intentos",
+    "diagramId": 29,
+    "key": "clases_autenticacion"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_catalogo_alta.png",
+    "title": "Clases de catálogo y generación de SKU",
+    "diagramId": 30,
+    "key": "clases_catalogo_alta"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_catalogo_valores.png",
+    "title": "Clases de códigos presentaciones y políticas",
+    "diagramId": 31,
+    "key": "clases_catalogo_valores"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_ubicaciones.png",
+    "title": "Clases de almacenes ubicaciones y estados",
+    "diagramId": 32,
+    "key": "clases_ubicaciones"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_proveedores.png",
+    "title": "Clases de proveedores RUC y asociaciones",
+    "diagramId": 33,
+    "key": "clases_proveedores"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_auditoria.png",
+    "title": "Clases de contratos y persistencia de auditoría",
+    "diagramId": 34,
+    "key": "clases_auditoria"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_conteos.png",
+    "title": "Clases de apertura registro y cierre de conteos",
+    "diagramId": 35,
+    "key": "clases_conteos"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_pos.png",
+    "title": "Clases de importación de ventas y errores",
+    "diagramId": 36,
+    "key": "clases_pos"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_transferencias.png",
+    "title": "Clases de transferencias y confirmación",
+    "diagramId": 37,
+    "key": "clases_transferencias"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_ajustes.png",
+    "title": "Clases de ajustes solicitud y aprobación",
+    "diagramId": 38,
+    "key": "clases_ajustes"
+  },
+  {
+    "path": "D:\\CITY OFERTAS\\city-ofertas-wms-parte1\\city-ofertas-wms\\outputs\\avance2_2026_10_28\\modelos\\clases_continuidad.png",
+    "title": "Clases propuestas de respaldo y restauración",
+    "diagramId": 39,
+    "key": "clases_continuidad"
+  }
+]

@@ -1,0 +1,3328 @@
+
+FILE app\Modules\Audit\Domain\AuditEntry.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Audit\Domain;
+6: 
+7: final readonly class AuditEntry
+8: {
+9:     /**
+10:      * @param  array<string, mixed>|null  $oldValues
+11:      * @param  array<string, mixed>|null  $newValues
+12:      */
+13:     public function __construct(
+14:         public string $action,
+15:         public string $entityType,
+16:         public ?int $entityId = null,
+17:         public ?int $actorId = null,
+18:         public ?array $oldValues = null,
+19:         public ?array $newValues = null,
+20:     ) {}
+21: }
+
+
+FILE app\Modules\Audit\Domain\AuditTrail.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Audit\Domain;
+6: 
+7: /** Registro de auditoría append-only. Nunca debe recibir contraseñas ni secretos. */
+8: interface AuditTrail
+9: {
+10:     public function record(AuditEntry $entry): void;
+11: }
+
+
+FILE app\Modules\Catalog\Domain\Barcode.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: /** Código de barras validado (dígito verificador GS1 para EAN-13, EAN-8 y UPC-A). */
+8: final readonly class Barcode
+9: {
+10:     private function __construct(public string $value, public Symbology $symbology) {}
+11: 
+12:     public static function of(string $value, Symbology $symbology): self
+13:     {
+14:         $code = trim($value);
+15: 
+16:         $length = match ($symbology) {
+17:             Symbology::Ean13 => 13,
+18:             Symbology::Ean8 => 8,
+19:             Symbology::UpcA => 12,
+20:             default => null,
+21:         };
+22: 
+23:         if ($length !== null) {
+24:             if (preg_match('/^\d{'.$length.'}$/', $code) !== 1) {
+25:                 throw CatalogException::invalid("El código {$symbology->value} debe tener {$length} dígitos.");
+26:             }
+27:             if (! self::hasValidCheckDigit($code)) {
+28:                 throw CatalogException::invalid("El dígito verificador del código {$code} no es válido.");
+29:             }
+30:         } elseif (preg_match('/^[\x21-\x7E]{1,40}$/', $code) !== 1) {
+31:             throw CatalogException::invalid('El código debe tener de 1 a 40 caracteres imprimibles, sin espacios.');
+32:         }
+33: 
+34:         return new self($code, $symbology);
+35:     }
+36: 
+37:     private static function hasValidCheckDigit(string $code): bool
+38:     {
+39:         $payload = substr($code, 0, -1);
+40:         $sum = 0;
+41:         $n = strlen($payload);
+42: 
+43:         for ($i = $n - 1; $i >= 0; $i--) {
+44:             $weight = (($n - 1 - $i) % 2 === 0) ? 3 : 1; // el dígito más cercano al verificador pesa 3
+45:             $sum += (int) $payload[$i] * $weight;
+46:         }
+47: 
+48:         return ((10 - ($sum % 10)) % 10) === (int) substr($code, -1);
+49:     }
+50: }
+
+
+FILE app\Modules\Catalog\Domain\BarcodeInput.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: final readonly class BarcodeInput
+8: {
+9:     public function __construct(
+10:         public Barcode $barcode,
+11:         /** Unidad de la presentación a la que pertenece el código (null = unidad base). */
+12:         public ?int $presentationUnitId = null,
+13:         public bool $isPrimary = false,
+14:     ) {}
+15: 
+16:     public function asPrimary(): self
+17:     {
+18:         return new self($this->barcode, $this->presentationUnitId, true);
+19:     }
+20: }
+
+
+FILE app\Modules\Catalog\Domain\CatalogException.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: final class CatalogException extends \DomainException
+8: {
+9:     /** @param array<string, scalar|null> $context */
+10:     private function __construct(string $message, public readonly string $errorCode, public readonly array $context = [])
+11:     {
+12:         parent::__construct($message);
+13:     }
+14: 
+15:     public static function invalid(string $message): self
+16:     {
+17:         return new self($message, 'INVALID_PRODUCT');
+18:     }
+19: 
+20:     public static function categoryNotFound(int $id): self
+21:     {
+22:         return new self("La categoría {$id} no existe o está desactivada.", 'CATEGORY_NOT_FOUND', ['category_id' => $id]);
+23:     }
+24: 
+25:     public static function brandNotFound(int $id): self
+26:     {
+27:         return new self("La marca {$id} no existe.", 'BRAND_NOT_FOUND', ['brand_id' => $id]);
+28:     }
+29: 
+30:     public static function unitNotFound(int $id): self
+31:     {
+32:         return new self("La unidad {$id} no existe.", 'UNIT_NOT_FOUND', ['unit_id' => $id]);
+33:     }
+34: 
+35:     public static function warehouseNotFound(int $id): self
+36:     {
+37:         return new self("El almacén {$id} no existe.", 'WAREHOUSE_NOT_FOUND', ['warehouse_id' => $id]);
+38:     }
+39: 
+40:     public static function duplicateBarcode(string $barcode): self
+41:     {
+42:         return new self("El código de barras {$barcode} ya pertenece a otro producto.", 'DUPLICATE_BARCODE', ['barcode' => $barcode]);
+43:     }
+44: 
+45:     public static function productNotFound(int $id): self
+46:     {
+47:         return new self("El producto {$id} no existe.", 'PRODUCT_NOT_FOUND', ['product_id' => $id]);
+48:     }
+49: 
+50:     public static function staleVersion(int $expected, int $current): self
+51:     {
+52:         return new self(
+53:             'El producto fue modificado por otra persona. Recargue y vuelva a intentar.',
+54:             'STALE_VERSION',
+55:             ['expected' => $expected, 'current' => $current],
+56:         );
+57:     }
+58: 
+59:     public static function hasStock(string $sku, string $quantity): self
+60:     {
+61:         return new self("El producto {$sku} aún tiene {$quantity} unidades en stock: no puede darse de baja.", 'HAS_STOCK', ['sku' => $sku]);
+62:     }
+63: }
+
+
+FILE app\Modules\Catalog\Domain\CatalogRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: interface CatalogRepository
+8: {
+9:     public function category(int $id): ?CategoryInfo;
+10: 
+11:     public function brandExists(int $id): bool;
+12: 
+13:     /**
+14:      * @param  list<int>  $ids
+15:      * @return list<int> los que existen
+16:      */
+17:     public function existingUnitIds(array $ids): array;
+18: 
+19:     /**
+20:      * @param  list<int>  $ids
+21:      * @return list<int> los que existen
+22:      */
+23:     public function existingWarehouseIds(array $ids): array;
+24: 
+25:     /** id del producto dueño del código, o null si está libre. */
+26:     public function barcodeOwner(string $barcode): ?int;
+27: 
+28:     /** Inserta producto + presentaciones + códigos + políticas. Debe llamarse dentro de una transacción. */
+29:     public function insert(NewProduct $product, string $sku): int;
+30: 
+31:     /** Bloquea la fila del producto (FOR UPDATE). */
+32:     public function lock(int $productId): ?ProductRecord;
+33: 
+34:     /** Aplica los cambios e incrementa la versión. */
+35:     public function update(int $productId, ProductChanges $changes): void;
+36: 
+37:     public function setStatus(int $productId, ProductStatus $status): void;
+38: 
+39:     /** Stock total del producto (suma de todas las ubicaciones), como decimal en texto. */
+40:     public function totalStock(int $productId): string;
+41: 
+42:     /** @return list<SimilarProduct> */
+43:     public function similarNames(string $name, float $threshold, int $limit): array;
+44: 
+45:     public function lookup(string $code): ?ProductLookup;
+46: }
+
+
+FILE app\Modules\Catalog\Domain\CategoryInfo.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: final readonly class CategoryInfo
+8: {
+9:     public function __construct(public int $id, public string $rootCode, public bool $isActive) {}
+10: }
+
+
+FILE app\Modules\Catalog\Domain\Factor.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: /** Factor de conversión de una presentación a la unidad base (3 decimales, > 0). */
+8: final readonly class Factor
+9: {
+10:     private function __construct(public string $value) {}
+11: 
+12:     public static function of(string|int $value): self
+13:     {
+14:         $raw = trim((string) $value);
+15: 
+16:         if (preg_match('/^\d{1,9}(\.\d{1,3})?$/', $raw) !== 1 || bccomp($raw, '0', 3) <= 0) {
+17:             throw CatalogException::invalid("Factor de presentación inválido: '{$raw}'.");
+18:         }
+19: 
+20:         return new self(bcadd($raw, '0', 3));
+21:     }
+22: 
+23:     public function isOne(): bool
+24:     {
+25:         return bccomp($this->value, '1', 3) === 0;
+26:     }
+27: }
+
+
+FILE app\Modules\Catalog\Domain\NewProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: final readonly class NewProduct
+8: {
+9:     public string $name;
+10: 
+11:     public ?string $description;
+12: 
+13:     /** @var list<PresentationInput> la unidad base siempre va primero con factor 1 */
+14:     public array $presentations;
+15: 
+16:     /** @var list<BarcodeInput> exactamente uno es principal (si hay códigos) */
+17:     public array $barcodes;
+18: 
+19:     /** @var list<StockPolicy> */
+20:     public array $policies;
+21: 
+22:     /**
+23:      * @param  list<PresentationInput>  $presentations
+24:      * @param  list<BarcodeInput>  $barcodes
+25:      * @param  list<StockPolicy>  $policies
+26:      */
+27:     public function __construct(
+28:         string $name,
+29:         public int $categoryId,
+30:         public int $baseUnitId,
+31:         public ?int $actorId = null,
+32:         ?string $description = null,
+33:         public ?int $brandId = null,
+34:         public ?string $referencePrice = null,
+35:         array $presentations = [],
+36:         array $barcodes = [],
+37:         array $policies = [],
+38:     ) {
+39:         $this->name = self::normalizeName($name);
+40:         $this->description = self::normalizeDescription($description);
+41: 
+42:         if ($referencePrice !== null && preg_match('/^\d{1,10}(\.\d{1,2})?$/', $referencePrice) !== 1) {
+43:             throw CatalogException::invalid('El precio referencial no es válido (máximo 2 decimales).');
+44:         }
+45: 
+46:         $this->presentations = self::normalizePresentations($baseUnitId, $presentations);
+47:         $this->barcodes = self::normalizeBarcodes($barcodes, $this->presentations);
+48:         $this->policies = self::normalizePolicies($policies);
+49:     }
+50: 
+51:     public static function normalizeName(string $name): string
+52:     {
+53:         $clean = trim((string) preg_replace('/\s+/u', ' ', $name));
+54: 
+55:         if (mb_strlen($clean) < 2 || mb_strlen($clean) > 200) {
+56:             throw CatalogException::invalid('El nombre debe tener entre 2 y 200 caracteres.');
+57:         }
+58: 
+59:         return $clean;
+60:     }
+61: 
+62:     public static function normalizeDescription(?string $description): ?string
+63:     {
+64:         if ($description === null || trim($description) === '') {
+65:             return null;
+66:         }
+67:         if (mb_strlen($description) > 2000) {
+68:             throw CatalogException::invalid('La descripción no puede superar 2000 caracteres.');
+69:         }
+70: 
+71:         return trim($description);
+72:     }
+73: 
+74:     /**
+75:      * @param  list<PresentationInput>  $input
+76:      * @return list<PresentationInput>
+77:      */
+78:     private static function normalizePresentations(int $baseUnitId, array $input): array
+79:     {
+80:         $base = new PresentationInput($baseUnitId, Factor::of(1));
+81:         $seen = [$baseUnitId => true];
+82:         $out = [$base];
+83:         $defaults = 0;
+84: 
+85:         foreach ($input as $p) {
+86:             if ($p->unitId === $baseUnitId) {
+87:                 if (! $p->factor->isOne()) {
+88:                     throw CatalogException::invalid('La presentación de la unidad base debe tener factor 1.');
+89:                 }
+90:                 $out[0] = $p;
+91:             } else {
+92:                 if (isset($seen[$p->unitId])) {
+93:                     throw CatalogException::invalid('Hay presentaciones repetidas para la misma unidad.');
+94:                 }
+95:                 $seen[$p->unitId] = true;
+96:                 $out[] = $p;
+97:             }
+98:             $defaults += $p->isPurchaseDefault ? 1 : 0;
+99:         }
+100: 
+101:         if ($defaults > 1) {
+102:             throw CatalogException::invalid('Solo una presentación puede ser la de compra por defecto.');
+103:         }
+104: 
+105:         return $out;
+106:     }
+107: 
+108:     /**
+109:      * @param  list<BarcodeInput>  $barcodes
+110:      * @param  list<PresentationInput>  $presentations
+111:      * @return list<BarcodeInput>
+112:      */
+113:     private static function normalizeBarcodes(array $barcodes, array $presentations): array
+114:     {
+115:         if ($barcodes === []) {
+116:             return [];
+117:         }
+118: 
+119:         $units = array_map(static fn (PresentationInput $p): int => $p->unitId, $presentations);
+120:         $seen = [];
+121:         $primaries = 0;
+122: 
+123:         foreach ($barcodes as $b) {
+124:             if (isset($seen[$b->barcode->value])) {
+125:                 throw CatalogException::invalid("El código {$b->barcode->value} está repetido en el formulario.");
+126:             }
+127:             $seen[$b->barcode->value] = true;
+128: 
+129:             if ($b->presentationUnitId !== null && ! in_array($b->presentationUnitId, $units, true)) {
+130:                 throw CatalogException::invalid('Un código de barras referencia una presentación que no existe.');
+131:             }
+132:             $primaries += $b->isPrimary ? 1 : 0;
+133:         }
+134: 
+135:         if ($primaries > 1) {
+136:             throw CatalogException::invalid('Solo un código puede ser el principal.');
+137:         }
+138:         if ($primaries === 0) {
+139:             $barcodes[0] = $barcodes[0]->asPrimary();
+140:         }
+141: 
+142:         return $barcodes;
+143:     }
+144: 
+145:     /**
+146:      * @param  list<StockPolicy>  $policies
+147:      * @return list<StockPolicy>
+148:      */
+149:     private static function normalizePolicies(array $policies): array
+150:     {
+151:         $seen = [];
+152:         foreach ($policies as $p) {
+153:             if (isset($seen[$p->warehouseId])) {
+154:                 throw CatalogException::invalid('Hay más de una política de stock para el mismo almacén.');
+155:             }
+156:             $seen[$p->warehouseId] = true;
+157:         }
+158: 
+159:         return $policies;
+160:     }
+161: }
+
+
+FILE app\Modules\Catalog\Domain\PresentationInput.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: final readonly class PresentationInput
+8: {
+9:     public function __construct(
+10:         public int $unitId,
+11:         public Factor $factor,
+12:         public bool $isPurchaseDefault = false,
+13:     ) {}
+14: }
+
+
+FILE app\Modules\Catalog\Domain\ProductChanges.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: /** Cambios parciales (null = no cambiar). El SKU y la unidad base nunca cambian. */
+8: final readonly class ProductChanges
+9: {
+10:     public ?string $name;
+11: 
+12:     public ?string $description;
+13: 
+14:     public function __construct(
+15:         public int $expectedVersion,
+16:         public ?int $actorId = null,
+17:         ?string $name = null,
+18:         ?string $description = null,
+19:         public ?int $categoryId = null,
+20:         public ?int $brandId = null,
+21:         public ?string $referencePrice = null,
+22:     ) {
+23:         $this->name = $name === null ? null : NewProduct::normalizeName($name);
+24:         $this->description = $description === null ? null : NewProduct::normalizeDescription($description);
+25: 
+26:         if ($referencePrice !== null && preg_match('/^\d{1,10}(\.\d{1,2})?$/', $referencePrice) !== 1) {
+27:             throw CatalogException::invalid('El precio referencial no es válido (máximo 2 decimales).');
+28:         }
+29:     }
+30: 
+31:     /** @return array<string, scalar> campos con valor nuevo */
+32:     public function fields(): array
+33:     {
+34:         return array_filter([
+35:             'name' => $this->name,
+36:             'description' => $this->description,
+37:             'category_id' => $this->categoryId,
+38:             'brand_id' => $this->brandId,
+39:             'reference_price' => $this->referencePrice,
+40:         ], static fn (mixed $v): bool => $v !== null);
+41:     }
+42: }
+
+
+FILE app\Modules\Catalog\Domain\ProductLookup.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: /** Resultado de escanear un código o digitar un SKU: producto, presentación y stock por ubicación. */
+8: final readonly class ProductLookup
+9: {
+10:     /** @param list<array{location_id: int, location_code: string, warehouse: string, quantity: string}> $stock */
+11:     public function __construct(
+12:         public int $productId,
+13:         public string $sku,
+14:         public string $name,
+15:         public string $status,
+16:         public ?int $presentationId,
+17:         public string $presentationFactor,
+18:         public string $costAvg,
+19:         public array $stock,
+20:     ) {}
+21: }
+
+
+FILE app\Modules\Catalog\Domain\ProductRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: final readonly class ProductRecord
+8: {
+9:     public function __construct(
+10:         public int $id,
+11:         public string $sku,
+12:         public string $name,
+13:         public ?string $description,
+14:         public int $categoryId,
+15:         public ?int $brandId,
+16:         public ?string $referencePrice,
+17:         public ProductStatus $status,
+18:         public int $version,
+19:     ) {}
+20: }
+
+
+FILE app\Modules\Catalog\Domain\ProductStatus.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: enum ProductStatus: string
+8: {
+9:     case Active = 'ACTIVE';
+10:     case Inactive = 'INACTIVE';
+11:     case Discontinued = 'DISCONTINUED';
+12: }
+
+
+FILE app\Modules\Catalog\Domain\SimilarProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: final readonly class SimilarProduct
+8: {
+9:     public function __construct(public int $id, public string $sku, public string $name, public float $similarity) {}
+10: }
+
+
+FILE app\Modules\Catalog\Domain\SkuSequence.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: interface SkuSequence
+8: {
+9:     /** Siguiente SKU atómico para el prefijo de la categoría raíz, p. ej. LIB-000231. */
+10:     public function next(string $categoryRootCode): string;
+11: }
+
+
+FILE app\Modules\Catalog\Domain\StockPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: /** Política de stock de un producto en un almacén: mínimo, máximo y cantidad de reposición. */
+8: final readonly class StockPolicy
+9: {
+10:     public string $minQty;
+11: 
+12:     public ?string $maxQty;
+13: 
+14:     public ?string $reorderQty;
+15: 
+16:     public function __construct(public int $warehouseId, string|int $minQty, string|int|null $maxQty = null, string|int|null $reorderQty = null)
+17:     {
+18:         $this->minQty = self::qty($minQty, 'mínimo', true);
+19:         $this->maxQty = $maxQty === null ? null : self::qty($maxQty, 'máximo', true);
+20:         $this->reorderQty = $reorderQty === null ? null : self::qty($reorderQty, 'reposición', false);
+21: 
+22:         if ($this->maxQty !== null && bccomp($this->maxQty, $this->minQty, 3) < 0) {
+23:             throw CatalogException::invalid('El stock máximo no puede ser menor que el mínimo.');
+24:         }
+25:     }
+26: 
+27:     private static function qty(string|int $value, string $label, bool $allowZero): string
+28:     {
+29:         $raw = trim((string) $value);
+30: 
+31:         if (preg_match('/^\d{1,11}(\.\d{1,3})?$/', $raw) !== 1) {
+32:             throw CatalogException::invalid("Cantidad inválida para {$label}: '{$raw}'.");
+33:         }
+34:         if (! $allowZero && bccomp($raw, '0', 3) <= 0) {
+35:             throw CatalogException::invalid("La cantidad de {$label} debe ser mayor que cero.");
+36:         }
+37: 
+38:         return bcadd($raw, '0', 3);
+39:     }
+40: }
+
+
+FILE app\Modules\Catalog\Domain\Symbology.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Domain;
+6: 
+7: enum Symbology: string
+8: {
+9:     case Ean13 = 'EAN13';
+10:     case Ean8 = 'EAN8';
+11:     case UpcA = 'UPCA';
+12:     case Code128 = 'CODE128';
+13:     case Qr = 'QR';
+14:     case Internal = 'INTERNAL';
+15: }
+
+
+FILE app\Modules\Iam\Domain\IamException.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: final class IamException extends \DomainException
+8: {
+9:     private function __construct(string $message, public readonly string $errorCode)
+10:     {
+11:         parent::__construct($message);
+12:     }
+13: 
+14:     public static function invalid(string $message): self
+15:     {
+16:         return new self($message, 'INVALID_USER');
+17:     }
+18: 
+19:     public static function usernameTaken(string $username): self
+20:     {
+21:         return new self("El usuario '{$username}' ya existe.", 'USERNAME_TAKEN');
+22:     }
+23: 
+24:     public static function emailTaken(string $email): self
+25:     {
+26:         return new self("El correo '{$email}' ya está registrado.", 'EMAIL_TAKEN');
+27:     }
+28: 
+29:     public static function notFound(int $id): self
+30:     {
+31:         return new self("El usuario {$id} no existe.", 'USER_NOT_FOUND');
+32:     }
+33: 
+34:     public static function cannotDeactivateSelf(): self
+35:     {
+36:         return new self('No puede desactivar su propia cuenta.', 'CANNOT_DEACTIVATE_SELF');
+37:     }
+38: 
+39:     public static function lastAdmin(): self
+40:     {
+41:         return new self('No se puede desactivar al último administrador activo.', 'LAST_ADMIN');
+42:     }
+43: }
+
+
+FILE app\Modules\Iam\Domain\LockoutPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: /** 5 intentos fallidos => bloqueo de 15 minutos. */
+8: final class LockoutPolicy
+9: {
+10:     public const MAX_ATTEMPTS = 5;
+11: 
+12:     public const LOCK_MINUTES = 15;
+13: 
+14:     public static function afterFailure(LockoutState $current, \DateTimeImmutable $now): LockoutState
+15:     {
+16:         $attempts = $current->failedAttempts + 1;
+17: 
+18:         if ($attempts >= self::MAX_ATTEMPTS) {
+19:             return new LockoutState(0, $now->modify('+'.self::LOCK_MINUTES.' minutes'));
+20:         }
+21: 
+22:         return new LockoutState($attempts, $current->lockedUntil);
+23:     }
+24: 
+25:     public static function isLocked(LockoutState $state, \DateTimeImmutable $now): bool
+26:     {
+27:         return $state->lockedUntil !== null && $state->lockedUntil > $now;
+28:     }
+29: }
+
+
+FILE app\Modules\Iam\Domain\LockoutState.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: final readonly class LockoutState
+8: {
+9:     public function __construct(public int $failedAttempts, public ?\DateTimeImmutable $lockedUntil) {}
+10: }
+
+
+FILE app\Modules\Iam\Domain\NewUser.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: final readonly class NewUser
+8: {
+9:     public string $name;
+10: 
+11:     public string $username;
+12: 
+13:     public string $email;
+14: 
+15:     public function __construct(
+16:         string $name,
+17:         string $username,
+18:         string $email,
+19:         public string $password,
+20:         public RoleName $role,
+21:         public ?int $defaultWarehouseId = null,
+22:         public ?int $actorId = null,
+23:     ) {
+24:         $this->name = trim((string) preg_replace('/\s+/u', ' ', $name));
+25:         $this->username = mb_strtolower(trim($username));
+26:         $this->email = mb_strtolower(trim($email));
+27: 
+28:         if (mb_strlen($this->name) < 2 || mb_strlen($this->name) > 120) {
+29:             throw IamException::invalid('El nombre debe tener entre 2 y 120 caracteres.');
+30:         }
+31:         if (preg_match('/^[a-z0-9._-]{3,40}$/', $this->username) !== 1) {
+32:             throw IamException::invalid('El usuario debe tener 3 a 40 caracteres: letras minúsculas, números, punto, guion o guion bajo.');
+33:         }
+34:         if (filter_var($this->email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($this->email) > 160) {
+35:             throw IamException::invalid('El correo no es válido.');
+36:         }
+37: 
+38:         $violations = PasswordPolicy::violations($password, $this->username, $this->email);
+39:         if ($violations !== []) {
+40:             throw IamException::invalid(implode(' ', $violations));
+41:         }
+42:     }
+43: }
+
+
+FILE app\Modules\Iam\Domain\PasswordHasher.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: interface PasswordHasher
+8: {
+9:     public function hash(string $plain): string;
+10: }
+
+
+FILE app\Modules\Iam\Domain\PasswordPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: /** Política alineada con NIST 800-63B: prima la longitud, no las reglas de composición. */
+8: final class PasswordPolicy
+9: {
+10:     public const MIN_LENGTH = 12;
+11: 
+12:     public const MAX_LENGTH = 128;
+13: 
+14:     private const COMMON = [
+15:         'contrasena1234', 'contraseña1234', 'password1234', 'administrador', 'administrador1',
+16:         '123456789012', 'qwertyuiop12', 'admin1234567', 'cityofertas1',
+17:     ];
+18: 
+19:     /** @return list<string> mensajes de incumplimiento (vacío = válida) */
+20:     public static function violations(string $password, string $username, string $email): array
+21:     {
+22:         $errors = [];
+23:         $length = mb_strlen($password);
+24: 
+25:         if ($length < self::MIN_LENGTH) {
+26:             $errors[] = 'La contraseña debe tener al menos '.self::MIN_LENGTH.' caracteres.';
+27:         }
+28:         if ($length > self::MAX_LENGTH) {
+29:             $errors[] = 'La contraseña no puede superar '.self::MAX_LENGTH.' caracteres.';
+30:         }
+31:         if (mb_strlen($username) >= 3 && mb_stripos($password, $username) !== false) {
+32:             $errors[] = 'La contraseña no puede contener el nombre de usuario.';
+33:         }
+34:         $local = explode('@', $email)[0];
+35:         if (mb_strlen($local) >= 3 && mb_stripos($password, $local) !== false) {
+36:             $errors[] = 'La contraseña no puede contener su correo.';
+37:         }
+38:         if (in_array(mb_strtolower($password), self::COMMON, true) || preg_match('/^(.)\1+$/u', $password) === 1) {
+39:             $errors[] = 'La contraseña es demasiado común.';
+40:         }
+41: 
+42:         return $errors;
+43:     }
+44: }
+
+
+FILE app\Modules\Iam\Domain\Permissions.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: /**
+8:  * Única fuente de verdad de permisos y de la matriz rol x permiso (plan v3, sección 5).
+9:  * Los permisos se asignan SIEMPRE por permiso, nunca preguntando por el nombre del rol.
+10:  */
+11: final class Permissions
+12: {
+13:     public const CATALOG_VIEW = 'catalog.view';
+14: 
+15:     public const CATALOG_WRITE = 'catalog.write';
+16: 
+17:     public const CATALOG_IMPORT = 'catalog.import';
+18: 
+19:     public const SUPPLIERS_MANAGE = 'suppliers.manage';
+20: 
+21:     public const LOCATIONS_MANAGE = 'locations.manage';
+22: 
+23:     public const INVENTORY_VIEW = 'inventory.view';
+24: 
+25:     public const INVENTORY_RECEIVE = 'inventory.receive';
+26: 
+27:     public const INVENTORY_TRANSFER = 'inventory.transfer';
+28: 
+29:     public const INVENTORY_ADJUST_REQUEST = 'inventory.adjust.request';
+30: 
+31:     public const INVENTORY_ADJUST_APPROVE = 'inventory.adjust.approve';
+32: 
+33:     public const INVENTORY_OPENING_BALANCE = 'inventory.opening_balance';
+34: 
+35:     public const COUNTS_RUN = 'counts.run';
+36: 
+37:     public const COUNTS_CLOSE = 'counts.close';
+38: 
+39:     public const POS_IMPORT = 'pos.import';
+40: 
+41:     public const ALERTS_VIEW = 'alerts.view';
+42: 
+43:     public const ALERTS_MANAGE = 'alerts.manage';
+44: 
+45:     public const REPORTS_VIEW = 'reports.view';
+46: 
+47:     public const REPORTS_EXPORT = 'reports.export';
+48: 
+49:     public const USERS_MANAGE = 'users.manage';
+50: 
+51:     public const SETTINGS_MANAGE = 'settings.manage';
+52: 
+53:     public const AUDIT_VIEW = 'audit.view';
+54: 
+55:     /** @return list<string> */
+56:     public static function all(): array
+57:     {
+58:         /** @var list<string> $values */
+59:         $values = array_values((new \ReflectionClass(self::class))->getConstants());
+60: 
+61:         return $values;
+62:     }
+63: 
+64:     /** @return list<string> */
+65:     public static function forRole(RoleName $role): array
+66:     {
+67:         return match ($role) {
+68:             RoleName::Admin => self::all(),
+69:             RoleName::Supervisor => [
+70:                 self::CATALOG_VIEW, self::CATALOG_WRITE, self::CATALOG_IMPORT, self::LOCATIONS_MANAGE,
+71:                 self::INVENTORY_VIEW, self::INVENTORY_RECEIVE, self::INVENTORY_TRANSFER,
+72:                 self::INVENTORY_ADJUST_REQUEST, self::INVENTORY_ADJUST_APPROVE,
+73:                 self::COUNTS_RUN, self::COUNTS_CLOSE, self::POS_IMPORT,
+74:                 self::ALERTS_VIEW, self::ALERTS_MANAGE,
+75:                 self::REPORTS_VIEW, self::REPORTS_EXPORT, self::AUDIT_VIEW,
+76:             ],
+77:             RoleName::Almacenero => [
+78:                 self::CATALOG_VIEW, self::INVENTORY_VIEW, self::INVENTORY_RECEIVE, self::INVENTORY_TRANSFER,
+79:                 self::INVENTORY_ADJUST_REQUEST, self::COUNTS_RUN, self::ALERTS_VIEW,
+80:             ],
+81:             RoleName::Compras => [
+82:                 self::CATALOG_VIEW, self::SUPPLIERS_MANAGE, self::INVENTORY_VIEW,
+83:                 self::ALERTS_VIEW, self::REPORTS_VIEW, self::REPORTS_EXPORT,
+84:             ],
+85:             RoleName::Lectura => [
+86:                 self::CATALOG_VIEW, self::INVENTORY_VIEW, self::ALERTS_VIEW, self::REPORTS_VIEW,
+87:             ],
+88:         };
+89:     }
+90: }
+
+
+FILE app\Modules\Iam\Domain\RoleName.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: enum RoleName: string
+8: {
+9:     case Admin = 'admin';
+10:     case Supervisor = 'supervisor';
+11:     case Almacenero = 'almacenero';
+12:     case Compras = 'compras';
+13:     case Lectura = 'lectura';
+14: }
+
+
+FILE app\Modules\Iam\Domain\UserRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: final readonly class UserRecord
+8: {
+9:     public function __construct(
+10:         public int $id,
+11:         public string $username,
+12:         public bool $isActive,
+13:         public bool $isAdmin,
+14:         public string $email = '',
+15:     ) {}
+16: }
+
+
+FILE app\Modules\Iam\Domain\UserRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Domain;
+6: 
+7: interface UserRepository
+8: {
+9:     public function usernameExists(string $username): bool;
+10: 
+11:     public function emailExists(string $email): bool;
+12: 
+13:     public function insert(NewUser $user, string $passwordHash): int;
+14: 
+15:     public function find(int $id): ?UserRecord;
+16: 
+17:     /** Cantidad de administradores activos (bloquea filas para evitar carreras al desactivar). */
+18:     public function countActiveAdmins(): int;
+19: 
+20:     public function setActive(int $id, bool $active): void;
+21: 
+22:     public function setPasswordHash(int $id, string $passwordHash): void;
+23: 
+24:     public function lockoutState(int $id): LockoutState;
+25: 
+26:     public function saveLockoutState(int $id, LockoutState $state): void;
+27: 
+28:     public function markLogin(int $id, \DateTimeImmutable $at): void;
+29: }
+
+
+FILE app\Modules\Inventory\Domain\EventBus.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: interface EventBus
+8: {
+9:     /** La implementación de producción publica solo después del commit. */
+10:     public function publish(object $event): void;
+11: }
+
+
+FILE app\Modules\Inventory\Domain\KardexPage.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: final readonly class KardexPage
+8: {
+9:     /** @param list<KardexRow> $rows */
+10:     public function __construct(public string $openingBalance, public array $rows, public string $closingBalance) {}
+11: }
+
+
+FILE app\Modules\Inventory\Domain\KardexQuery.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+8: 
+9: final readonly class KardexQuery
+10: {
+11:     public const MAX_ROWS = 5000;
+12: 
+13:     public function __construct(
+14:         public int $productId,
+15:         public ?int $warehouseId = null,
+16:         public ?int $locationId = null,
+17:         /** Inicio inclusivo. */
+18:         public ?\DateTimeImmutable $from = null,
+19:         /** Fin exclusivo. */
+20:         public ?\DateTimeImmutable $to = null,
+21:         public int $limit = 1000,
+22:     ) {
+23:         if ($limit < 1 || $limit > self::MAX_ROWS) {
+24:             throw InventoryException::invalid('El límite del kardex debe estar entre 1 y '.self::MAX_ROWS.'.');
+25:         }
+26:         if ($from !== null && $to !== null && $from >= $to) {
+27:             throw InventoryException::invalid('El rango de fechas del kardex es inválido.');
+28:         }
+29:     }
+30: }
+
+
+FILE app\Modules\Inventory\Domain\KardexReader.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: interface KardexReader
+8: {
+9:     public function read(KardexQuery $query): KardexPage;
+10: }
+
+
+FILE app\Modules\Inventory\Domain\KardexRow.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: final readonly class KardexRow
+8: {
+9:     public function __construct(
+10:         public int $movementId,
+11:         public string $at,
+12:         public string $type,
+13:         /** Positivo = entra a la ubicación; negativo = sale. */
+14:         public string $delta,
+15:         public string $runningBalance,
+16:         public string $locationCode,
+17:         public ?string $documentRef,
+18:         public ?string $notes,
+19:         public ?string $unitCost,
+20:         public string $userName,
+21:     ) {}
+22: }
+
+
+FILE app\Modules\Inventory\Domain\LocationState.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: final readonly class LocationState
+8: {
+9:     public function __construct(
+10:         public int $id,
+11:         public string $code,
+12:         public bool $isActive,
+13:         public bool $isFrozen,
+14:     ) {}
+15: }
+
+
+FILE app\Modules\Inventory\Domain\MovementType.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: /**
+8:  * Tipos de movimiento del ledger. Los valores coinciden con el CHECK de la BD.
+9:  */
+10: enum MovementType: string
+11: {
+12:     case OpeningBalance = 'SALDO_INICIAL';
+13:     case Purchase = 'ENTRADA_COMPRA';
+14:     case CustomerReturn = 'DEVOLUCION_CLIENTE';
+15:     case AdjustmentIn = 'AJUSTE_POSITIVO';
+16:     case Sale = 'SALIDA_VENTA';
+17:     case WriteOff = 'MERMA';
+18:     case AdjustmentOut = 'AJUSTE_NEGATIVO';
+19:     case SupplierReturn = 'DEVOLUCION_PROVEEDOR';
+20:     case Transfer = 'TRANSFERENCIA';
+21: 
+22:     public function isEntry(): bool
+23:     {
+24:         return match ($this) {
+25:             self::OpeningBalance, self::Purchase, self::CustomerReturn, self::AdjustmentIn => true,
+26:             default => false,
+27:         };
+28:     }
+29: 
+30:     public function isExit(): bool
+31:     {
+32:         return match ($this) {
+33:             self::Sale, self::WriteOff, self::AdjustmentOut, self::SupplierReturn => true,
+34:             default => false,
+35:         };
+36:     }
+37: 
+38:     public function isTransfer(): bool
+39:     {
+40:         return $this === self::Transfer;
+41:     }
+42: 
+43:     public function requiresReason(): bool
+44:     {
+45:         return match ($this) {
+46:             self::WriteOff, self::AdjustmentIn, self::AdjustmentOut => true,
+47:             default => false,
+48:         };
+49:     }
+50: 
+51:     /** Solo las entradas con costo de compra recalculan el promedio ponderado. */
+52:     public function requiresCost(): bool
+53:     {
+54:         return $this === self::Purchase || $this === self::OpeningBalance;
+55:     }
+56: 
+57:     /** Permiso (spatie) necesario para registrar este tipo de movimiento directamente. */
+58:     public function requiredPermission(): string
+59:     {
+60:         return match ($this) {
+61:             self::OpeningBalance => 'inventory.opening_balance',
+62:             self::Purchase, self::CustomerReturn, self::SupplierReturn => 'inventory.receive',
+63:             self::Transfer => 'inventory.transfer',
+64:             self::Sale => 'pos.import',
+65:             self::WriteOff, self::AdjustmentIn, self::AdjustmentOut => 'inventory.adjust.approve',
+66:         };
+67:     }
+68: }
+
+
+FILE app\Modules\Inventory\Domain\NewMovement.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+8: 
+9: /**
+10:  * Movimiento ya validado (forma, motivo, costo). Si existe, es estructuralmente correcto;
+11:  * las reglas que dependen del estado (stock, ubicación congelada) las aplica el caso de uso.
+12:  */
+13: final readonly class NewMovement
+14: {
+15:     public string $uuid;
+16: 
+17:     public function __construct(
+18:         string $uuid,
+19:         public string $idempotencyKey,
+20:         public MovementType $type,
+21:         public int $productId,
+22:         public ?int $fromLocationId,
+23:         public ?int $toLocationId,
+24:         public Quantity $quantity,
+25:         public int $userId,
+26:         public ?UnitCost $unitCost = null,
+27:         public ?int $reasonId = null,
+28:         public ?int $presentationId = null,
+29:         public ?Quantity $presentationQty = null,
+30:         public ?string $sourceType = null,
+31:         public ?int $sourceId = null,
+32:         public ?string $documentRef = null,
+33:         public ?string $notes = null,
+34:         public ?int $approvedBy = null,
+35:         public ?\DateTimeImmutable $clientCreatedAt = null,
+36:     ) {
+37:         $this->uuid = strtolower($uuid);
+38:         $this->assertValid();
+39:     }
+40: 
+41:     /** Los ajustes derivados de un conteo sí pueden operar sobre ubicaciones congeladas. */
+42:     public function allowsFrozenLocations(): bool
+43:     {
+44:         return $this->sourceType === 'COUNT';
+45:     }
+46: 
+47:     /** @return list<int> */
+48:     public function locationIds(): array
+49:     {
+50:         return array_values(array_filter(
+51:             [$this->fromLocationId, $this->toLocationId],
+52:             static fn (?int $id): bool => $id !== null,
+53:         ));
+54:     }
+55: 
+56:     private function assertValid(): void
+57:     {
+58:         if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $this->uuid) !== 1) {
+59:             throw InventoryException::invalid('El uuid del movimiento no es válido.');
+60:         }
+61: 
+62:         if (preg_match('/^[\w:.\-]{8,80}$/', $this->idempotencyKey) !== 1) {
+63:             throw InventoryException::invalid('La clave de idempotencia debe tener entre 8 y 80 caracteres.');
+64:         }
+65: 
+66:         if (! $this->quantity->isPositive()) {
+67:             throw InventoryException::invalid('La cantidad debe ser mayor que cero.');
+68:         }
+69: 
+70:         $this->assertShape();
+71: 
+72:         if ($this->type->requiresReason() && $this->reasonId === null) {
+73:             throw InventoryException::invalid('Este tipo de movimiento exige un motivo.');
+74:         }
+75: 
+76:         if ($this->type->requiresCost() && $this->unitCost === null) {
+77:             throw InventoryException::invalid('Este tipo de movimiento exige el costo unitario.');
+78:         }
+79: 
+80:         if (! $this->type->requiresCost() && $this->unitCost !== null) {
+81:             throw InventoryException::invalid('Este tipo de movimiento no admite costo: se valoriza al promedio vigente.');
+82:         }
+83: 
+84:         if (($this->presentationId === null) !== ($this->presentationQty === null)) {
+85:             throw InventoryException::invalid('La presentación y su cantidad deben informarse juntas.');
+86:         }
+87: 
+88:         if ($this->notes !== null && mb_strlen($this->notes) > 500) {
+89:             throw InventoryException::invalid('Las notas no pueden superar 500 caracteres.');
+90:         }
+91: 
+92:         if ($this->documentRef !== null && mb_strlen($this->documentRef) > 60) {
+93:             throw InventoryException::invalid('La referencia del documento no puede superar 60 caracteres.');
+94:         }
+95:     }
+96: 
+97:     private function assertShape(): void
+98:     {
+99:         if ($this->type->isEntry() && ($this->toLocationId === null || $this->fromLocationId !== null)) {
+100:             throw InventoryException::invalid('Una entrada requiere solo ubicación de destino.');
+101:         }
+102: 
+103:         if ($this->type->isExit() && ($this->fromLocationId === null || $this->toLocationId !== null)) {
+104:             throw InventoryException::invalid('Una salida requiere solo ubicación de origen.');
+105:         }
+106: 
+107:         if ($this->type->isTransfer()) {
+108:             if ($this->fromLocationId === null || $this->toLocationId === null) {
+109:                 throw InventoryException::invalid('Una transferencia requiere origen y destino.');
+110:             }
+111: 
+112:             if ($this->fromLocationId === $this->toLocationId) {
+113:                 throw InventoryException::invalid('El origen y el destino deben ser distintos.');
+114:             }
+115:         }
+116:     }
+117: }
+
+
+FILE app\Modules\Inventory\Domain\ProductSnapshot.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: final readonly class ProductSnapshot
+8: {
+9:     public function __construct(public int $id, public UnitCost $costAvg) {}
+10: }
+
+
+FILE app\Modules\Inventory\Domain\Quantity.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+8: 
+9: /**
+10:  * Cantidad no negativa con 3 decimales. Usa aritmética decimal (bcmath), nunca float.
+11:  */
+12: final readonly class Quantity implements \Stringable
+13: {
+14:     private const SCALE = 3;
+15: 
+16:     private function __construct(public string $value) {}
+17: 
+18:     public static function of(string|int $value): self
+19:     {
+20:         $raw = trim((string) $value);
+21: 
+22:         if (preg_match('/^\d{1,11}(\.\d{1,3})?$/', $raw) !== 1) {
+23:             throw InventoryException::invalid("Cantidad inválida: '{$raw}'.");
+24:         }
+25: 
+26:         return new self(bcadd($raw, '0', self::SCALE));
+27:     }
+28: 
+29:     public static function zero(): self
+30:     {
+31:         return new self(bcadd('0', '0', self::SCALE));
+32:     }
+33: 
+34:     public function add(self $other): self
+35:     {
+36:         return new self(bcadd($this->value, $other->value, self::SCALE));
+37:     }
+38: 
+39:     public function subtract(self $other): self
+40:     {
+41:         if ($this->lessThan($other)) {
+42:             throw InventoryException::invalid('La resta produciría una cantidad negativa.');
+43:         }
+44: 
+45:         return new self(bcsub($this->value, $other->value, self::SCALE));
+46:     }
+47: 
+48:     public function isPositive(): bool
+49:     {
+50:         return bccomp($this->value, '0', self::SCALE) === 1;
+51:     }
+52: 
+53:     public function lessThan(self $other): bool
+54:     {
+55:         return bccomp($this->value, $other->value, self::SCALE) === -1;
+56:     }
+57: 
+58:     public function greaterThanOrEqual(self $other): bool
+59:     {
+60:         return bccomp($this->value, $other->value, self::SCALE) >= 0;
+61:     }
+62: 
+63:     public function equals(self $other): bool
+64:     {
+65:         return bccomp($this->value, $other->value, self::SCALE) === 0;
+66:     }
+67: 
+68:     public function __toString(): string
+69:     {
+70:         return $this->value;
+71:     }
+72: }
+
+
+FILE app\Modules\Inventory\Domain\RecordedMovement.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: final readonly class RecordedMovement
+8: {
+9:     public function __construct(public int $id, public string $uuid) {}
+10: }
+
+
+FILE app\Modules\Inventory\Domain\StockLedger.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: /**
+8:  * Puerto de persistencia del ledger. La implementación debe ejecutarse dentro de una transacción.
+9:  */
+10: interface StockLedger
+11: {
+12:     /** Bloquea la fila del producto (FOR UPDATE): serializa los movimientos del mismo producto. */
+13:     public function lockProduct(int $productId): ?ProductSnapshot;
+14: 
+15:     /**
+16:      * Estado de las ubicaciones (con bloqueo compartido para que un congelamiento concurrente espere).
+17:      *
+18:      * @param  list<int>  $locationIds
+19:      * @return array<int, LocationState> indexado por id
+20:      */
+21:     public function locationStates(array $locationIds): array;
+22: 
+23:     public function findByIdempotencyKey(string $key): ?RecordedMovement;
+24: 
+25:     /** Saldo bloqueado (FOR UPDATE) de un producto en una ubicación; cero si no existe fila. */
+26:     public function lockBalance(int $productId, int $locationId): Quantity;
+27: 
+28:     public function totalQuantity(int $productId): Quantity;
+29: 
+30:     /** Inserta en el ledger (append-only) y devuelve el id. */
+31:     public function append(NewMovement $movement, UnitCost $recordedCost): int;
+32: 
+33:     public function increase(int $productId, int $locationId, Quantity $quantity): void;
+34: 
+35:     /** @return bool false si no había saldo suficiente (nada se modifica) */
+36:     public function decrease(int $productId, int $locationId, Quantity $quantity): bool;
+37: 
+38:     public function updateProductCost(int $productId, UnitCost $average, ?UnitCost $lastCost): void;
+39: }
+
+
+FILE app\Modules\Inventory\Domain\Transaction.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: interface Transaction
+8: {
+9:     /**
+10:      * Ejecuta el callback de forma atómica: o todo se confirma o nada.
+11:      *
+12:      * @template T
+13:      *
+14:      * @param  callable(): T  $callback
+15:      * @return T
+16:      */
+17:     public function run(callable $callback): mixed;
+18: }
+
+
+FILE app\Modules\Inventory\Domain\UnitCost.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+8: 
+9: /**
+10:  * Costo unitario en PEN, sin IGV, con 4 decimales.
+11:  */
+12: final readonly class UnitCost implements \Stringable
+13: {
+14:     private const SCALE = 4;
+15: 
+16:     private function __construct(public string $value) {}
+17: 
+18:     public static function of(string|int $value): self
+19:     {
+20:         $raw = trim((string) $value);
+21: 
+22:         if (preg_match('/^\d{1,10}(\.\d{1,4})?$/', $raw) !== 1) {
+23:             throw InventoryException::invalid("Costo unitario inválido: '{$raw}'.");
+24:         }
+25: 
+26:         return new self(bcadd($raw, '0', self::SCALE));
+27:     }
+28: 
+29:     public static function zero(): self
+30:     {
+31:         return new self(bcadd('0', '0', self::SCALE));
+32:     }
+33: 
+34:     public function equals(self $other): bool
+35:     {
+36:         return bccomp($this->value, $other->value, self::SCALE) === 0;
+37:     }
+38: 
+39:     public function __toString(): string
+40:     {
+41:         return $this->value;
+42:     }
+43: }
+
+
+FILE app\Modules\Inventory\Domain\WeightedAverageCost.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain;
+6: 
+7: /**
+8:  * Costo promedio ponderado global por producto:
+9:  *   nuevo = (Q_total x promedio_actual + q x costo) / (Q_total + q)
+10:  * Redondeo half-up a 4 decimales.
+11:  */
+12: final class WeightedAverageCost
+13: {
+14:     public static function next(
+15:         Quantity $currentQty,
+16:         UnitCost $currentAvg,
+17:         Quantity $incomingQty,
+18:         UnitCost $incomingCost,
+19:     ): UnitCost {
+20:         $denominator = bcadd($currentQty->value, $incomingQty->value, 3);
+21: 
+22:         if (bccomp($denominator, '0', 3) === 0) {
+23:             return $incomingCost;
+24:         }
+25: 
+26:         $numerator = bcadd(
+27:             bcmul($currentQty->value, $currentAvg->value, 7),
+28:             bcmul($incomingQty->value, $incomingCost->value, 7),
+29:             7,
+30:         );
+31: 
+32:         $quotient = bcdiv($numerator, $denominator, 10);
+33: 
+34:         // bcadd trunca: sumar 0.00005 antes de truncar a 4 decimales equivale a half-up (valores >= 0).
+35:         return UnitCost::of(bcadd($quotient, '0.00005', 4));
+36:     }
+37: }
+
+
+FILE app\Modules\Inventory\Domain\Events\StockChanged.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain\Events;
+6: 
+7: use App\Modules\Inventory\Domain\MovementType;
+8: 
+9: /** Se publica DESPUÉS del commit. Alerts reacciona a este evento. */
+10: final readonly class StockChanged
+11: {
+12:     /** @param list<int> $locationIds */
+13:     public function __construct(
+14:         public int $movementId,
+15:         public int $productId,
+16:         public MovementType $type,
+17:         public array $locationIds,
+18:     ) {}
+19: }
+
+
+FILE app\Modules\Inventory\Domain\Exceptions\InventoryException.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Domain\Exceptions;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: 
+9: /**
+10:  * Única excepción de dominio del módulo. El `errorCode` es estable y lo usa la API (problem+json).
+11:  */
+12: final class InventoryException extends \DomainException
+13: {
+14:     /** @param array<string, scalar|null> $context */
+15:     private function __construct(
+16:         string $message,
+17:         public readonly string $errorCode,
+18:         public readonly array $context = [],
+19:     ) {
+20:         parent::__construct($message);
+21:     }
+22: 
+23:     public static function invalid(string $message): self
+24:     {
+25:         return new self($message, 'INVALID_MOVEMENT');
+26:     }
+27: 
+28:     public static function productNotFound(int $productId): self
+29:     {
+30:         return new self("El producto {$productId} no existe o fue eliminado.", 'PRODUCT_NOT_FOUND', ['product_id' => $productId]);
+31:     }
+32: 
+33:     public static function locationNotFound(int $locationId): self
+34:     {
+35:         return new self("La ubicación {$locationId} no existe.", 'LOCATION_NOT_FOUND', ['location_id' => $locationId]);
+36:     }
+37: 
+38:     public static function locationInactive(string $code): self
+39:     {
+40:         return new self("La ubicación {$code} está desactivada.", 'LOCATION_INACTIVE', ['location' => $code]);
+41:     }
+42: 
+43:     public static function locationFrozen(string $code): self
+44:     {
+45:         return new self("La ubicación {$code} está congelada por un conteo en curso.", 'LOCATION_FROZEN', ['location' => $code]);
+46:     }
+47: 
+48:     public static function insufficientStock(string $code, Quantity $available, Quantity $requested): self
+49:     {
+50:         return new self(
+51:             "Stock insuficiente en {$code}: disponible {$available}, solicitado {$requested}.",
+52:             'INSUFFICIENT_STOCK',
+53:             ['location' => $code, 'available' => $available->value, 'requested' => $requested->value],
+54:         );
+55:     }
+56: 
+57:     public static function idempotencyKeyReused(string $key): self
+58:     {
+59:         return new self(
+60:             "La clave de idempotencia '{$key}' ya se usó con otro movimiento.",
+61:             'IDEMPOTENCY_KEY_REUSED',
+62:             ['key' => $key],
+63:         );
+64:     }
+65: }
+
+
+FILE app\Modules\Locations\Domain\LocationBatch.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Domain;
+6: 
+7: /** Pedido de generación en lote: zona fija x pasillos x anaqueles x niveles. */
+8: final readonly class LocationBatch
+9: {
+10:     public const MAX_PER_BATCH = 2000;
+11: 
+12:     public function __construct(
+13:         public int $warehouseId,
+14:         public int $zone,
+15:         public int $aisleFrom,
+16:         public int $aisleTo,
+17:         public int $rackFrom,
+18:         public int $rackTo,
+19:         public int $levelFrom,
+20:         public int $levelTo,
+21:         public ?int $actorId = null,
+22:         public ?string $maxCapacity = null,
+23:     ) {
+24:         foreach (['pasillos' => [$aisleFrom, $aisleTo], 'anaqueles' => [$rackFrom, $rackTo], 'niveles' => [$levelFrom, $levelTo]] as $label => [$from, $to]) {
+25:             if ($from > $to) {
+26:                 throw LocationException::invalid("El rango de {$label} es inválido: el inicial es mayor que el final.");
+27:             }
+28:         }
+29: 
+30:         if ($this->count() > self::MAX_PER_BATCH) {
+31:             throw LocationException::invalid('Máximo '.self::MAX_PER_BATCH.' ubicaciones por lote (pidió '.$this->count().').');
+32:         }
+33:         if ($maxCapacity !== null && (preg_match('/^\d{1,11}(\.\d{1,3})?$/', $maxCapacity) !== 1 || bccomp($maxCapacity, '0', 3) <= 0)) {
+34:             throw LocationException::invalid('La capacidad máxima debe ser mayor que cero.');
+35:         }
+36:     }
+37: 
+38:     public function count(): int
+39:     {
+40:         return ($this->aisleTo - $this->aisleFrom + 1) * ($this->rackTo - $this->rackFrom + 1) * ($this->levelTo - $this->levelFrom + 1);
+41:     }
+42: 
+43:     /** @return list<NewLocation> */
+44:     public function expand(string $warehouseCode): array
+45:     {
+46:         $out = [];
+47:         for ($aisle = $this->aisleFrom; $aisle <= $this->aisleTo; $aisle++) {
+48:             for ($rack = $this->rackFrom; $rack <= $this->rackTo; $rack++) {
+49:                 for ($level = $this->levelFrom; $level <= $this->levelTo; $level++) {
+50:                     $code = LocationCode::build($warehouseCode, $this->zone, $aisle, $rack, $level);
+51:                     $out[] = new NewLocation(
+52:                         $code->value, 'Z'.$this->zone, sprintf('P%02d', $aisle), sprintf('A%02d', $rack), $level,
+53:                         $this->maxCapacity === null ? null : bcadd($this->maxCapacity, '0', 3),
+54:                     );
+55:                 }
+56:             }
+57:         }
+58: 
+59:         return $out;
+60:     }
+61: }
+
+
+FILE app\Modules\Locations\Domain\LocationCode.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Domain;
+6: 
+7: /** Código legible de una ubicación: BOD-Z1-P03-A02-N2 = bodega, zona 1, pasillo 3, anaquel 2, nivel 2. */
+8: final readonly class LocationCode implements \Stringable
+9: {
+10:     private function __construct(public string $value) {}
+11: 
+12:     public static function build(string $warehouseCode, int $zone, int $aisle, int $rack, int $level): self
+13:     {
+14:         $warehouse = strtoupper(trim($warehouseCode));
+15: 
+16:         if (preg_match('/^[A-Z]{3}$/', $warehouse) !== 1) {
+17:             throw LocationException::invalid('El código del almacén debe tener 3 letras.');
+18:         }
+19:         foreach (['zona' => [$zone, 99], 'pasillo' => [$aisle, 99], 'anaquel' => [$rack, 99], 'nivel' => [$level, 9]] as $label => [$value, $max]) {
+20:             if ($value < 1 || $value > $max) {
+21:                 throw LocationException::invalid("El {$label} debe estar entre 1 y {$max}.");
+22:             }
+23:         }
+24: 
+25:         return new self(sprintf('%s-Z%d-P%02d-A%02d-N%d', $warehouse, $zone, $aisle, $rack, $level));
+26:     }
+27: 
+28:     /** Normaliza lo escaneado o digitado (mayúsculas, sin espacios). */
+29:     public static function normalize(string $scanned): string
+30:     {
+31:         return strtoupper(preg_replace('/\s+/', '', $scanned) ?? '');
+32:     }
+33: 
+34:     public function __toString(): string
+35:     {
+36:         return $this->value;
+37:     }
+38: }
+
+
+FILE app\Modules\Locations\Domain\LocationException.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Domain;
+6: 
+7: final class LocationException extends \DomainException
+8: {
+9:     private function __construct(string $message, public readonly string $errorCode)
+10:     {
+11:         parent::__construct($message);
+12:     }
+13: 
+14:     public static function invalid(string $message): self
+15:     {
+16:         return new self($message, 'INVALID_LOCATION');
+17:     }
+18: 
+19:     public static function warehouseNotFound(int $id): self
+20:     {
+21:         return new self("El almacén {$id} no existe o está desactivado.", 'WAREHOUSE_NOT_FOUND');
+22:     }
+23: 
+24:     public static function notFound(int $id): self
+25:     {
+26:         return new self("La ubicación {$id} no existe.", 'LOCATION_NOT_FOUND');
+27:     }
+28: 
+29:     public static function hasStock(string $code, string $quantity): self
+30:     {
+31:         return new self("La ubicación {$code} aún tiene {$quantity} unidades: muévalas antes de desactivarla.", 'LOCATION_HAS_STOCK');
+32:     }
+33: 
+34:     public static function isStaging(string $code): self
+35:     {
+36:         return new self("La ubicación {$code} es de paso (recepción) y no se puede desactivar.", 'LOCATION_IS_STAGING');
+37:     }
+38: 
+39:     public static function isFrozen(string $code): self
+40:     {
+41:         return new self("La ubicación {$code} está congelada por un conteo: descongélela primero.", 'LOCATION_FROZEN');
+42:     }
+43: }
+
+
+FILE app\Modules\Locations\Domain\LocationRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Domain;
+6: 
+7: final readonly class LocationRecord
+8: {
+9:     public function __construct(
+10:         public int $id,
+11:         public string $code,
+12:         public bool $isStaging,
+13:         public bool $isFrozen,
+14:         public bool $isActive,
+15:     ) {}
+16: }
+
+
+FILE app\Modules\Locations\Domain\LocationRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Domain;
+6: 
+7: interface LocationRepository
+8: {
+9:     public function warehouse(int $id): ?WarehouseInfo;
+10: 
+11:     /**
+12:      * @param  list<string>  $codes
+13:      * @return list<string> los códigos que ya existen
+14:      */
+15:     public function existingCodes(array $codes): array;
+16: 
+17:     /** @param list<NewLocation> $locations */
+18:     public function insertMany(int $warehouseId, array $locations): void;
+19: 
+20:     /** Bloquea la fila (FOR UPDATE). */
+21:     public function lock(int $id): ?LocationRecord;
+22: 
+23:     /** Stock total en la ubicación, como decimal en texto. */
+24:     public function stockAt(int $id): string;
+25: 
+26:     /**
+27:      * Bloquea varias ubicaciones en orden de id (FOR UPDATE).
+28:      *
+29:      * @param  list<int>  $ids
+30:      * @return list<LocationRecord>
+31:      */
+32:     public function lockMany(array $ids): array;
+33: 
+34:     /** @param list<int> $ids */
+35:     public function setFrozenMany(array $ids, bool $frozen): void;
+36: 
+37:     public function setFrozen(int $id, bool $frozen): void;
+38: 
+39:     public function setActive(int $id, bool $active): void;
+40: }
+
+
+FILE app\Modules\Locations\Domain\NewLocation.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Domain;
+6: 
+7: final readonly class NewLocation
+8: {
+9:     public function __construct(
+10:         public string $code,
+11:         public string $zone,
+12:         public string $aisle,
+13:         public string $rack,
+14:         public int $level,
+15:         public ?string $maxCapacity = null,
+16:     ) {}
+17: }
+
+
+FILE app\Modules\Locations\Domain\WarehouseInfo.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Domain;
+6: 
+7: final readonly class WarehouseInfo
+8: {
+9:     public function __construct(public int $id, public string $code, public bool $isActive) {}
+10: }
+
+
+FILE app\Modules\Operations\Domain\AdjustmentKind.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: enum AdjustmentKind: string
+8: {
+9:     case Positive = 'POSITIVE';
+10:     case Negative = 'NEGATIVE';
+11:     case WriteOff = 'WRITE_OFF';
+12: 
+13:     public function movementKind(): MovementKind
+14:     {
+15:         return match ($this) {
+16:             self::Positive => MovementKind::AdjustmentIn,
+17:             self::Negative => MovementKind::AdjustmentOut,
+18:             self::WriteOff => MovementKind::WriteOff,
+19:         };
+20:     }
+21: 
+22:     /** Tipo de movimiento que deben tener los motivos de este ajuste. */
+23:     public function reasonMovementType(): string
+24:     {
+25:         return match ($this) {
+26:             self::Positive => 'AJUSTE_POSITIVO',
+27:             self::Negative => 'AJUSTE_NEGATIVO',
+28:             self::WriteOff => 'MERMA',
+29:         };
+30:     }
+31: }
+
+
+FILE app\Modules\Operations\Domain\AdjustmentRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class AdjustmentRecord
+8: {
+9:     public function __construct(
+10:         public int $id,
+11:         public string $code,
+12:         public AdjustmentStatus $status,
+13:         public NewAdjustment $request,
+14:         public ?int $movementId = null,
+15:     ) {}
+16: }
+
+
+FILE app\Modules\Operations\Domain\AdjustmentRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: interface AdjustmentRepository
+8: {
+9:     public function insertAdjustment(NewAdjustment $adjustment, string $code): int;
+10: 
+11:     /** Bloquea la solicitud (FOR UPDATE). */
+12:     public function lockAdjustment(int $id): ?AdjustmentRecord;
+13: 
+14:     public function markApproved(int $id, int $reviewerId, int $movementId, ?string $reviewNotes): void;
+15: 
+16:     public function markRejected(int $id, int $reviewerId, string $reviewNotes): void;
+17: }
+
+
+FILE app\Modules\Operations\Domain\AdjustmentStatus.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: enum AdjustmentStatus: string
+8: {
+9:     case Pending = 'PENDING';
+10:     case Approved = 'APPROVED';
+11:     case Rejected = 'REJECTED';
+12: }
+
+
+FILE app\Modules\Operations\Domain\CountBalance.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: 
+9: /** Stock esperado de un producto en una ubicación al iniciar el conteo. */
+10: final readonly class CountBalance
+11: {
+12:     public function __construct(public int $productId, public int $locationId, public Quantity $quantity) {}
+13: }
+
+
+FILE app\Modules\Operations\Domain\CountLineRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: 
+9: final readonly class CountLineRecord
+10: {
+11:     public function __construct(
+12:         public int $id,
+13:         public int $productId,
+14:         public int $locationId,
+15:         public Quantity $expected,
+16:         public ?Quantity $counted = null,
+17:         public bool $recountRequested = false,
+18:         public ?int $countedBy = null,
+19:         public ?int $adjustmentId = null,
+20:     ) {}
+21: 
+22:     /** contado - esperado (puede ser negativo); null si aún no se cuenta. */
+23:     public function difference(): ?string
+24:     {
+25:         return $this->counted === null ? null : bcsub($this->counted->value, $this->expected->value, 3);
+26:     }
+27: 
+28:     public function hasDifference(): bool
+29:     {
+30:         $d = $this->difference();
+31: 
+32:         return $d !== null && bccomp($d, '0', 3) !== 0;
+33:     }
+34: }
+
+
+FILE app\Modules\Operations\Domain\CountLocations.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: /** Puerto hacia el módulo Locations: congelar durante el conteo. */
+8: interface CountLocations
+9: {
+10:     /**
+11:      * @param  list<int>  $locationIds
+12:      *
+13:      * @throws OperationsException si alguna ya está congelada o desactivada
+14:      */
+15:     public function freeze(array $locationIds, int $actorId, string $reference): void;
+16: 
+17:     /** @param list<int> $locationIds */
+18:     public function unfreeze(array $locationIds, int $actorId, string $reference): void;
+19: }
+
+
+FILE app\Modules\Operations\Domain\CountRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class CountRecord
+8: {
+9:     /** @param list<int> $locationIds ubicaciones congeladas por este conteo */
+10:     public function __construct(
+11:         public int $id,
+12:         public string $code,
+13:         public int $warehouseId,
+14:         public CountStatus $status,
+15:         public int $openedBy,
+16:         public array $locationIds,
+17:     ) {}
+18: }
+
+
+FILE app\Modules\Operations\Domain\CountRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: 
+9: interface CountRepository
+10: {
+11:     /** Crea el conteo (COUNTING) con su alcance y las líneas esperadas. */
+12:     public function insertCount(NewCount $count, string $code, CountScope $scope, \DateTimeImmutable $snapshotAt): int;
+13: 
+14:     /** Bloquea el conteo (FOR UPDATE). */
+15:     public function lockCount(int $id): ?CountRecord;
+16: 
+17:     /** @return list<CountLineRecord> */
+18:     public function countLines(int $countId): array;
+19: 
+20:     public function findLine(int $countId, int $productId, int $locationId): ?CountLineRecord;
+21: 
+22:     /** Crea (esperado 0, hallazgo) o actualiza la línea con lo contado. */
+23:     public function saveCounted(int $countId, int $productId, int $locationId, Quantity $counted, int $userId, \DateTimeImmutable $at, bool $recountRequested): void;
+24: 
+25:     /** @param list<int> $lineIds */
+26:     public function flagRecounts(int $countId, array $lineIds): void;
+27: 
+28:     public function setLineAdjustment(int $lineId, int $adjustmentId): void;
+29: 
+30:     public function setCountStatus(int $id, CountStatus $status, ?int $closedBy = null, ?\DateTimeImmutable $closedAt = null): void;
+31: }
+
+
+FILE app\Modules\Operations\Domain\CountScope.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class CountScope
+8: {
+9:     /**
+10:      * @param  list<int>  $locationIds  ubicaciones que se congelan
+11:      * @param  list<CountBalance>  $balances  stock esperado (solo saldos > 0)
+12:      */
+13:     public function __construct(public array $locationIds, public array $balances) {}
+14: }
+
+
+FILE app\Modules\Operations\Domain\CountScopeResolver.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: interface CountScopeResolver
+8: {
+9:     /** Ubicaciones a congelar y stock esperado para el alcance pedido. */
+10:     public function resolve(int $warehouseId, CountScopeType $type, ?string $value): CountScope;
+11: }
+
+
+FILE app\Modules\Operations\Domain\CountScopeType.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: enum CountScopeType: string
+8: {
+9:     case Full = 'FULL';
+10:     case Zone = 'ZONE';
+11:     case Location = 'LOCATION';
+12:     case Category = 'CATEGORY';
+13:     case AbcA = 'ABC_A';
+14: 
+15:     public function needsValue(): bool
+16:     {
+17:         return match ($this) {
+18:             self::Zone, self::Location, self::Category => true,
+19:             default => false,
+20:         };
+21:     }
+22: }
+
+
+FILE app\Modules\Operations\Domain\CountStatus.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: enum CountStatus: string
+8: {
+9:     case Open = 'OPEN';
+10:     case Counting = 'COUNTING';
+11:     case Review = 'REVIEW';
+12:     case Closed = 'CLOSED';
+13:     case Cancelled = 'CANCELLED';
+14: }
+
+
+FILE app\Modules\Operations\Domain\DeterministicUuid.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: /** UUID derivado de la clave de idempotencia: reintentar produce siempre el mismo movimiento. */
+8: final class DeterministicUuid
+9: {
+10:     public static function fromKey(string $key): string
+11:     {
+12:         $h = sha1('wms:'.$key);
+13:         $timeHi = (hexdec(substr($h, 12, 4)) & 0x0FFF) | 0x5000;
+14:         $clock = (hexdec(substr($h, 16, 4)) & 0x3FFF) | 0x8000;
+15: 
+16:         return sprintf('%s-%s-%04x-%04x-%s', substr($h, 0, 8), substr($h, 8, 4), $timeHi, $clock, substr($h, 20, 12));
+17:     }
+18: }
+
+
+FILE app\Modules\Operations\Domain\DocumentNumbers.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: interface DocumentNumbers
+8: {
+9:     /** Siguiente número correlativo atómico del año, p. ej. REC-2026-000123. */
+10:     public function next(string $prefix): string;
+11: }
+
+
+FILE app\Modules\Operations\Domain\DocumentType.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: enum DocumentType: string
+8: {
+9:     case Invoice = 'FACTURA';
+10:     case DeliveryNote = 'GUIA_REMISION';
+11:     case Receipt = 'BOLETA';
+12:     case Other = 'OTRO';
+13: }
+
+
+FILE app\Modules\Operations\Domain\ImportError.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class ImportError
+8: {
+9:     public function __construct(public int $line, public string $message) {}
+10: }
+
+
+FILE app\Modules\Operations\Domain\ImportJobs.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: interface ImportJobs
+8: {
+9:     /** ¿Ya se confirmó un archivo con este mismo contenido? */
+10:     public function committedBefore(string $kind, string $sha256): bool;
+11: 
+12:     public function record(string $kind, string $fileName, string $sha256, bool $commit, int $totalRows, int $okRows, int $errorRows, int $userId): int;
+13: }
+
+
+FILE app\Modules\Operations\Domain\ImportResult.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class ImportResult
+8: {
+9:     /** @param list<ImportError> $errors */
+10:     public function __construct(
+11:         public int $importId,
+12:         public bool $committed,
+13:         public int $totalRows,
+14:         public int $okRows,
+15:         public array $errors,
+16:         /** Total de unidades descontadas (o que se descontarían en simulación). */
+17:         public string $units,
+18:     ) {}
+19: 
+20:     /** Reporte descargable de errores: línea;mensaje (con BOM para que Excel lo abra bien). */
+21:     public function errorReportCsv(): string
+22:     {
+23:         $out = "\xEF\xBB\xBFlinea;error\r\n";
+24:         foreach ($this->errors as $e) {
+25:             $out .= $e->line.';"'.str_replace('"', '""', $e->message)."\"\r\n";
+26:         }
+27: 
+28:         return $out;
+29:     }
+30: }
+
+
+FILE app\Modules\Operations\Domain\MovementKind.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: /** Movimientos que Operations puede pedirle al módulo Inventory. */
+8: enum MovementKind: string
+9: {
+10:     case Purchase = 'PURCHASE';
+11:     case Transfer = 'TRANSFER';
+12:     case AdjustmentIn = 'ADJUSTMENT_IN';
+13:     case AdjustmentOut = 'ADJUSTMENT_OUT';
+14:     case WriteOff = 'WRITE_OFF';
+15:     case Sale = 'SALE';
+16: }
+
+
+FILE app\Modules\Operations\Domain\MovementRequest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: use App\Modules\Inventory\Domain\UnitCost;
+9: 
+10: /** Pedido de movimiento de stock. La clave de idempotencia hace seguro reintentar cualquier operación. */
+11: final readonly class MovementRequest
+12: {
+13:     public function __construct(
+14:         public MovementKind $kind,
+15:         public int $productId,
+16:         public Quantity $quantity,
+17:         public int $userId,
+18:         public string $idempotencyKey,
+19:         public ?int $fromLocationId = null,
+20:         public ?int $toLocationId = null,
+21:         public ?UnitCost $unitCost = null,
+22:         public ?int $reasonId = null,
+23:         public ?int $presentationId = null,
+24:         public ?Quantity $presentationQty = null,
+25:         public ?string $sourceType = null,
+26:         public ?int $sourceId = null,
+27:         public ?string $documentRef = null,
+28:         public ?string $notes = null,
+29:         public ?int $approvedBy = null,
+30:     ) {}
+31: }
+
+
+FILE app\Modules\Operations\Domain\NewAdjustment.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: 
+9: final readonly class NewAdjustment
+10: {
+11:     public string $notes;
+12: 
+13:     public function __construct(
+14:         public AdjustmentKind $kind,
+15:         public int $productId,
+16:         public int $locationId,
+17:         public Quantity $quantity,
+18:         public int $reasonId,
+19:         string $notes,
+20:         public int $requestedBy,
+21:         public ?string $evidencePath = null,
+22:     ) {
+23:         $this->notes = trim($notes);
+24: 
+25:         if (! $quantity->isPositive()) {
+26:             throw OperationsException::invalid('La cantidad del ajuste debe ser mayor que cero.');
+27:         }
+28:         if (mb_strlen($this->notes) < 5 || mb_strlen($this->notes) > 500) {
+29:             throw OperationsException::invalid('Explique el motivo del ajuste (entre 5 y 500 caracteres).');
+30:         }
+31:         if ($evidencePath !== null && mb_strlen($evidencePath) > 255) {
+32:             throw OperationsException::invalid('La ruta de la evidencia es demasiado larga.');
+33:         }
+34:     }
+35: }
+
+
+FILE app\Modules\Operations\Domain\NewCount.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class NewCount
+8: {
+9:     public ?string $scopeValue;
+10: 
+11:     public function __construct(public int $warehouseId, public CountScopeType $scopeType, ?string $scopeValue, public int $openedBy)
+12:     {
+13:         $value = $scopeValue === null ? null : trim($scopeValue);
+14:         $this->scopeValue = $value === '' ? null : $value;
+15: 
+16:         if ($scopeType->needsValue() && $this->scopeValue === null) {
+17:             throw OperationsException::invalid('Indique la zona, ubicación o categoría que se va a contar.');
+18:         }
+19:         if (! $scopeType->needsValue() && $this->scopeValue !== null) {
+20:             throw OperationsException::invalid('Este tipo de conteo no lleva un valor de alcance.');
+21:         }
+22:         if ($this->scopeValue !== null && mb_strlen($this->scopeValue) > 40) {
+23:             throw OperationsException::invalid('El valor del alcance es demasiado largo.');
+24:         }
+25:     }
+26: }
+
+
+FILE app\Modules\Operations\Domain\NewReceipt.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class NewReceipt
+8: {
+9:     public const MAX_LINES = 500;
+10: 
+11:     public string $docNumber;
+12: 
+13:     public ?string $notes;
+14: 
+15:     /** @param list<ReceiptLine> $lines */
+16:     public function __construct(
+17:         public int $supplierId,
+18:         public int $warehouseId,
+19:         public DocumentType $docType,
+20:         string $docNumber,
+21:         public string $docDate,
+22:         public int $receivedBy,
+23:         public array $lines,
+24:         ?string $notes = null,
+25:     ) {
+26:         $this->docNumber = strtoupper(trim($docNumber));
+27:         if (preg_match('/^[A-Z0-9][A-Z0-9\-\/]{0,29}$/', $this->docNumber) !== 1) {
+28:             throw OperationsException::invalid('El número de documento no es válido (letras, números, guion o barra; máximo 30).');
+29:         }
+30: 
+31:         $parts = explode('-', $docDate);
+32:         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $docDate) !== 1 || ! checkdate((int) $parts[1], (int) $parts[2], (int) $parts[0])) {
+33:             throw OperationsException::invalid('La fecha del documento no es válida (use AAAA-MM-DD).');
+34:         }
+35: 
+36:         if ($lines === [] || count($lines) > self::MAX_LINES) {
+37:             throw OperationsException::invalid('La recepción debe tener entre 1 y '.self::MAX_LINES.' líneas.');
+38:         }
+39: 
+40:         $this->notes = $notes === null || trim($notes) === '' ? null : trim($notes);
+41:         if ($this->notes !== null && mb_strlen($this->notes) > 500) {
+42:             throw OperationsException::invalid('Las notas no pueden superar 500 caracteres.');
+43:         }
+44:     }
+45: }
+
+
+FILE app\Modules\Operations\Domain\NewTransfer.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class NewTransfer
+8: {
+9:     public const MAX_LINES = 500;
+10: 
+11:     public ?string $notes;
+12: 
+13:     /** @param list<TransferLine> $lines */
+14:     public function __construct(public int $requestedBy, public array $lines, ?string $notes = null)
+15:     {
+16:         if ($lines === [] || count($lines) > self::MAX_LINES) {
+17:             throw OperationsException::invalid('La transferencia debe tener entre 1 y '.self::MAX_LINES.' líneas.');
+18:         }
+19:         $this->notes = $notes === null || trim($notes) === '' ? null : trim($notes);
+20:         if ($this->notes !== null && mb_strlen($this->notes) > 500) {
+21:             throw OperationsException::invalid('Las notas no pueden superar 500 caracteres.');
+22:         }
+23:     }
+24: }
+
+
+FILE app\Modules\Operations\Domain\OperationsException.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final class OperationsException extends \DomainException
+8: {
+9:     private function __construct(string $message, public readonly string $errorCode)
+10:     {
+11:         parent::__construct($message);
+12:     }
+13: 
+14:     public static function invalid(string $message): self
+15:     {
+16:         return new self($message, 'INVALID_OPERATION');
+17:     }
+18: 
+19:     public static function notFound(string $what, int $id): self
+20:     {
+21:         return new self("{$what} {$id} no existe.", 'NOT_FOUND');
+22:     }
+23: 
+24:     public static function wrongState(string $message): self
+25:     {
+26:         return new self($message, 'WRONG_STATE');
+27:     }
+28: 
+29:     public static function duplicateDocument(string $type, string $number): self
+30:     {
+31:         return new self("Ya se registró {$type} {$number} de ese proveedor.", 'DUPLICATE_DOCUMENT');
+32:     }
+33: 
+34:     public static function supplierInactive(): self
+35:     {
+36:         return new self('El proveedor no existe o está desactivado.', 'SUPPLIER_INACTIVE');
+37:     }
+38: 
+39:     public static function warehouseNotFound(): self
+40:     {
+41:         return new self('El almacén no existe o está desactivado.', 'WAREHOUSE_NOT_FOUND');
+42:     }
+43: 
+44:     public static function locationNotInWarehouse(int $locationId): self
+45:     {
+46:         return new self("La ubicación {$locationId} no existe o no pertenece al almacén de la recepción.", 'LOCATION_NOT_IN_WAREHOUSE');
+47:     }
+48: 
+49:     public static function separationOfDuties(): self
+50:     {
+51:         return new self('Quien solicita un ajuste no puede aprobarlo: debe hacerlo otra persona.', 'SEPARATION_OF_DUTIES');
+52:     }
+53: 
+54:     public static function exceedsDirectLimit(string $value, string $limit): self
+55:     {
+56:         return new self("El ajuste vale S/ {$value} y supera el límite de registro directo (S/ {$limit}): debe solicitarse para aprobación.", 'EXCEEDS_DIRECT_LIMIT');
+57:     }
+58: 
+59:     /** El almacén rechazó el movimiento (stock insuficiente, ubicación congelada, etc.). */
+60:     public static function stockRejected(string $message, string $inventoryCode): self
+61:     {
+62:         return new self($message, $inventoryCode);
+63:     }
+64: }
+
+
+FILE app\Modules\Operations\Domain\OperationsLookup.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: /** Consultas de solo lectura que necesitan las operaciones. */
+8: interface OperationsLookup
+9: {
+10:     public function supplierIsActive(int $supplierId): bool;
+11: 
+12:     public function warehouseIsActive(int $warehouseId): bool;
+13: 
+14:     /** Almacén al que pertenece la ubicación, o null si no existe. */
+15:     public function locationWarehouseId(int $locationId): ?int;
+16: 
+17:     public function reason(int $reasonId): ?ReasonInfo;
+18: 
+19:     /** Id del motivo por su código (p. ej. AJU_ERROR_CONTEO), o null. */
+20:     public function reasonIdByCode(string $code): ?int;
+21: 
+22:     /** Costo promedio vigente del producto (4 decimales), o null si el producto no existe. */
+23:     public function averageCost(int $productId): ?string;
+24: 
+25:     /** Límite en soles para registrar un ajuste sin aprobación ("0.00" = no se permite). */
+26:     public function directAdjustmentLimit(): string;
+27: }
+
+
+FILE app\Modules\Operations\Domain\PosParseResult.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class PosParseResult
+8: {
+9:     /**
+10:      * @param  list<PosSaleRow>  $rows
+11:      * @param  list<ImportError>  $errors
+12:      */
+13:     public function __construct(public array $rows, public array $errors, public int $totalRows) {}
+14: }
+
+
+FILE app\Modules\Operations\Domain\PosSaleRow.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class PosSaleRow
+8: {
+9:     public function __construct(public int $line, public string $code, public string $quantity) {}
+10: }
+
+
+FILE app\Modules\Operations\Domain\PosSalesParser.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: /** Lee el CSV de ventas del día que exporta la caja: columnas SKU (o código de barras) y cantidad. */
+8: final class PosSalesParser
+9: {
+10:     public const MAX_ROWS = 20000;
+11: 
+12:     private const CODE_HEADERS = ['sku', 'codigo', 'cod', 'codigo_barras', 'barcode', 'ean', 'producto'];
+13: 
+14:     private const QTY_HEADERS = ['cantidad', 'cant', 'qty', 'unidades', 'quantity'];
+15: 
+16:     public static function parse(string $csv): PosParseResult
+17:     {
+18:         $csv = str_starts_with($csv, "\xEF\xBB\xBF") ? substr($csv, 3) : $csv;
+19:         $lines = preg_split('/\r\n|\r|\n/', $csv) ?: [];
+20: 
+21:         $numbered = [];
+22:         foreach ($lines as $i => $line) {
+23:             if (trim($line) !== '') {
+24:                 $numbered[] = [$i + 1, $line];
+25:             }
+26:         }
+27:         if ($numbered === []) {
+28:             throw OperationsException::invalid('El archivo está vacío.');
+29:         }
+30: 
+31:         [, $headerLine] = $numbered[0];
+32:         $delimiter = self::detectDelimiter($headerLine);
+33:         $headers = array_map([self::class, 'normalizeHeader'], str_getcsv($headerLine, $delimiter, '"', ''));
+34: 
+35:         $codeIndex = self::indexOf($headers, self::CODE_HEADERS);
+36:         $qtyIndex = self::indexOf($headers, self::QTY_HEADERS);
+37:         if ($codeIndex === null || $qtyIndex === null) {
+38:             throw OperationsException::invalid('El archivo debe tener las columnas "sku" (o código) y "cantidad" en la primera fila.');
+39:         }
+40: 
+41:         $data = array_slice($numbered, 1);
+42:         if (count($data) > self::MAX_ROWS) {
+43:             throw OperationsException::invalid('El archivo supera el máximo de '.self::MAX_ROWS.' filas.');
+44:         }
+45: 
+46:         $rows = [];
+47:         $errors = [];
+48:         foreach ($data as [$lineNumber, $line]) {
+49:             $cells = str_getcsv($line, $delimiter, '"', '');
+50:             $code = trim((string) ($cells[$codeIndex] ?? ''));
+51:             $rawQty = trim((string) ($cells[$qtyIndex] ?? ''));
+52: 
+53:             if ($code === '') {
+54:                 $errors[] = new ImportError($lineNumber, 'Falta el SKU o código del producto.');
+55: 
+56:                 continue;
+57:             }
+58:             if ($delimiter !== ',' && str_contains($rawQty, ',') && ! str_contains($rawQty, '.')) {
+59:                 $rawQty = str_replace(',', '.', $rawQty); // coma decimal (Excel en español)
+60:             }
+61:             if (str_starts_with($rawQty, '-')) {
+62:                 $errors[] = new ImportError($lineNumber, 'Cantidad negativa: las devoluciones no se importan aquí.');
+63: 
+64:                 continue;
+65:             }
+66:             if (preg_match('/^\d{1,9}(\.\d{1,3})?$/', $rawQty) !== 1 || bccomp($rawQty, '0', 3) <= 0) {
+67:                 $errors[] = new ImportError($lineNumber, "Cantidad inválida: '{$rawQty}'.");
+68: 
+69:                 continue;
+70:             }
+71: 
+72:             $rows[] = new PosSaleRow($lineNumber, $code, bcadd($rawQty, '0', 3));
+73:         }
+74: 
+75:         return new PosParseResult($rows, $errors, count($data));
+76:     }
+77: 
+78:     private static function detectDelimiter(string $header): string
+79:     {
+80:         $counts = [';' => substr_count($header, ';'), "\t" => substr_count($header, "\t"), ',' => substr_count($header, ',')];
+81:         arsort($counts);
+82: 
+83:         return (string) array_key_first($counts);
+84:     }
+85: 
+86:     private static function normalizeHeader(?string $header): string
+87:     {
+88:         $h = mb_strtolower(trim((string) $header));
+89:         $h = strtr($h, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ñ' => 'n', 'ü' => 'u']);
+90: 
+91:         return trim(str_replace([' ', '-'], '_', $h), "\"' ");
+92:     }
+93: 
+94:     /**
+95:      * @param  list<string>  $headers
+96:      * @param  list<string>  $accepted
+97:      */
+98:     private static function indexOf(array $headers, array $accepted): ?int
+99:     {
+100:         foreach ($headers as $i => $h) {
+101:             if (in_array($h, $accepted, true)) {
+102:                 return $i;
+103:             }
+104:         }
+105: 
+106:         return null;
+107:     }
+108: }
+
+
+FILE app\Modules\Operations\Domain\ReasonInfo.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class ReasonInfo
+8: {
+9:     public function __construct(
+10:         public int $id,
+11:         /** AJUSTE_POSITIVO | AJUSTE_NEGATIVO | MERMA */
+12:         public string $movementType,
+13:         public bool $requiresNotes,
+14:         public bool $isActive,
+15:     ) {}
+16: }
+
+
+FILE app\Modules\Operations\Domain\ReceiptItemRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class ReceiptItemRecord
+8: {
+9:     public function __construct(
+10:         public int $id,
+11:         public ReceiptLine $line,
+12:         public ?int $movementId = null,
+13:     ) {}
+14: }
+
+
+FILE app\Modules\Operations\Domain\ReceiptLine.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: use App\Modules\Inventory\Domain\UnitCost;
+9: 
+10: /** Línea de recepción SIEMPRE en unidad base (cantidad y costo por unidad base, sin IGV). */
+11: final readonly class ReceiptLine
+12: {
+13:     public function __construct(
+14:         public int $productId,
+15:         public int $locationId,
+16:         public Quantity $quantity,
+17:         public UnitCost $unitCost,
+18:         public ?Quantity $expected = null,
+19:         public ?int $presentationId = null,
+20:         public ?Quantity $presentationQty = null,
+21:     ) {
+22:         if (($presentationId === null) !== ($presentationQty === null)) {
+23:             throw OperationsException::invalid('La presentación y su cantidad deben informarse juntas.');
+24:         }
+25:     }
+26: 
+27:     /** Convierte una recepción por caja/docena a unidad base: cantidad x factor; costo / factor. */
+28:     public static function fromPresentation(
+29:         int $productId,
+30:         int $locationId,
+31:         int $presentationId,
+32:         Quantity $presentationQty,
+33:         string $factor,
+34:         string $costPerPresentation,
+35:         ?Quantity $expectedPresentation = null,
+36:     ): self {
+37:         if (preg_match('/^\d{1,9}(\.\d{1,3})?$/', $factor) !== 1 || bccomp($factor, '0', 3) <= 0) {
+38:             throw OperationsException::invalid('El factor de la presentación no es válido.');
+39:         }
+40: 
+41:         // Costo por unidad base con redondeo half-up a 4 decimales.
+42:         $costBase = bcadd(bcdiv($costPerPresentation, $factor, 8), '0.00005', 4);
+43: 
+44:         return new self(
+45:             $productId,
+46:             $locationId,
+47:             Quantity::of(bcmul($presentationQty->value, $factor, 3)),
+48:             UnitCost::of($costBase),
+49:             $expectedPresentation === null ? null : Quantity::of(bcmul($expectedPresentation->value, $factor, 3)),
+50:             $presentationId,
+51:             $presentationQty,
+52:         );
+53:     }
+54: 
+55:     public function hasDiscrepancy(): bool
+56:     {
+57:         return $this->expected !== null && ! $this->quantity->equals($this->expected);
+58:     }
+59: }
+
+
+FILE app\Modules\Operations\Domain\ReceiptRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class ReceiptRecord
+8: {
+9:     /** @param list<ReceiptItemRecord> $items */
+10:     public function __construct(
+11:         public int $id,
+12:         public string $code,
+13:         public ReceiptStatus $status,
+14:         public int $supplierId,
+15:         public int $warehouseId,
+16:         public string $docType,
+17:         public string $docNumber,
+18:         public array $items,
+19:     ) {}
+20: }
+
+
+FILE app\Modules\Operations\Domain\ReceiptRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: interface ReceiptRepository
+8: {
+9:     /** ¿Ya hay una recepción NO anulada con el mismo documento del proveedor? */
+10:     public function activeDocumentExists(int $supplierId, DocumentType $type, string $number): bool;
+11: 
+12:     public function insertReceipt(NewReceipt $receipt, string $code): int;
+13: 
+14:     /** @param list<ReceiptLine> $lines */
+15:     public function replaceReceiptItems(int $receiptId, array $lines): void;
+16: 
+17:     /** Bloquea la recepción (FOR UPDATE) con sus líneas. */
+18:     public function lockReceipt(int $id): ?ReceiptRecord;
+19: 
+20:     public function setItemMovement(int $itemId, int $movementId): void;
+21: 
+22:     public function setReceiptStatus(int $id, ReceiptStatus $status, ?\DateTimeImmutable $confirmedAt = null): void;
+23: }
+
+
+FILE app\Modules\Operations\Domain\ReceiptStatus.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: enum ReceiptStatus: string
+8: {
+9:     case Draft = 'DRAFT';
+10:     case Confirmed = 'CONFIRMED';
+11:     case Cancelled = 'CANCELLED';
+12: }
+
+
+FILE app\Modules\Operations\Domain\SalesTarget.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: /** A qué producto y ubicación del piso de venta corresponde un código de la caja. */
+8: final readonly class SalesTarget
+9: {
+10:     public function __construct(
+11:         public int $productId,
+12:         public string $sku,
+13:         public int $locationId,
+14:         public string $locationCode,
+15:         /** Stock disponible hoy en esa ubicación. */
+16:         public string $available,
+17:     ) {}
+18: }
+
+
+FILE app\Modules\Operations\Domain\SalesTargets.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: interface SalesTargets
+8: {
+9:     /** Busca por SKU o código de barras; null si no existe o no tiene ubicación en el piso de venta. */
+10:     public function resolve(string $code): ?SalesTarget;
+11: }
+
+
+FILE app\Modules\Operations\Domain\StockMovements.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: /** Puerto hacia el módulo Inventory (único que escribe stock). */
+8: interface StockMovements
+9: {
+10:     /**
+11:      * @return int id del movimiento (el mismo si la clave ya se había registrado)
+12:      *
+13:      * @throws OperationsException si el almacén lo rechaza
+14:      */
+15:     public function register(MovementRequest $request): int;
+16: }
+
+
+FILE app\Modules\Operations\Domain\TransferLine.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: 
+9: final readonly class TransferLine
+10: {
+11:     public function __construct(
+12:         public int $productId,
+13:         public int $fromLocationId,
+14:         public int $toLocationId,
+15:         public Quantity $quantity,
+16:     ) {
+17:         if ($fromLocationId === $toLocationId) {
+18:             throw OperationsException::invalid('El origen y el destino de una línea deben ser distintos.');
+19:         }
+20:         if (! $quantity->isPositive()) {
+21:             throw OperationsException::invalid('La cantidad a transferir debe ser mayor que cero.');
+22:         }
+23:     }
+24: }
+
+
+FILE app\Modules\Operations\Domain\TransferLineRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class TransferLineRecord
+8: {
+9:     public function __construct(public int $id, public TransferLine $line, public ?int $movementId = null) {}
+10: }
+
+
+FILE app\Modules\Operations\Domain\TransferRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: final readonly class TransferRecord
+8: {
+9:     /** @param list<TransferLineRecord> $lines */
+10:     public function __construct(public int $id, public string $code, public TransferStatus $status, public int $requestedBy, public array $lines) {}
+11: }
+
+
+FILE app\Modules\Operations\Domain\TransferRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: interface TransferRepository
+8: {
+9:     public function insertTransfer(NewTransfer $transfer, string $code): int;
+10: 
+11:     public function lockTransfer(int $id): ?TransferRecord;
+12: 
+13:     public function setLineMovement(int $lineId, int $movementId): void;
+14: 
+15:     public function setTransferStatus(int $id, TransferStatus $status, ?\DateTimeImmutable $completedAt = null): void;
+16: }
+
+
+FILE app\Modules\Operations\Domain\TransferStatus.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Domain;
+6: 
+7: enum TransferStatus: string
+8: {
+9:     case Draft = 'DRAFT';
+10:     case Completed = 'COMPLETED';
+11:     case Cancelled = 'CANCELLED';
+12: }
+
+
+FILE app\Modules\Suppliers\Domain\NewSupplier.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Domain;
+6: 
+7: final readonly class NewSupplier
+8: {
+9:     public string $businessName;
+10: 
+11:     public ?string $contactName;
+12: 
+13:     public ?string $phone;
+14: 
+15:     public ?string $email;
+16: 
+17:     public ?string $address;
+18: 
+19:     public function __construct(
+20:         public Ruc $ruc,
+21:         string $businessName,
+22:         ?string $contactName = null,
+23:         ?string $phone = null,
+24:         ?string $email = null,
+25:         ?string $address = null,
+26:         public ?int $leadTimeDays = null,
+27:         public ?int $actorId = null,
+28:     ) {
+29:         $fields = SupplierFields::clean($businessName, $contactName, $phone, $email, $address, $leadTimeDays);
+30:         $this->businessName = (string) $fields['business_name'];
+31:         $this->contactName = $fields['contact_name'];
+32:         $this->phone = $fields['phone'];
+33:         $this->email = $fields['email'];
+34:         $this->address = $fields['address'];
+35:     }
+36: }
+
+
+FILE app\Modules\Suppliers\Domain\Ruc.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Domain;
+6: 
+7: /** RUC peruano de 11 dígitos con dígito verificador (módulo 11 de SUNAT). */
+8: final readonly class Ruc implements \Stringable
+9: {
+10:     private const WEIGHTS = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+11: 
+12:     private const PREFIXES = ['10', '15', '16', '17', '20'];
+13: 
+14:     private function __construct(public string $value) {}
+15: 
+16:     public static function of(string $value): self
+17:     {
+18:         $ruc = trim($value);
+19: 
+20:         if (preg_match('/^\d{11}$/', $ruc) !== 1) {
+21:             throw SupplierException::invalid('El RUC debe tener 11 dígitos.');
+22:         }
+23:         if (! in_array(substr($ruc, 0, 2), self::PREFIXES, true)) {
+24:             throw SupplierException::invalid('El RUC debe empezar con 10, 15, 16, 17 o 20.');
+25:         }
+26: 
+27:         $sum = 0;
+28:         foreach (self::WEIGHTS as $i => $weight) {
+29:             $sum += (int) $ruc[$i] * $weight;
+30:         }
+31:         $check = 11 - ($sum % 11);
+32:         $check = $check === 10 ? 0 : ($check === 11 ? 1 : $check);
+33: 
+34:         if ($check !== (int) $ruc[10]) {
+35:             throw SupplierException::invalid('El RUC no es válido (dígito verificador incorrecto).');
+36:         }
+37: 
+38:         return new self($ruc);
+39:     }
+40: 
+41:     public function __toString(): string
+42:     {
+43:         return $this->value;
+44:     }
+45: }
+
+
+FILE app\Modules\Suppliers\Domain\SupplierChanges.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Domain;
+6: 
+7: /** Cambios parciales (null = no cambiar). El RUC nunca cambia. */
+8: final readonly class SupplierChanges
+9: {
+10:     public ?string $businessName;
+11: 
+12:     public ?string $contactName;
+13: 
+14:     public ?string $phone;
+15: 
+16:     public ?string $email;
+17: 
+18:     public ?string $address;
+19: 
+20:     public function __construct(
+21:         ?string $businessName = null,
+22:         ?string $contactName = null,
+23:         ?string $phone = null,
+24:         ?string $email = null,
+25:         ?string $address = null,
+26:         public ?int $leadTimeDays = null,
+27:         public ?int $actorId = null,
+28:     ) {
+29:         $f = SupplierFields::clean($businessName, $contactName, $phone, $email, $address, $leadTimeDays, nameRequired: false);
+30:         $this->businessName = $f['business_name'];
+31:         $this->contactName = $f['contact_name'];
+32:         $this->phone = $f['phone'];
+33:         $this->email = $f['email'];
+34:         $this->address = $f['address'];
+35:     }
+36: 
+37:     /** @return array<string, scalar> */
+38:     public function fields(): array
+39:     {
+40:         return array_filter([
+41:             'business_name' => $this->businessName,
+42:             'contact_name' => $this->contactName,
+43:             'phone' => $this->phone,
+44:             'email' => $this->email,
+45:             'address' => $this->address,
+46:             'lead_time_days' => $this->leadTimeDays,
+47:         ], static fn (mixed $v): bool => $v !== null);
+48:     }
+49: }
+
+
+FILE app\Modules\Suppliers\Domain\SupplierException.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Domain;
+6: 
+7: final class SupplierException extends \DomainException
+8: {
+9:     private function __construct(string $message, public readonly string $errorCode)
+10:     {
+11:         parent::__construct($message);
+12:     }
+13: 
+14:     public static function invalid(string $message): self
+15:     {
+16:         return new self($message, 'INVALID_SUPPLIER');
+17:     }
+18: 
+19:     public static function rucTaken(string $ruc): self
+20:     {
+21:         return new self("Ya existe un proveedor con el RUC {$ruc}.", 'RUC_TAKEN');
+22:     }
+23: 
+24:     public static function notFound(int $id): self
+25:     {
+26:         return new self("El proveedor {$id} no existe.", 'SUPPLIER_NOT_FOUND');
+27:     }
+28: 
+29:     public static function inactive(string $name): self
+30:     {
+31:         return new self("El proveedor {$name} está desactivado.", 'SUPPLIER_INACTIVE');
+32:     }
+33: 
+34:     public static function productNotFound(int $id): self
+35:     {
+36:         return new self("El producto {$id} no existe.", 'PRODUCT_NOT_FOUND');
+37:     }
+38: }
+
+
+FILE app\Modules\Suppliers\Domain\SupplierFields.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Domain;
+6: 
+7: /** Validación y normalización compartida por altas y ediciones. */
+8: final class SupplierFields
+9: {
+10:     /** @return array{business_name: ?string, contact_name: ?string, phone: ?string, email: ?string, address: ?string} */
+11:     public static function clean(?string $businessName, ?string $contactName, ?string $phone, ?string $email, ?string $address, ?int $leadTimeDays, bool $nameRequired = true): array
+12:     {
+13:         $name = $businessName === null ? null : trim((string) preg_replace('/\s+/u', ' ', $businessName));
+14:         if ($nameRequired && ($name === null || mb_strlen($name) < 2)) {
+15:             throw SupplierException::invalid('La razón social debe tener al menos 2 caracteres.');
+16:         }
+17:         if ($name !== null && mb_strlen($name) > 160) {
+18:             throw SupplierException::invalid('La razón social no puede superar 160 caracteres.');
+19:         }
+20: 
+21:         $contact = self::blankToNull($contactName);
+22:         if ($contact !== null && mb_strlen($contact) > 120) {
+23:             throw SupplierException::invalid('El contacto no puede superar 120 caracteres.');
+24:         }
+25: 
+26:         $phone = self::blankToNull($phone);
+27:         if ($phone !== null && preg_match('/^[0-9+()\s-]{6,30}$/', $phone) !== 1) {
+28:             throw SupplierException::invalid('El teléfono no es válido.');
+29:         }
+30: 
+31:         $email = self::blankToNull($email);
+32:         $email = $email === null ? null : mb_strtolower($email);
+33:         if ($email !== null && (filter_var($email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($email) > 160)) {
+34:             throw SupplierException::invalid('El correo no es válido.');
+35:         }
+36: 
+37:         $address = self::blankToNull($address);
+38:         if ($address !== null && mb_strlen($address) > 255) {
+39:             throw SupplierException::invalid('La dirección no puede superar 255 caracteres.');
+40:         }
+41: 
+42:         if ($leadTimeDays !== null && ($leadTimeDays < 0 || $leadTimeDays > 365)) {
+43:             throw SupplierException::invalid('El plazo de entrega debe estar entre 0 y 365 días.');
+44:         }
+45: 
+46:         return ['business_name' => $name, 'contact_name' => $contact, 'phone' => $phone, 'email' => $email, 'address' => $address];
+47:     }
+48: 
+49:     private static function blankToNull(?string $value): ?string
+50:     {
+51:         $v = $value === null ? null : trim($value);
+52: 
+53:         return $v === null || $v === '' ? null : $v;
+54:     }
+55: }
+
+
+FILE app\Modules\Suppliers\Domain\SupplierRecord.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Domain;
+6: 
+7: final readonly class SupplierRecord
+8: {
+9:     /** @param array<string, scalar|null> $data campos editables actuales */
+10:     public function __construct(
+11:         public int $id,
+12:         public string $ruc,
+13:         public string $businessName,
+14:         public bool $isActive,
+15:         public array $data = [],
+16:     ) {}
+17: }
+
+
+FILE app\Modules\Suppliers\Domain\SupplierRepository.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Domain;
+6: 
+7: interface SupplierRepository
+8: {
+9:     public function rucExists(string $ruc): bool;
+10: 
+11:     public function insert(NewSupplier $supplier): int;
+12: 
+13:     /** Bloquea la fila (FOR UPDATE). */
+14:     public function lock(int $id): ?SupplierRecord;
+15: 
+16:     public function update(int $id, SupplierChanges $changes): void;
+17: 
+18:     public function setActive(int $id, bool $active): void;
+19: 
+20:     public function productExists(int $productId): bool;
+21: 
+22:     /** Crea o actualiza el vínculo producto-proveedor. */
+23:     public function linkProduct(int $productId, int $supplierId, ?string $supplierSku, ?string $lastCost, bool $preferred): void;
+24: 
+25:     /** Deja a ningún proveedor como preferido para ese producto. */
+26:     public function clearPreferred(int $productId): void;
+27: }

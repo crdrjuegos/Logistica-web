@@ -1,0 +1,282 @@
+{
+  "coverage": {
+    "files": "169",
+    "loc": "7050",
+    "ncloc": "6707",
+    "classes": "138",
+    "methods": "370",
+    "coveredmethods": "320",
+    "conditionals": "0",
+    "coveredconditionals": "0",
+    "statements": "1997",
+    "coveredstatements": "1913",
+    "elements": "2367",
+    "coveredelements": "2233"
+  },
+  "suites": [
+    {
+      "name": "Tests\\Unit\\Catalog\\BarcodeTest",
+      "tests": 4,
+      "assertions": 14,
+      "time": 1.427318
+    },
+    {
+      "name": "Tests\\Unit\\Catalog\\CatalogUseCasesTest",
+      "tests": 9,
+      "assertions": 43,
+      "time": 0.764775
+    },
+    {
+      "name": "Tests\\Unit\\Catalog\\NewProductTest",
+      "tests": 8,
+      "assertions": 32,
+      "time": 0.108298
+    },
+    {
+      "name": "Tests\\Unit\\Catalog\\ProductFormMapperTest",
+      "tests": 5,
+      "assertions": 35,
+      "time": 0.09908
+    },
+    {
+      "name": "Tests\\Unit\\Filament\\FormMappersTest",
+      "tests": 4,
+      "assertions": 45,
+      "time": 0.313401
+    },
+    {
+      "name": "Tests\\Unit\\Filament\\SupplierMapperTest",
+      "tests": 3,
+      "assertions": 13,
+      "time": 0.141427
+    },
+    {
+      "name": "Tests\\Unit\\Iam\\LockoutPolicyTest",
+      "tests": 2,
+      "assertions": 13,
+      "time": 0.051353
+    },
+    {
+      "name": "Tests\\Unit\\Iam\\PasswordPolicyTest",
+      "tests": 4,
+      "assertions": 6,
+      "time": 0.018692
+    },
+    {
+      "name": "Tests\\Unit\\Iam\\PermissionsTest",
+      "tests": 6,
+      "assertions": 95,
+      "time": 0.043693
+    },
+    {
+      "name": "Tests\\Unit\\Iam\\ResetUserPasswordTest",
+      "tests": 3,
+      "assertions": 10,
+      "time": 0.377555
+    },
+    {
+      "name": "Tests\\Unit\\Iam\\UserUseCasesTest",
+      "tests": 8,
+      "assertions": 32,
+      "time": 0.081995
+    },
+    {
+      "name": "Tests\\Unit\\Inventory\\NewMovementTest",
+      "tests": 9,
+      "assertions": 47,
+      "time": 0.035569
+    },
+    {
+      "name": "Tests\\Unit\\Inventory\\QuantityTest",
+      "tests": 5,
+      "assertions": 20,
+      "time": 0.018402
+    },
+    {
+      "name": "Tests\\Unit\\Inventory\\RegisterMovementTest",
+      "tests": 13,
+      "assertions": 43,
+      "time": 0.187111
+    },
+    {
+      "name": "Tests\\Unit\\Inventory\\WeightedAverageCostTest",
+      "tests": 4,
+      "assertions": 4,
+      "time": 0.01454
+    },
+    {
+      "name": "Tests\\Unit\\Locations\\LocationCodeAndBatchTest",
+      "tests": 5,
+      "assertions": 24,
+      "time": 0.089348
+    },
+    {
+      "name": "Tests\\Unit\\Locations\\LocationUseCasesTest",
+      "tests": 8,
+      "assertions": 38,
+      "time": 0.120951
+    },
+    {
+      "name": "Tests\\Unit\\Operations\\AdjustmentsTest",
+      "tests": 9,
+      "assertions": 50,
+      "time": 0.339449
+    },
+    {
+      "name": "Tests\\Unit\\Operations\\CountsTest",
+      "tests": 13,
+      "assertions": 70,
+      "time": 0.394589
+    },
+    {
+      "name": "Tests\\Unit\\Operations\\OperationsDomainTest",
+      "tests": 6,
+      "assertions": 36,
+      "time": 0.038138
+    },
+    {
+      "name": "Tests\\Unit\\Operations\\PosSalesTest",
+      "tests": 7,
+      "assertions": 48,
+      "time": 0.190437
+    },
+    {
+      "name": "Tests\\Unit\\Operations\\ReceiptsTest",
+      "tests": 8,
+      "assertions": 49,
+      "time": 0.162633
+    },
+    {
+      "name": "Tests\\Unit\\Operations\\TransfersTest",
+      "tests": 4,
+      "assertions": 18,
+      "time": 0.118258
+    },
+    {
+      "name": "Tests\\Unit\\Suppliers\\SupplierTest",
+      "tests": 6,
+      "assertions": 43,
+      "time": 0.142229
+    },
+    {
+      "name": "Tests\\Architecture\\ModuleBoundariesTest",
+      "tests": 10,
+      "assertions": 90,
+      "time": 136.73069
+    },
+    {
+      "name": "Tests\\Feature\\Audit\\AuditTrailTest",
+      "tests": 2,
+      "assertions": 7,
+      "time": 15.512657
+    },
+    {
+      "name": "Tests\\Feature\\Catalog\\CatalogDatabaseTest",
+      "tests": 7,
+      "assertions": 30,
+      "time": 12.638197
+    },
+    {
+      "name": "Tests\\Feature\\Iam\\AdminCommandsTest",
+      "tests": 4,
+      "assertions": 22,
+      "time": 9.847726
+    },
+    {
+      "name": "Tests\\Feature\\Iam\\RolesAndPermissionsTest",
+      "tests": 2,
+      "assertions": 7,
+      "time": 3.649031
+    },
+    {
+      "name": "Tests\\Feature\\Iam\\UserManagementTest",
+      "tests": 5,
+      "assertions": 15,
+      "time": 10.754865
+    },
+    {
+      "name": "Tests\\Feature\\Inventory\\PostgresLedgerTest",
+      "tests": 8,
+      "assertions": 24,
+      "time": 13.07475
+    },
+    {
+      "name": "Tests\\Feature\\Locations\\LocationsDatabaseTest",
+      "tests": 4,
+      "assertions": 17,
+      "time": 6.095139
+    },
+    {
+      "name": "Tests\\Feature\\Operations\\CountsAndPosDatabaseTest",
+      "tests": 8,
+      "assertions": 47,
+      "time": 11.119643
+    },
+    {
+      "name": "Tests\\Feature\\Operations\\OperationsDatabaseTest",
+      "tests": 10,
+      "assertions": 56,
+      "time": 14.90742
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\AlmacenPagesTest",
+      "tests": 7,
+      "assertions": 45,
+      "time": 26.393519
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\CatalogModelsTest",
+      "tests": 3,
+      "assertions": 10,
+      "time": 5.110574
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\ComprasPagesTest",
+      "tests": 4,
+      "assertions": 26,
+      "time": 11.335723
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\PanelAccessTest",
+      "tests": 4,
+      "assertions": 14,
+      "time": 9.623994
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\PoliciesTest",
+      "tests": 3,
+      "assertions": 20,
+      "time": 6.805542
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\ReportesPagesTest",
+      "tests": 3,
+      "assertions": 23,
+      "time": 7.735185
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\ResourcePagesTest",
+      "tests": 4,
+      "assertions": 10,
+      "time": 12.71635
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\SeguridadTest",
+      "tests": 4,
+      "assertions": 16,
+      "time": 11.57987
+    },
+    {
+      "name": "Tests\\Feature\\Panel\\SupervisorPagesTest",
+      "tests": 4,
+      "assertions": 39,
+      "time": 12.973474
+    },
+    {
+      "name": "Tests\\Feature\\Suppliers\\SuppliersDatabaseTest",
+      "tests": 4,
+      "assertions": 17,
+      "time": 6.839693
+    }
+  ]
+}

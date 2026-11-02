@@ -1,0 +1,42 @@
+{
+    "date": "2026-10-28",
+    "runtime": "8.4.26",
+    "database": "wms_test",
+    "results": [
+        {
+            "id": "CA-017-2",
+            "scenario": "UPDATE del ledger es rechazado",
+            "status": "Conforme en integración",
+            "observed": "Aserciones verificadas contra PostgreSQL 17",
+            "scope": "PostgreSQL wms_test en transacción revertida al finalizar"
+        },
+        {
+            "id": "CA-017-3",
+            "scenario": "DELETE y TRUNCATE CASCADE son rechazados",
+            "status": "Conforme en integración",
+            "observed": "Aserciones verificadas contra PostgreSQL 17",
+            "scope": "PostgreSQL wms_test en transacción revertida al finalizar"
+        },
+        {
+            "id": "CA-019-4",
+            "scenario": "UUID y clave iguales con cantidad alterada",
+            "status": "No conforme",
+            "observed": "Se aceptó como duplicado pese a cambiar 10 por 99; saldo no se duplica, pero el conflicto queda oculto",
+            "scope": "PostgreSQL wms_test en transacción revertida al finalizar"
+        },
+        {
+            "id": "CA-053-2",
+            "scenario": "Segunda apertura con clave distinta",
+            "status": "No conforme",
+            "observed": "Se permiten dos SALDO_INICIAL de 10 para el mismo producto y ubicación; saldo observado 20.000",
+            "scope": "PostgreSQL wms_test en transacción revertida al finalizar"
+        },
+        {
+            "id": "CA-045-4",
+            "scenario": "Exportar pedido sugerido exige reports.export",
+            "status": "No conforme",
+            "observed": "La acción export es visible para rol lectura sin reports.export",
+            "scope": "PostgreSQL wms_test en transacción revertida al finalizar"
+        }
+    ]
+}

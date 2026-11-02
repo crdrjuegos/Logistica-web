@@ -1,0 +1,10 @@
+from pathlib import Path
+p=Path('audit_work/build_reports.py');s=p.read_text(encoding='utf-8').replace('else21','else 21').replace('else29.7','else 29.7').replace('else2.2','else 2.2').replace('else2.5','else 2.5')
+s=s.replace('fig_no=0','fig_no=0\nfigure_open=False')
+s=s.replace('global fig_no\n','global fig_no,figure_open\n')
+s=s.replace(' section(d,False)\n\ndef content',' figure_open=True\n\ndef content')
+s=s.replace('def content(d,path):\n','def content(d,path):\n global figure_open\n')
+s=s.replace("  if not s:continue\n  if s.startswith('|'):","  if not s:continue\n  if figure_open and not s.startswith('@figure '):\n   section(d,False);figure_open=False\n  if s.startswith('|'):")
+s=s.replace('d=Document();setup(d);cover(d,mini)','d=Document();setup(d);cover(d,mini)\n if mini:d.styles[\'Heading 1\'].paragraph_format.page_break_before=False')
+p.write_text(s,encoding='utf-8')
+compile(s,'build_reports.py','exec');print('Builder válido')

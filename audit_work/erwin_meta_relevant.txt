@@ -1,0 +1,1608 @@
+PAGE 15
+Entity, Attribute, Key_Group & Relationship Diagram 
+This diagram extends the prior diagram by adding Relationships.  The following assertions are added: 
+ 
+1. Key_Groups reference their associated Relationships via the Key_Group_Ref peroperty. 
+2. Relationships reference their associated Key_Group via the Key_Group_Ref property. 
+3. Relationships reference their parent Entity via the Parent_Entity_Ref property. 
+4. Relationships reference their child Entity via the Child_Entity_Ref property. 
+5. The collection of Relationships in which an Entity participates as the parent is stored in the 
+Parent_Relationships_Ref property.  When viewed via SCAPI, this is held as a vector reference 
+property on Entity.  When viewed via ODBC, the associative table Parent_Relationships_Ref 
+stores this information. 
+6. The collection of Relationships in which an Entity participates as the child is stored in the 
+Child_Relationships_Ref property.  When viewed via SCAPI, this is held as a vector reference 
+property on Entity.  When viewed via ODBC, the associative table Child_Relationships_Ref 
+stores this information. 
+7. Attributes reference their parent Attribute via the Parent_Relationship_Ref property. 
+ 
+ 
+ 
+ 
+ 
+Page 15 
+PAGE 32
+Valid Owned Object Types 
+Name DBMS Brands/Versions 
+Check_Constraint_Usage All  
+Default_Constraint_Usage All  
+History_Information All  
+Oracle_Constraint_State Oracle 9+  
+Oracle_LOB_Storage Oracle 9+  
+Transform_Scratch_Object All  
+Tagged Values 
+Name Value 
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40200005  
+tag_Display_Bitmap_Resource 1781 04434B50  
+tag_Display_Name_Resource Attribute  
+tag_Display_Name_Resource_Plural Attributes  
+tag_Is_For_Data_Movement true  
+tag_Is_Transformable true  
+tag_Legacy_Object_Is_Dependent true  
+tag_Legacy_Ownership_Depth 8  
+tag_Physical_Name_Text Column  
+tag_Physical_Name_Text_Plural Columns  
+Valid Properties 
+Name L/P DBMS Brands/Versions Notes
+Allocate_Amount   iSeries 4+    
+Allow_Zero   Access 9+    
+Attribute_Order   None    
+Built_In_Id   All    
+Cache_Count   DB2 UDB 7.1+, DB2 6+, iSeries 4+    
+Cache_Identity_Column_Values   DB2 UDB 7.1+, DB2 6+, iSeries 4+    
+Cardinality_Value   SybaseIQ 12.5+    
+Character_Case_Type   Progress 8+, Teradata 2+    
+Character_Semantics_Type   Oracle 9+    
+Character_Set   All    
+Character_Type   DB2 UDB 8.1+, DB2 6+, Oracle 9+, iSeries 
+4+  
+  
+Collation_Name   SQL Server 9+    
+Column_In_Name   Informix 7+    
+Column_Order   All    
+Comment   All    
+Compress_Values   Teradata 2+    
+Database_Id   All    
+Database_Internal_Name   All    
+Data_Source_Comment   All    
+Data_Sources_Ref   All    
+DB2_Identity_Cycle   DB2 7+, Teradata 2-2, iSeries 4+    
+DB2_Identity_Max_Value   DB2 7+, Teradata 2-2, iSeries 4+    
+32 – ERwin Metamodel Reference 
+PAGE 33
+DB2_Identity_Min_Value   DB2 7+, Teradata 2-2, iSeries 4+    
+Decimals   Progress 8+    
+Definition   None    
+Dependent_Objects_Ref   All    
+Display_Control   Progress 8+    
+Display_Format_Ref   Access 9+, Progress 8+, Teradata 2+    
+Display_Format_String   SAS    
+Display_Informat_Name   SAS    
+Expression   Oracle 9+, SQL Server 9+    
+Extent_Count   Progress 8+    
+Font_Color   All    
+Font_Ref   All    
+Fonts_And_Colors_Style_Sheet_Ref   All    
+For_Character_Type   iSeries 4+    
+Generation_Type   DB2 UDB 7.1+, DB2 6+, Teradata 2+, 
+iSeries 4+  
+  
+Hash_Index_Member_Ref   Teradata 2.6+    
+Has_No_Max   Teradata 2.5+    
+Has_No_Min   Teradata 2.5+    
+Header   Progress 8+, SAS 0+, Teradata 2+, iSeries 
+4+  
+  
+Hide_In_Logical   None    
+Hide_In_Physical   All    
+Icon_Ref   All    
+Identity_Seed   SQL Server 6+, Sybase 12.5+, SybaseIQ 
+12.5+  
+  
+Increment_By   DB2 UDB 2+, DB2 3+, Teradata 2+, 
+iSeries 4+  
+  
+Input_Mask   Access 9+    
+Internal_State   All    
+Is_Calculated   All    
+Is_Color_Inherited   All    
+Is_Column_Compressed   DB2 UDB 8+, Teradata 2+    
+Is_Cycle_On   Teradata 2.5+    
+Is_Empty_Equal_To_Null   All    
+Is_Font_Inherited   All    
+Is_Identity_Column   DB2 UDB 7.1+, DB2 6+, Teradata 2+, 
+iSeries 4+  
+  
+Is_Logical_Only   None    
+Is_Not_For_Replication   SQL Server 9+    
+Is_Physical_Only   All    
+Is_Read_Only   All    
+Is_System_Maintained   Ingres 2.5+    
+Key_Group_Member_Ref   All    
+Key_Groups_Ref   All    
+Label   Access 9+, DB2 7+, Progress 8+, iSeries 
+4+  
+  
+LOB_Storage_Ref   Oracle 9+    
+Logical_Data_Type   None    
+Logical_Lead_Attribute_Ref   None    
+Long_Id   All    
+Master_Attribute_Ref   All    
+Page 33 
+PAGE 36
+tag_Is_Logical true  
+tag_Is_Physical true  
+Attribute_Note (String property) 
+Specifies the value for the Note property inherited by Attribute objects that use the Domain. This is a 
+string property associated with Domain objects. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202cef  
+tag_Display_Name_Resource Attribute Note  
+tag_Is_Logical true  
+Attribute_Order (Integer property) 
+An integer property on Attribute that specifies the position of the Attribute with the Entity on the 
+logical side of the model.  This property is read-only and maintained by ERwin. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202b65  
+tag_Display_Name_Resource Attribute Order  
+tag_Is_Logical true  
+Attribute_Ref (Short Id property) 
+References an Attribute.  The role of this referenced Attribute varies according to the referencing 
+object type. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202739  
+Referenced_Model   
+Referenced_Type_Ref 1075838981  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Attribute  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Reference true  
+36 – ERwin Metamodel Reference 
+PAGE 72
+Child_Delete_Trigger_Template_Ref (Short Id property) 
+References a template used by forward engineering to generate a trigger for the child table of a 
+relationship. It enforces referential integrity with the parent table. The template referenced is 
+determined by the RI action that is associated with the Child Delete operation. This is a pre-fetch 
+property. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-
+C0FB869EE7CB}+40202b31  
+Referenced_Model   
+Referenced_Type_Ref 1075839048  
+tag_DBMS_Is_Represented null  
+tag_Deep_Copy_In_Complete_Compare true  
+tag_Display_Name_Resource Child Delete Trigger Template  
+tag_Is_Physical true  
+tag_Is_Reference true  
+Child_Drawing_Object_Ref (Short Id property) 
+References the Drawing Object Entity on the child side of a Drawing Object Relationship object. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202c49  
+Referenced_Model   
+Referenced_Type_Ref 1075839172  
+tag_Display_Name_Resource Child Drawing Object  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Is_System_Maintained true  
+Child_Entity_Ref (Short Id property) 
+References the child entity, cached view, or view used in a relationship. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a24  
+72 – ERwin Metamodel Reference 
+PAGE 161
+Display_Informat_Name (String property) 
+Specifies the name of a SAS Informat to use for the data in a column. An Informat is an instruction 
+used to read data values into a variable. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402027a4  
+tag_DBMS_Brands_And_Versions 1075859013, 0, 999000  
+tag_Display_Name_Resource Display Informat  
+tag_Is_Physical true  
+Display_Logical_Data_Type (Boolean property) 
+Specifies whether to display the datatypes for attributes in the logical view of the stored display. 
+Tagged Values 
+Name Value 
+Data_Type 6  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+4020299a  
+tag_Display_Name_Resource Display Logical Datatype  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Legacy_Property_Visualizer_Type CHECKBOX  
+Display_Logical_Domains (Boolean property) 
+Specifies whether to display attribute domain names in the logical view of the stored display. 
+Tagged Values 
+Name Value 
+Data_Type 6  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a1f  
+tag_Display_Name_Resource Display Logical Domains  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Legacy_Property_Visualizer_Type CHECKBOX  
+Display_Logical_FK_Designator (Boolean property) 
+Specifies to display foreign keys in the logical model. 
+Page 161 
+PAGE 170
+DB2_Identity_Cycle   DB2 7+, Teradata 2-2, iSeries 4+    
+DB2_Identity_Max_Value   DB2 7+, Teradata 2-2, iSeries 4+    
+DB2_Identity_Min_Value   DB2 7+, Teradata 2-2, iSeries 4+    
+Decimals   Progress 8+    
+Definition   None    
+Dependent_Objects_Ref   All    
+Display_Control   Progress 8+    
+Display_Format_Ref   Access 9+, Progress 8+, Teradata 2+    
+Display_Format_String   SAS    
+Display_Informat_Name   SAS    
+Do_Not_Generate_Transform   Teradata 2.6+    
+Expression   Oracle 9+, SQL Server 9+    
+Extent_Count   Progress 8+    
+For_Character_Type   iSeries 4+    
+Generate_As_User_Defined_Type   DB2 UDB 8.1+, DB2 6+, SQL Server 7+, 
+Sybase 12.5+, Teradata 2.6+, SybaseIQ 
+12.5+  
+  
+Generation_Type   DB2 UDB 7.1+, DB2 6+, Teradata 2+, 
+iSeries 4+  
+  
+Has_No_Max   Teradata 2.5+    
+Has_No_Min   Teradata 2.5+    
+Header   Progress 8+, SAS 0+, Teradata 2+, 
+iSeries 4+  
+  
+Hide_In_Logical   None    
+Hide_In_Physical   All    
+Icon_Ref   All    
+Identity_Seed   SQL Server 6+, Sybase 12.5+, SybaseIQ 
+12.5+  
+  
+Increment_By   DB2 UDB 2+, DB2 3+, Teradata 2+, 
+iSeries 4+  
+  
+Input_Mask   Access 9+    
+Is_Column_Compressed   DB2 UDB 8+, Teradata 2+    
+Is_Cycle_On   Teradata 2.5+    
+Is_Empty_Equal_To_Null   All    
+Is_Identity_Column   DB2 UDB 7.1+, DB2 6+, Teradata 2+, 
+iSeries 4+  
+  
+Is_Logical_Only   None    
+Is_Not_For_Replication   SQL Server 9+    
+Is_Physical_Only   All    
+Is_Read_Only   All    
+Is_System_Maintained   Ingres 2.5+    
+Label   Access 9+, DB2 7+, Progress 8+, iSeries 
+4+  
+  
+LOB_Storage_Ref   Oracle 9+    
+Logical_Data_Type   None    
+Long_Id   All    
+Max_Value   DB2 6+, Teradata 2.5+    
+Min_Value   DB2 6+, Teradata 2.5+    
+Name   None    
+Name_Qualifier   All    
+Note   None    
+Null_Option_Constraint_Name   Oracle 9+    
+170 – ERwin Metamodel Reference 
+PAGE 284
+Is_Disabled   SQL Server 9+    
+Is_Enabled   Oracle 8+    
+Is_Index_Compacted   FoxPro    
+Is_Index_Compound   FoxPro    
+Is_Logical_Only   None    
+Is_Physical_Only   All    
+Is_Primary_Index   Teradata 2.5+    
+Is_Unique   All    
+Is_Unnamed   Teradata 2.6+    
+Key_Expression   FoxPro    
+Key_Group_Members_Order_Ref   None    
+Key_Group_Type   All    
+Long_Id   All    
+Name   None    
+Name_Qualifier   All    
+Note   None    
+Object_GUID   All    
+Online   Oracle 8+, SQL Server 9+    
+Oracle_Bitmap   Oracle 8+    
+Oracle_Index_Partition_Type   Oracle 8+    
+Owner_Path   All    
+Partition_Columns_Ref   All    
+Physical_Name   All    
+Progress_Abbreviated   Progress 8+    
+Progress_Active   Progress 8+    
+Progress_Area_Ref   Progress 9+    
+Progress_Word   Progress 8+    
+RedBrick_Domain_Type   Red Brick 5+    
+RedBrick_Fill_Factor   Red Brick 5+    
+RedBrick_Index_In_Segment_Ref   Red Brick 5+    
+RedBrick_Index_In_Segments   Red Brick 5+    
+RedBrick_Index_Target_Type   Red Brick 5+    
+RedBrick_Index_Type   Red Brick 5+    
+Relationship_Ref   All    
+Remainder_In_Informix_DBSpace_Ref   Informix 7+    
+Schema_Name   Access 9+, DB2 UDB 8.1+, DB2 6+, 
+FoxPro, Informix 9.2+, ODBC 2+, Oracle 
+8+, Progress 8+, Red Brick 5+, SAS, SQL 
+Server 7-8, Sybase 12.5+, iSeries 4+, 
+MySQL 5+  
+  
+Schema_Ref   Teradata 2.6+    
+Scratch_Partition_Columns_Ref   None    
+Scratch_SQLServer_Include_Columns_Ref   None    
+Source_Of_Transforms_Ref   All    
+SQLServer_Drop_Existing_Index   SQL Server 7+    
+SQLServer_File_Group_Ref   SQL Server 7+    
+SQLServer_Fill_Factor   SQL Server 7+, Sybase 12.5+    
+SQLServer_Ignore_Duplicate_Keys   SQL Server 7+, Sybase 12.5+    
+SQLServer_Include_Columns_Ref   SQL Server 9+    
+SQLServer_Is_Data_Sorted   SQL Server 7+, Sybase 12.5+    
+SQLServer_Keep_Existing_Statistics   SQL Server 7+    
+284 – ERwin Metamodel Reference 
+PAGE 288
+Key_Group_Ref (Short Id property) 
+Applies to relationships. Specifies the index that is migrated from the parent table. For a SQL Server 
+Full-text Index, specifies the unique index on the table used by the full-text index. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402027cd  
+Referenced_Model   
+Referenced_Type_Ref 1075838985  
+tag_Display_Name_Resource Key Group  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Reference true  
+Key_Group_Sort_Order (String property) 
+Specifies how the values for the key group member will be sorted. 
+Valid values: 
+Value Description 
+ASC Specifies to use ascending sort order. 
+DESC Specifies to use descending sort order. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+4020273a  
+tag_Display_Name_Resource Sort Order  
+tag_Is_Physical true  
+Key_Group_Type (String property) 
+Specifies the type of key group to create. 
+Valid values: 
+Value Description 
+PK Specifies Primary Key. 
+AK Specifies Unique (Alternate) Key. 
+IE Specifies Non-unique (Inversion Entry) Key. 
+IF Specifies Foreign Key. 
+288 – ERwin Metamodel Reference 
+PAGE 297
+Tagged Values 
+Name Value 
+Data_Type 75  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202d6f  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_DBMS_Is_Represented 1075859016, 9000, 999000  
+tag_Display_Name_Resource Logfiles  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.2.0  
+Logical_Data_Type (String property) 
+Specifies the logical datatype for an attribute (based on the attribute domain). You can also indicate 
+whether the datatype is required and whether the property is inherited from the attribute's domain. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402027f1  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Logical Datatype  
+tag_Is_Logical true  
+Logical_Default_Value (String property) 
+A string property used by the Default object type.  This property specifies the default value for the 
+logical side of the model. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402028f2  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Default Value  
+tag_Is_Logical true  
+tag_Legacy_Property_Visualizer_Type EDIT  
+Logical_Lead_Attribute_Ref (Short Id property) 
+Identifies the lead (or visible) attribute among a unified set of attributes. 
+Page 297 
+PAGE 422
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-
+C0FB869EE7CB}+40202b34  
+Referenced_Model   
+Referenced_Type_Ref 1075839048  
+tag_DBMS_Is_Represented null  
+tag_Deep_Copy_In_Complete_Compare true  
+tag_Display_Name_Resource Parent Delete Trigger Template  
+tag_Is_Physical true  
+tag_Is_Reference true  
+Parent_Domain_Ref (Short Id property) 
+Used by Attributes and Domains to link the object to its parent Domain. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402028ec  
+Referenced_Model   
+Referenced_Type_Ref 1075839126  
+tag_Display_Name_Resource Domain Parent  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Reference true  
+Parent_Drawing_Object_Ref (Short Id property) 
+Applies to a Drawing Object Relationship. References the drawing object of the relationship's parent. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202c4a  
+Referenced_Model   
+Referenced_Type_Ref 1075839172  
+tag_Display_Name_Resource Parent Drawing Object  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Is_System_Maintained true  
+Parent_Entity_Ref (Short Id property) 
+References the parent of a Relationship object. 
+422 – ERwin Metamodel Reference 
+PAGE 476
+Valid Owned Object Types 
+Name DBMS Brands/Versions 
+Transform_Scratch_Object All  
+Tagged Values 
+Name Value 
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40200028  
+tag_Display_Bitmap_Resource Set Multiple Properties of %1 '%2'  
+tag_Display_Name_Resource Relationship  
+tag_Display_Name_Resource_Plural Relationships  
+tag_Has_Udp_Editor true  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Transformable true  
+tag_Legacy_Ownership_Depth 9  
+tag_Physical_Name_Text Relationship  
+tag_Sub_Model_Role 1  
+Valid Properties 
+Name L/P DBMS Brands/Versions Notes
+Alias_Name   All    
+Attribute_Rolename   None    
+Built_In_Id   All    
+Cardinality   All    
+Child_Delete_Rule   Informix 9+, Ingres 2.5+, Oracle 8+, 
+Progress 9+, SQL Server 7+, Sybase 12.5+, 
+Teradata 2.6+, SybaseIQ 12.5+  
+  
+Child_Delete_Trigger_Template_Ref   All    
+Child_Entity_Ref   All    
+Child_Insert_Rule   Informix 9+, Ingres 2.5+, Oracle 8+, 
+Progress 9+, SQL Server 7+, Sybase 12.5+, 
+Teradata 2.6+, SybaseIQ 12.5+  
+  
+Child_Insert_Trigger_Template_Ref   All    
+Child_Synonym_Ref   All    
+Child_To_Parent_Verb_Phrase   None    
+Child_Update_Rule   Informix 9+, Ingres 2.5+, Oracle 8+, 
+Progress 9+, SQL Server 7+, Sybase 12.5+, 
+Teradata 2.6+, SybaseIQ 12.5+  
+  
+Child_Update_Trigger_Template_Ref   All    
+Column_Rolename   All    
+Comment   All    
+Definition   None    
+Dependent_Objects_Ref   All    
+Do_Not_Generate   All    
+Drawing_Objects_Ref   All    
+Fonts_And_Colors_Style_Sheet_Ref   All    
+Force_Checking_Of_Existing_Data   SQL Server 9+, Teradata 2.6+    
+476 – ERwin Metamodel Reference 
+PAGE 477
+Hide_In_Logical   None    
+Hide_In_Physical   All    
+Is_Logical_Only   None    
+Is_Not_For_Replication   SQL Server 9+    
+Is_Outer   Informix 5+    
+Is_Physical_Only   All    
+Key_Group_Ref   All    
+Long_Id   All    
+Many_To_Many_Association_Table_Ref   All    
+Mode   None    
+Name   None    
+Note   None    
+Null_Option_Type   Access, DB2 UDB 2+, DB2 2+, FoxPro 0+, 
+Informix 7+, Ingres 2+, ODBC 2+, Oracle 
+7.3+, Progress 8+, Red Brick 5+, SAS 0+, 
+SQL Server 7+, Sybase 11+, Teradata 2+, 
+iSeries 4+  
+  
+Object_GUID   All    
+Owner_Path   All    
+Parent_Delete_Rule   DB2 UDB 8+, DB2 7+, Informix 9+, Ingres 
+2.5+, Oracle 8+, Progress 9+, SQL Server 
+7+, Sybase 12.5+, Teradata 2.6+, SybaseIQ 
+12.5+  
+  
+Parent_Delete_Trigger_Template_Ref   All    
+Parent_Entity_Ref   All    
+Parent_Insert_Rule   Informix 9+, Ingres 2.5+, Oracle 8+, 
+Progress 9+, SQL Server 7+, Sybase 12.5+, 
+Teradata 2.6+, SybaseIQ 12.5+  
+  
+Parent_Insert_Trigger_Template_Ref   All    
+Parent_Synonym_Ref   Access 9+, DB2 UDB 8.1+, DB2 6+, FoxPro, 
+Informix 7+, Ingres 2.5+, ODBC 2+, Oracle 
+8+, Progress 8+, Red Brick 5+, SAS, SQL 
+Server 7+, Sybase 12.5+, Teradata 2+, 
+iSeries 4+, SybaseIQ 12.5+, MySQL 5+  
+  
+Parent_To_Child_Verb_Phrase   All    
+Parent_Update_Rule   DB2 UDB 8+, DB2 7+, Informix 9+, Ingres 
+2.5+, Oracle 8+, Progress 9+, SQL Server 
+7+, Sybase 12.5+, Teradata 2.6+, SybaseIQ 
+12.5+  
+  
+Parent_Update_Trigger_Template_Ref   All    
+Physical_Name   All    
+Relationship_Sequence   All    
+Source_Of_Transforms_Ref   All    
+Subtype_Discriminator_Ref   All    
+Target_Of_Transforms_Ref   All    
+Trans_Migration_Mapping   All    
+Trans_Rolenaming_Attribute_Ref   None    
+Trans_Rolenaming_Column_Ref   All    
+Type   All    
+User_Formatted_Name   None    
+User_Formatted_Physical_Name   All    
+Page 477 
+PAGE 479
+Relationship_Ref (Short Id property) 
+Specifies a reference to the relationship migrating the attributes for the key group. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202735  
+Referenced_Model   
+Referenced_Type_Ref 1075839016  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Relationship  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Reference true  
+Relationship_Sequence (Integer property) 
+An integer property on Relationship objects that indicates the creation order of the Relationship 
+relative to its peers. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402027c9  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Sequence  
+tag_Is_Physical true  
+Relationship_Type (Integer property) 
+An integer property on Trigger that indicates whether the referential integrity rule being enforced 
+applies to the parent or child side of the associated Relationship. 
+Valid values: 
+Value Description 
+0 Parent 
+1 Child 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202ee5 
+Page 479 
+PAGE 497
+Scratch_Child_Drawing_Object_Ref (Short Id property) 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202ca1  
+Referenced_Model   
+Referenced_Type_Ref 1075839186  
+tag_Display_Name_Resource Scratch Child Drawing Object  
+tag_Is_Reference true  
+tag_Is_Scratch true  
+Scratch_Child_Entity_Ref (Short Id property) 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202ca2  
+Referenced_Model   
+Referenced_Type_Ref 1075839186  
+tag_Display_Name_Resource Scratch Child Entity  
+tag_Is_Reference true  
+tag_Is_Scratch true  
+Scratch_Child_Insert_Trigger_Template_Ref (Short Id property) 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202ca3  
+Referenced_Model   
+Referenced_Type_Ref 1075839186  
+tag_Display_Name_Resource Scratch Child Insert Trigger Template  
+tag_Is_Reference true  
+tag_Is_Scratch true  
+Scratch_Child_Relationships_Ref (Short Id List property) 
+Tagged Values 
+Name Value 
+Data_Type 75  
+Page 497 
+PAGE 517
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202cd2  
+Referenced_Model   
+Referenced_Type_Ref 1075839186  
+tag_Display_Name_Resource Scratch Pa rent Delete Trigger Template  
+tag_Is_Reference true  
+tag_Is_Scratch true  
+Scratch_Parent_Domain_Ref (Short Id property) 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202cd3  
+Referenced_Model   
+Referenced_Type_Ref 1075839186  
+tag_Display_Name_Resource Scratch Parent Domain  
+tag_Is_Reference true  
+tag_Is_Scratch true  
+Scratch_Parent_Drawing_Object_Ref (Short Id property) 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202cd4  
+Referenced_Model   
+Referenced_Type_Ref 1075839186  
+tag_Display_Name_Resource Scratch Parent Drawing Object  
+tag_Is_Reference true  
+tag_Is_Scratch true  
+Scratch_Parent_Entity_Ref (Short Id property) 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202cd5  
+Referenced_Model   
+Referenced_Type_Ref 1075839186  
+tag_Display_Name_Resource Scratch Parent Entity  
+tag_Is_Reference true  
+tag_Is_Scratch true  
+Page 517 
+PAGE 711
+Character_Type   DB2 UDB 2+, DB2 2+, iSeries 
+4+  
+  
+Child_Connection_Position   All    
+Child_Connection_Side   All    
+Child_Delete_Rule   All    
+Child_Delete_Trigger_Template_Ref   All    
+Child_Drawing_Object_Ref   All    
+Child_Entity_Ref   All    
+Child_Insert_Rule   All    
+Child_Insert_Trigger_Template_Ref   All    
+Child_Relationships_Ref   All    
+Child_Synonym_Ref   All    
+Child_To_Parent_Verb_Phrase   None    
+Child_Update_Rule   All    
+Child_Update_Trigger_Template_Ref   All    
+Child_Verb_Phrase_Point   All    
+Child_Verb_Phrase_Side   All    
+Collation_Name   SQL Server 9+    
+Column_In_Name   Informix 7+    
+Column_Ref   Oracle 9+    
+Column_Rolename   All    
+Columns_Order_Ref   All    
+Columns_Ref   Oracle 8.1+, SQL Server 9+    
+Comment   All    
+Compress_Prefix_Length   Oracle 8.1+    
+Compress_Type   Oracle 8.1+    
+Compress_Values   Teradata 2+    
+Consider_No_Validate   All    
+Constraint_Name   All    
+Creation_Time   All    
+Database_Event_Type   All    
+Database_Id   All    
+Database_Internal_Name   All    
+Data_Movement_Append_Rule_Ref   All    
+Data_Movement_Archive_Rule_Ref   All    
+Data_Movement_Backup_Rule_Ref   All    
+Data_Movement_Dimensional_Role_Type   All    
+Data_Movement_Dimensional_Update_Type   All    
+Data_Movement_Purge_Rule_Ref   All    
+Data_Movement_Recovery_Rule_Ref   All    
+Data_Movement_Refresh_Rule_Ref   All    
+Data_Organization_Type   Oracle 8+    
+Data_Source_Comment   All    
+Data_Sources_Ref   All    
+DB2_Buffer_Pool   DB2 UDB 2+, DB2 2+    
+DB2_Close   DB2 UDB 2+, DB2 2+    
+DB2_Cluster_Members   DB2 UDB 2+, DB2 5+    
+DB2_Coded_Character_Set_Identifier   DB2 2+    
+DB2_Copy_Index   DB2 6+    
+DB2_Database_Ref   DB2 2+    
+DB2_Data_Capture   DB2 2+    
+Page 711 
+PAGE 715
+Is_Outer   Informix 5+    
+Is_Physical_Only   All    
+Is_Primary_Index   Teradata 2.5+    
+Is_Primary_XML_Index   SQL Server 9+    
+Is_Read_Only   All    
+Is_Required   All    
+Is_System_Maintained   Ingres 2.5+    
+Is_Table_Compressed   DB2 UDB 8+    
+Is_Unique   All    
+Is_Unnamed   All    
+Is_Updateable   Oracle 8.1-8.1, Oracle 9+    
+Is_User_Controlled_Path   All    
+Key_Expression   FoxPro 0+    
+Key_Group_Member_Ref   All    
+Key_Group_Members_Order_Ref   None    
+Key_Group_Position   All    
+Key_Group_Ref   All    
+Key_Group_Sort_Order   All    
+Key_Groups_Ref   All    
+Key_Group_Type   All    
+Label   Access, Progress 8+, iSeries 4+    
+Language   All    
+LOB_Segment_Name   Oracle 8+    
+LOB_Storage_Ref   All    
+Location_Rectangle   All    
+Log_Always   Oracle 9+    
+Logical_Data_Type   None    
+Logical_Lead_Attribute_Ref   None    
+Long_Id   All    
+Macros_Ref   All    
+Many_To_Many_Association_Table_Ref   All    
+Master_Attribute_Ref   All    
+Max_Row   All    
+Max_Value   DB2 6+, Teradata 2.5+    
+Middle_Verb_Phrase_Point   All    
+Mid_Point_Of_Relationship_Point   All    
+Minimum_Rectangle   All    
+Min_Value   DB2 6+, Teradata 2.5+    
+Mode   All    
+Model_Object_Ref   All    
+Model_Source_Data   All    
+Model_Source_Type   All    
+Name   All    
+Name_Qualifier   All    
+Note   None    
+Note_2   None    
+Note_3   None    
+Null_Option_Constraint_Name   All    
+Null_Option_Type   Access, DB2 UDB 2+, DB2 2+, 
+FoxPro 0+, Informix 7+, Ingres 
+2+, ODBC 2+, Oracle 7.3+, 
+  
+Page 715 
+PAGE 717
+Oracle_Overflow_Storage_Ref   Oracle 8+    
+Oracle_Overflow_Tablespace_Ref   Oracle 9+    
+Oracle_Overflow_Tablespaces_Ref   Oracle 8+    
+Oracle_Parallel_Threads   Oracle 7.1+    
+Oracle_Partition_Columns   Oracle 8+    
+Oracle_Partition_Level_Subpartition_Type   Oracle 8+    
+Oracle_Partitions   Oracle 8+    
+Oracle_Partition_Type   Oracle 8+    
+Oracle_Percent_Free   Oracle 6+    
+Oracle_Percent_Increase   Oracle 6+    
+Oracle_Percent_Used   Oracle 6+    
+Oracle_Regular_Storage_Ref   Oracle 8+    
+Oracle_Sort_Cluster_On_Column   Oracle 9+    
+Oracle_Subpartition_Template_Type   Oracle 9+    
+Oracle_Supplemental_Key_Log_AK_Columns   Oracle 9+    
+Oracle_Supplemental_Key_Log_All_Columns   Oracle 9+    
+Oracle_Supplemental_Key_Log_FK_Columns   Oracle 9+    
+Oracle_Supplemental_Key_Log_PK_Columns   Oracle 9+    
+Oracle_Tablespace_Ref   Oracle 6+    
+Oracle_Tablespaces_Ref   Oracle 8+    
+Oracle_Tablespace_Usage_Type   Oracle 8+    
+Oracle_Use_Reverse_Store   Oracle 8+    
+Oracle_Uses_Prebuilt_Table   All    
+Oracle_Uses_Reduced_Precision   All    
+Oracle_Using_Constraint_Type   All    
+Oracle_Using_Index_Storage_Ref   Oracle 9+    
+Order_By_Clause   All    
+Order_Num   Progress 8+    
+Outline_Color   All    
+Outline_Pattern   All    
+Outline_Style   All    
+Outline_Width   All    
+Owner_Path   All    
+Parallel_Mode   Oracle 7.1+    
+Parent_Attribute_Ref   All    
+Parent_Check_Constraint_Usage_Ref   All    
+Parent_Connection_Position   All    
+Parent_Connection_Side   All    
+Parent_Default_Constraint_Usage_Ref   All    
+Parent_Delete_Rule   All    
+Parent_Delete_Trigger_Template_Ref   All    
+Parent_Domain_Ref   All    
+Parent_Drawing_Object_Ref   All    
+Parent_Entity_Ref   All    
+Parent_Insert_Rule   All    
+Parent_Insert_Trigger_Template_Ref   All    
+Parent_Key_Group_Member_Ref   All    
+Parent_Relationship_Ref   All    
+Parent_Relationships_Ref   All    
+Parent_Synonym_Ref   All    
+Parent_To_Child_Verb_Phrase   All    
+Page 717 
+PAGE 719
+Reject_Limit_Type   All    
+Relationship_Coordinates   All    
+Relationship_Ref   All    
+Relationship_Sequence   All    
+Relationships_Ref   All    
+Remainder_In_Informix_DBSpace_Ref   Informix 5+    
+Remote_Object_Name   All    
+Remote_Object_Owner   All    
+Replaced_Attribute_Short_Id   All    
+Restriction_Type   All    
+Row_Count   All    
+Row_GUID   SQL Server 7+    
+Schema_Name   All    
+Schema_Ref   All    
+Scratch_Attribute_Ref   All    
+Scratch_Attributes_Order_Ref   None    
+Scratch_Available_Filegroups_Ref   None    
+Scratch_Child_Delete_Trigger_Template_Ref   None    
+Scratch_Child_Drawing_Object_Ref   All    
+Scratch_Child_Entity_Ref   All    
+Scratch_Child_Insert_Trigger_Template_Ref   None    
+Scratch_Child_Relationships_Ref   All    
+Scratch_Child_Synonym_Ref   All    
+Scratch_Child_Update_Trigger_Template_Ref   None    
+Scratch_Column_Ref   None    
+Scratch_Columns_Order_Ref   All    
+Scratch_Columns_Ref   None    
+Scratch_Data_Movement_Append_Rule_Ref   All    
+Scratch_Data_Movement_Archive_Rule_Ref   All    
+Scratch_Data_Movement_Backup_Rule_Ref   All    
+Scratch_Data_Movement_Purge_Rule_Ref   All    
+Scratch_Data_Movement_Recovery_Rule_Ref   All    
+Scratch_Data_Movement_Refresh_Rule_Ref   All    
+Scratch_Data_Sources_Ref   None    
+Scratch_DB2_Database_Ref   All    
+Scratch_DB2_Tablespace_Ref   All    
+Scratch_Default_Ref   None    
+Scratch_Definition_Font_Ref   All    
+Scratch_Dependent_Objects_Ref   All    
+Scratch_Discriminator_Attributes_Ref   None    
+Scratch_Display_Format_Ref   All    
+Scratch_Drawing_Objects_Ref   All    
+Scratch_Entity_Bitmap_Ref   All    
+Scratch_Entity_Icon_Ref   All    
+Scratch_Entity_Ref   None    
+Scratch_Exception_Table_Ref   None    
+Scratch_Font_Ref   All    
+Scratch_Functions_Ref   All    
+Scratch_Icon_Ref   All    
+Scratch_Including_Column_Ref   All    
+Scratch_Index_Members_Order_Ref   All    
+Page 719 
+PAGE 720
+Scratch_Index_Ref   None    
+Scratch_Informix_DBSpace_Ref   All    
+Scratch_Input_Type_Ref   None    
+Scratch_Key_Group_Member_Ref   All    
+Scratch_Key_Group_Members_Order_Ref   None    
+Scratch_Key_Group_Ref   All    
+Scratch_Key_Groups_Ref   All    
+Scratch_LOB_Storage_Ref   All    
+Scratch_Logical_Lead_Attribute_Ref   None    
+Scratch_Many_To_Many_Association_Table_Ref   All    
+Scratch_Master_Attribute_Ref   All    
+Scratch_Model_Object_Ref   All    
+Scratch_Oracle_Cluster_Columns_Ref   All    
+Scratch_Oracle_Cluster_Ref   All    
+Scratch_Oracle_Constraint_State_Ref   All    
+Scratch_Oracle_Database_Link_Ref   None    
+Scratch_Oracle_Directory_Ref   All    
+Scratch_Oracle_Hash_Columns_Ref   None    
+Scratch_Oracle_Heap_Storage_Ref   All    
+Scratch_Oracle_Index_Storage_Ref   All    
+Scratch_Oracle_Overflow_Segment_Attributes_Ref   None    
+Scratch_Oracle_Overflow_Storage_Ref   All    
+Scratch_Oracle_Overflow_Tablespace_Ref   None    
+Scratch_Oracle_Overflow_Tablespaces_Ref   None    
+Scratch_Oracle_Regular_Storage_Ref   All    
+Scratch_Oracle_Tablespace_Ref   None    
+Scratch_Oracle_Tablespaces_Ref   None    
+Scratch_Parent_Attribute_Ref   All    
+Scratch_Parent_Check_Constraint_Usage_Ref   None    
+Scratch_Parent_Default_Constraint_Usage_Ref   None    
+Scratch_Parent_Delete_Trigger_Template_Ref   None    
+Scratch_Parent_Domain_Ref   All    
+Scratch_Parent_Drawing_Object_Ref   All    
+Scratch_Parent_Entity_Ref   All    
+Scratch_Parent_Insert_Trigger_Template_Ref   None    
+Scratch_Parent_Key_Group_Member_Ref   All    
+Scratch_Parent_Relationship_Ref   All    
+Scratch_Parent_Relationships_Ref   All    
+Scratch_Parent_Synonym_Ref   All    
+Scratch_Parent_Update_Trigger_Template_Ref   None    
+Scratch_Partition_Columns_Ref   None    
+Scratch_Physical_Columns_Order_Ref   All    
+Scratch_Physical_Lead_Attribute_Ref   All    
+Scratch_Primary_XML_Index_Ref   None    
+Scratch_Progress_Area_Ref   None    
+Scratch_RedBrick_Data_In_Segment_Ref   All    
+Scratch_RedBrick_Index_In_Segment_Ref   All    
+Scratch_RedBrick_PK_In_Segment_Ref   All    
+Scratch_Relationship_Ref   All    
+Scratch_Relationships_Ref   None    
+Scratch_Remainder_In_Informix_DBSpace_Ref   All    
+720 – ERwin Metamodel Reference 
+PAGE 784
+Abort_On_Arithmetic_Error 
+Abort_On_Precision_Loss 
+Abstract_Entity_Ref 
+Access_Driver_Type 
+Access_Parameter_Type 
+Access_Parameters 
+Accounts 
+Adjust_Fit 
+Adjust_Size_To_Fit_Text 
+Algorithm_Type 
+Alias_Name 
+Align_To_Grid 
+All_Attributes_Display_String 
+Allocate_Amount 
+Allow_Index_Reverse_Scans 
+Allow_Page_Locks 
+Allow_Recursive_Triggers 
+Allow_Restricted_Words_For_Password 
+Allow_Row_Locks 
+Allow_Special_Characters 
+Allow_Trustworthy_Modules 
+Allow_Use_By_Functions 
+Allow_Username_In_Password 
+Allow_Zero 
+Anchor_Point 
+Apply_To_All_Recipient_Ownees 
+Are_Nulls_Equal 
+Are_Strings_Padded 
+Are_Warnings_Issued 
+Assembly_Ref 
+Association 
+Asymmetric_Key_Ref 
+Asymmetric_Keys_Ref 
+Attribute 
+Attribute_Definition 
+Attribute_Icon_Ref 
+Attribute_Name 
+Attribute_Note 
+Attribute_Order 
+Attribute_Ref 
+Attribute_Rolename 
+Attributes_Order_Ref 
+Audit_Type 
+Authentication_Type 
+Author 
+Authorization_Ref 
+Authorization_Type 
+Auto_Bind_To_New 
+Auto_Close 
+Auto_Create_Statistics 
+Auto_Extend 
+Auto_Extend_Max_Size 
+Auto_Extend_Next_Value 
+Auto_Populate_With_All_Objects 
+Auto_Populated_Diagrams_Ref 
+Auto_Populated_Subject_Areas_Ref 
+Auto_Shrink 
+Auto_Switch_Transforms 
+Auto_Transform_Many_To_Many 
+Auto_Transform_Supertype_Subtype 
+Auto_Update_Statistics 
+Auto_Update_Statistics_Async 
+Auxiliary_Oracle_Tablespace_Ref 
+Available_Filegroups_Ref 
+Available_Files_Ref 
+Available_Principals_Ref 
+Available_Roles_Ref 
+Available_Schemas_Ref 
+Bitmap 
+Bitmap_Bits 
+Bitmap_File_Name 
+Built_In_Bitmap_Type 
+Built_In_Id 
+Cache_Capacity 
+Cache_Count 
+Cache_Identity_Column_Values 
+Cached_View 
+Can_Administer 
+Can_Chain 
+Can_Flashback 
+Can_Grant_Permission 
+Cardinality 
+Cardinality_Value 
+Case_Conversion_Type 
+Cast 
+Certificate_Ref 
+Certificate_Subject 
+Certificates_Ref 
+Change_Tracking_Type 
+Character_Case_Type 
+Character_Semantics_Type 
+Character_Set 
+Character_Type 
+Check_Constraint_Usage 
+Check_Expiration 
+Check_Policy 
+Child_Connection_Position 
+Child_Connection_Side 
+Child_Delete_Rule 
+Child_Delete_Rule_Identifying 
+Child_Delete_Rule_Nonidentifying 
+Child_Delete_Rule_Nonidentifying_Not_Null 
+Child_Delete_Rule_Subtype 
+Child_Delete_Trigger_Template_Ref 
+Child_Drawing_Object_Ref 
+Child_Entity_Ref 
+Child_Insert_Rule 
+Child_Insert_Rule_Identifying 
+ERwin Metamodel Reference - 784 
+PAGE 786
+DB2_Object_Id 
+DB2_Pad_Index 
+DB2_Partitions 
+DB2_Partitions_Count 
+DB2_Piece_Size 
+DB2_Segment_Size 
+DB2_Storage_Group_Ref 
+DB2_SubPages 
+DB2_Synonym_Database 
+DB2_Tablespace 
+DB2_Tablespace_Ref 
+DB2_Tablespace_Storage_Type 
+DB2_Track_Modifications 
+DB2_Using 
+DB2_Validation_Procedure 
+DB2_Volume 
+DB2_VSAM_Catalog 
+DBMS_Major_Version 
+DBMS_Minor_Version 
+DDL_Event_Type 
+Decimals 
+Default 
+Default_Constraint_Usage 
+Default_DO_Adjust_Fit 
+Default_DO_Background_Pattern 
+Default_DO_Background_Style 
+Default_DO_Fill_Color 
+Default_DO_Horizontal_Alignment 
+Default_DO_Outline_Color 
+Default_DO_Outline_Style 
+Default_DO_Outline_Width 
+Default_DO_Vertical_Alignment 
+Default_DO_Word_Break 
+Default_Drawing_Object_Color 
+Default_Drawing_Object_Font_Ref 
+Default_Entity_Definition_Color 
+Default_Entity_Definition_Font_Ref 
+Default_Entity_Fill_Color 
+Default_Entity_Name_Color 
+Default_Entity_Name_Font_Ref 
+Default_Entity_Outline_Color 
+Default_FK_Attribute_Color 
+Default_FK_Attribute_Color_Inheritance_Type 
+Default_FK_Attribute_Font_Inheritance_Type 
+Default_FK_Attribute_Font_Ref 
+Default_Fonts_And_Colors 
+Default_Fonts_And_Colors_Ref 
+Default_General_Background_Color 
+Default_General_Font_Ref 
+Default_Owned_Attribute_Color 
+Default_Owned_Attribute_Font_Ref 
+Default_Ref 
+Default_Relation_Color_Inherited 
+Default_Relation_Name_Color 
+Default_Relation_Name_Font_Inherited 
+Default_Relation_Name_Font_Ref 
+Default_Schema_Ref 
+Default_Subtype_Color_Inherited 
+Default_Subtype_Fill_Color 
+Default_Subtype_Name_Font_Inherited 
+Default_Subtype_Name_Font_Ref 
+Default_Subtype_Outline_Color 
+Default_Tablespace_Ref 
+Default_Temporary_Tablespace_Ref 
+Default_Teradata_Database_Ref 
+Default_Trigger_Template 
+Default_Value 
+Definition 
+Definition_Color 
+Definition_Font_Ref 
+Delete_File_Path 
+Denormalized_Table_In_Roll_Down_Ref 
+Denormalized_Table_In_Roll_Up_Ref 
+Dependent_Objects_Ref 
+Description 
+Disable_Recording_New_Values 
+Discriminator_Attributes_Ref 
+Display_Attribute_Icons 
+Display_Attribute_Null_Option 
+Display_Child_To_Parent_Verb_Phrase 
+Display_Control 
+Display_Data_Movement_Options 
+Display_Diagonal_Lines 
+Display_Entity_Icons 
+Display_Format 
+Display_Format_Ref 
+Display_Format_String 
+Display_Informat_Name 
+Display_Logical_Data_Type 
+Display_Logical_Domains 
+Display_Logical_FK_Designator 
+Display_Logical_PK_Designator 
+Display_Other_Owners_Only 
+Display_Owner 
+Display_Parent_To_Child_Verb_Phrase 
+Display_Physical_PK_Designator 
+Display_Shadow 
+Display_Split_Relationship_Names 
+Display_Table_Column_Nulls 
+Display_Ungenerated_Indexes 
+Display_Ungenerated_Relationships 
+Display_Ungenerated_Tables 
+Display_Ungenerated_Views 
+Display_View_Column_Data_Type 
+Display_View_Column_Null_Option 
+Display_View_Relations 
+Display_Views 
+Do_Not_Generate 
+786 – ERwin Metamodel Reference 
+PAGE 789
+Is_Index_Compound 
+Is_Logical_Only 
+Is_Main_Subject_Area 
+Is_Max 
+Is_Min 
+Is_Monitored 
+Is_Not_Client_Side 
+Is_Not_For_Replication 
+Is_Not_Server_Side 
+Is_Null_Default 
+Is_Outer 
+Is_Physical_Only 
+Is_Primary 
+Is_Primary_Index 
+Is_Primary_Subtransform 
+Is_Primary_XML_Index 
+Is_Private_Key 
+Is_Public 
+Is_Quoted_Identifier 
+Is_Read_Only 
+Is_Read_Write 
+Is_Required 
+Is_Shared 
+Is_Single_Table 
+Is_Sparse 
+Is_Submodel 
+Is_Supplied 
+Is_System_File 
+Is_System_Generated 
+Is_System_Maintained 
+Is_Table_Compressed 
+Is_UDP_Logical 
+Is_Unique 
+Is_Unnamed 
+Is_Updateable 
+Is_User_Controlled_Path 
+Key_Display_Style_Type 
+Key_Expression 
+Key_Group 
+Key_Group_Member 
+Key_Group_Member_Order 
+Key_Group_Member_Ref 
+Key_Group_Members_Order_Ref 
+Key_Group_Position 
+Key_Group_Ref 
+Key_Group_Sort_Order 
+Key_Group_Type 
+Key_Groups_Ref 
+Key_Source_Type 
+Label 
+Language 
+Layout_Circ_Edge_Cost 
+Layout_Circ_Node_Weight 
+Layout_Grid_Horizontal_Spacing 
+Layout_Grid_Vertical_Spacing 
+Layout_Hier_Non_Leveling 
+Layout_Symm_Quality 
+Line_Color 
+Line_Color_Inherited_From_Parent 
+Line_Style 
+Line_Width 
+LOB_Column_Ref 
+LOB_Segment_Name 
+LOB_Storage_Ref 
+Local_Extent_Management_Type 
+Location_Rectangle 
+Lock 
+Log_Always 
+Logfiles_Ref 
+Logical_Data_Type 
+Logical_Default_Value 
+Logical_Lead_Attribute_Ref 
+Logical_Notation_Type 
+Logical_Physical_View_Mode 
+Long_Id 
+Macro 
+Macro_Text 
+Macros_Ref 
+Many_To_Many_Association_Table_Ref 
+Many_To_Many_Relationship_Ref 
+Many_To_Many_Transform 
+Map_All 
+Master_Attribute_Ref 
+Max_Definition_Display_Length 
+Max_Length 
+Max_Row 
+Max_Size 
+Max_Value 
+Max_View_Expression_Display_Length 
+Media_Is_Read_Only 
+Merge_Publication 
+Meta_Object_Type 
+Metadata_Version 
+Method 
+Mid_Point_Of_Relationship_Point 
+Middle_Verb_Phrase_Point 
+Migrate_Through_Logical_Only_Relationships 
+Min_Value 
+Minimum_Extent 
+Minimum_Rectangle 
+Mode 
+Model 
+Model_Background_Color 
+Model_Object_Ref 
+Model_Source 
+Model_Source_Data 
+Model_Source_Type 
+Modifi cation_Time 
+Page 789 
+PAGE 791
+Oracle_Optimal_Size 
+Oracle_Optimal_Size_Type 
+Oracle_Overflow_Segment_Attributes_Ref 
+Oracle_Overflow_Storage_Ref 
+Oracle_Overflow_Tablespace_Ref 
+Oracle_Overflow_Tablespaces_Ref 
+Oracle_Package 
+Oracle_Parallel_Threads 
+Oracle_Partition_Columns 
+Oracle_Partition_Description 
+Oracle_Partition_Level_Subpartition_Type 
+Oracle_Partition_Template 
+Oracle_Partition_Type 
+Oracle_Partitioning_Storage 
+Oracle_Partitions 
+Oracle_Percent_Free 
+Oracle_Percent_Increase 
+Oracle_Percent_Used 
+Oracle_Physical_File 
+Oracle_Physical_Storage 
+Oracle_Qualified_Disk 
+Oracle_Range_Partition 
+Oracle_Range_Partition_Info 
+Oracle_Regular_Storage_Ref 
+Oracle_Reuse_Control_File 
+Oracle_Rollback_Segment 
+Oracle_Size 
+Oracle_Sort_Cluster_On_Column 
+Oracle_Subpartition_Spec 
+Oracle_Subpartition_Template_Type 
+Oracle_Supplemental_Key_Log_AK_Columns 
+Oracle_Supplemental_Key_Log_All_Columns 
+Oracle_Supplemental_Key_Log_FK_Columns 
+Oracle_Supplemental_Key_Log_PK_Columns 
+Oracle_Supplemental_Log_Column 
+Oracle_Supplemental_Log_Group 
+Oracle_System_Tablespace_Ref 
+Oracle_Tablespace 
+Oracle_Tablespace_Ref 
+Oracle_Tablespace_Usage_Type 
+Oracle_Tablespaces_Ref 
+Oracle_Use_Reverse_Store 
+Oracle_Uses_Prebuilt_Table 
+Oracle_Uses_Reduced_Precision 
+Oracle_Using_Constraint_Type 
+Oracle_Using_Index_Storage_Ref 
+Order_By_Clause 
+Order_Num 
+Order_On 
+Ordering_Do_Not_Generate 
+Ordering_Procedure_Ref 
+Ordering_Procedure_Type 
+OS_Domain 
+OS_User 
+Other_Foreign_Key_Attributes_Ref 
+Outline_Color 
+Outline_Pattern 
+Outline_Style 
+Outline_Width 
+Owner_Name 
+Owner_Override 
+Owner_Path 
+Owner_Ref 
+Page_Verify 
+Parallel_Mode 
+Parameter 
+Parameter_Order_Ref 
+Parameterization 
+Parent_Attribute_Ref 
+Parent_Check_Constraint_Usage_Ref 
+Parent_Connection_Position 
+Parent_Connection_Side 
+Parent_Default_Constraint_Usage_Ref 
+Parent_Delete_Rule 
+Parent_Delete_Rule_Identifying 
+Parent_Delete_Rule_Nonidentifying 
+Parent_Delete_Rule_Nonidentifying_Not_Null 
+Parent_Delete_Rule_Subtype 
+Parent_Delete_Trigger_Template_Ref 
+Parent_Domain_Ref 
+Parent_Drawing_Object_Ref 
+Parent_Entity_Ref 
+Parent_Insert_Rule 
+Parent_Insert_Rule_Identifying 
+Parent_Insert_Rule_Nonidentifying 
+Parent_Insert_Rule_Nonidentifying_Not_Null 
+Parent_Insert_Rule_Subtype 
+Parent_Insert_Trigger_Template_Ref 
+Parent_Key_Group_Member_Ref 
+Parent_Ref 
+Parent_Relationship_Ref 
+Parent_Relationships_Ref 
+Parent_Synonym_Ref 
+Parent_Table_Ref 
+Parent_To_Child_Verb_Phrase 
+Parent_Update_Rule 
+Parent_Update_Rule_Identifying 
+Parent_Update_Rule_Nonidentifying 
+Parent_Update_Rule_Nonidentifying_Not_Null 
+Parent_Update_Rule_Subtype 
+Parent_Update_Trigger_Template_Ref 
+Parent_Verb_Phrase_Point 
+Parent_Verb_Phrase_Side 
+Partition_Columns_Ref 
+Partition_Function_Ref 
+Partition_Less_Than_Values 
+Partition_Values 
+Password_Days_Before_Reuse 
+Page 791 
+PAGE 793
+Relationship_Sequence 
+Relationship_Type 
+Relationships_Ref 
+Remainder_In_Informix_DBSpace_Ref 
+Remote_Object_Name 
+Remote_Object_Owner 
+Remove_Vowels_In_Name_Mapping 
+Replaced_Attribute_Short_Id 
+Replacement_Character 
+Require_Password_Alphas 
+Require_Password_Digits 
+Require_Password_Mixed_Case 
+Resolve_Order_Transforms_Ref 
+Restricted_Access_Type 
+Restriction_Type 
+Retention_Guarantee 
+Return_Cast_By_Reference 
+Return_Cast_Character_Set_Type 
+Return_Cast_Data_Type 
+Return_Cast_Type_Ref 
+Return_Data_Type 
+Return_Self_As_Result 
+Return_Table_Definition_Ref 
+Return_Type_Ref 
+Reverse_Order_Transforms_Ref 
+Role_Ref 
+Role_Usage 
+Roll_Down_Subtransform 
+Roll_Up_Primary_Keys 
+Roll_Up_Subsubtransform 
+Roll_Up_Subtransform 
+Row_Count 
+Row_GUID 
+Schema 
+Schema_Name 
+Schema_Ref 
+Scratch_Attribute_Ref 
+Scratch_Attributes_Order_Ref 
+Scratch_Available_Filegroups_Ref 
+Scratch_Child_Delete_Trigger_Template_Ref 
+Scratch_Child_Drawing_Object_Ref 
+Scratch_Child_Entity_Ref 
+Scratch_Child_Insert_Trigger_Template_Ref 
+Scratch_Child_Relationships_Ref 
+Scratch_Child_Synonym_Ref 
+Scratch_Child_Table_Ref 
+Scratch_Child_Update_Trigger_Template_Ref 
+Scratch_Column_Ref 
+Scratch_Columns_Order_Ref 
+Scratch_Columns_Ref 
+Scratch_Data_Movement_Append_Rule_Ref 
+Scratch_Data_Movement_Archive_Rule_Ref 
+Scratch_Data_Movement_Backup_Rule_Ref 
+Scratch_Data_Movement_Purge_Rule_Ref 
+Scratch_Data_Movement_Recovery_Rule_Ref 
+Scratch_Data_Movement_Refresh_Rule_Ref 
+Scratch_Data_Sources_Ref 
+Scratch_DB2_Database_Ref 
+Scratch_DB2_Tablespace_Ref 
+Scratch_Default_Ref 
+Scratch_Definition_Font_Ref 
+Scratch_Denormalized_Table_In_Roll_Down_Ref 
+Scratch_Denormalized_Table_In_Roll_Up_Ref 
+Scratch_Dependent_Objects_Ref 
+Scratch_Discriminator_Attributes_Ref 
+Scratch_Display_Format_Ref 
+Scratch_Drawing_Objects_Ref 
+Scratch_Entity_Bitmap_Ref 
+Scratch_Entity_Icon_Ref 
+Scratch_Entity_Ref 
+Scratch_Exception_Table_Ref 
+Scratch_Font_Ref 
+Scratch_Functions_Ref 
+Scratch_Icon_Ref 
+Scratch_Including_Column_Ref 
+Scratch_Index_Members_Order_Ref 
+Scratch_Index_Ref 
+Scratch_Informix_DBSpace_Ref 
+Scratch_Input_Type_Ref 
+Scratch_Key_Group_Member_Ref 
+Scratch_Key_Group_Members_Order_Ref 
+Scratch_Key_Group_Ref 
+Scratch_Key_Groups_Ref 
+Scratch_LOB_Storage_Ref 
+Scratch_Logical_Lead_Attribute_Ref 
+Scratch_Many_To_Many_Association_Table_Ref 
+Scratch_Many_To_Many_Relationship_Ref 
+Scratch_Master_Attribute_Ref 
+Scratch_Model_Object_Ref 
+Scratch_Oracle_Cluster_Columns_Ref 
+Scratch_Oracle_Cluster_Ref 
+Scratch_Oracle_Constraint_State_Ref 
+Scratch_Oracle_Database_Link_Ref 
+Scratch_Oracle_Directory_Ref 
+Scratch_Oracle_Hash_Columns_Ref 
+Scratch_Oracle_Heap_Storage_Ref 
+Scratch_Oracle_Index_Storage_Ref 
+Scratch_Oracle_Overflow_Segment_Attributes_Ref 
+Scratch_Oracle_Overflow_Storage_Ref 
+Scratch_Oracle_Overflow_Tablespace_Ref 
+Scratch_Oracle_Overflow_Tablespaces_Ref 
+Scratch_Oracle_Regular_Storage_Ref 
+Scratch_Oracle_Tablespace_Ref 
+Scratch_Oracle_Tablespaces_Ref 
+Scratch_Other_Foreign_Key_Attributes_Ref 
+Scratch_Parent_Attribute_Ref 
+Scratch_Parent_Check_Constraint_Usage_Ref 
+Scratch_Parent_Default_Constraint_Usage_Ref 
+Page 793 
+PAGE 794
+Scratch_Parent_Delete_Trigger_Template_Ref 
+Scratch_Parent_Domain_Ref 
+Scratch_Parent_Drawing_Object_Ref 
+Scratch_Parent_Entity_Ref 
+Scratch_Parent_Insert_Trigger_Template_Ref 
+Scratch_Parent_Key_Group_Member_Ref 
+Scratch_Parent_Relationship_Ref 
+Scratch_Parent_Relationships_Ref 
+Scratch_Parent_Synonym_Ref 
+Scratch_Parent_Table_Ref 
+Scratch_Parent_Update_Trigger_Template_Ref 
+Scratch_Partition_Columns_Ref 
+Scratch_Physical_Columns_Order_Ref 
+Scratch_Physical_Lead_Attribute_Ref 
+Scratch_Primary_XML_Index_Ref 
+Scratch_Progress_Area_Ref 
+Scratch_RedBrick_Data_In_Segment_Ref 
+Scratch_RedBrick_Index_In_Segment_Ref 
+Scratch_RedBrick_PK_In_Segment_Ref 
+Scratch_Relationship_1_Ref 
+Scratch_Relationship_2_Ref 
+Scratch_Relationship_Ref 
+Scratch_Relationships_Ref 
+Scratch_Remainder_In_Informix_DBSpace_Ref 
+Scratch_Return_Type_Ref 
+Scratch_Schema_Ref 
+Scratch_Script_Templates_Ref 
+Scratch_Sequence_Ref 
+Scratch_Source_Column_In_Denormalization_Ref 
+Scratch_Source_Of_Transforms_Ref 
+Scratch_Source_Supertype_Symbol_Ref 
+Scratch_Source_Table_Ref 
+Scratch_SQLServer_Assembly_Ref 
+Scratch_SQLServer_Entity_Ref 
+Scratch_SQLServer_Execute_As_Principal_Ref 
+Scratch_SQLServer_File_Group_Ref 
+Scratch_SQLServer_Include_Columns_Ref 
+Scratch_SQLServer_Partition_Scheme_Ref 
+Scratch_SQLServer_Text_Image_Ref 
+Scratch_SQLServer_XML_Schema_Collection_Ref 
+Scratch_Stored_Procedures_Ref 
+Scratch_Subtype_Discriminator_Ref 
+Scratch_Sybase_Segment_Ref 
+Scratch_Target_Column_In_Denormalization_Ref 
+Scratch_Target_Of_Transforms_Ref 
+Scratch_Target_Table_Ref 
+Scratch_Teradata_Order_By_Columns_Ref 
+Scratch_Teradata_Primary_Index_Columns_Ref 
+Scratch_Teradata_Source_Table 
+Scratch_Trans_Rolenaming_Attribute_Ref 
+Scratch_Trans_Rolenaming_Column_Ref 
+Scratch_Trigger_Update_Columns_Ref 
+Scratch_Triggers_Order_Ref 
+Scratch_Type_Column_Ref 
+Scratch_UDB_Index_Tablespace_Ref 
+Scratch_UDB_Long_Tablespace_Ref 
+Scratch_UDB_Tablespace_Ref 
+Scratch_User_Defined_Type_Ref 
+Scratch_Validation_Rule_Ref 
+Script_Template 
+Script_Templates_Ref 
+Search_String 
+Secondary_XML_Index_Type 
+Segment_Count 
+Segment_Management_Type 
+Select_Top_Percentage 
+Select_Top_Rows_Count 
+Select_Type 
+Select_With_Ties 
+Sequence 
+Sequence_Ref 
+Server_Id 
+Server_Value 
+Shadow_Height 
+Shadow_Width 
+Show_Migrated_Attributes 
+Show_Page_Grid 
+Show_Target_Objects_In_Logical 
+Sort 
+Source_Column_In_Denormalization_Ref 
+Source_Data_Type 
+Source_Files_Ref 
+Source_Last_Synched_Time 
+Source_Model_Long_Id 
+Source_Name 
+Source_Object_Ref 
+Source_Objects_Ref 
+Source_Of_Transforms_Ref 
+Source_Relationship_Ref 
+Source_Supertype_Symbol_Ref 
+Source_Supertype_Table_Ref 
+Source_Table_Ref 
+Source_User_Type_Ref 
+Source_View_Objects_Ref 
+Special_Character_Action_Type 
+Special_Characters_For_Password_Mode 
+Spool_File_Size 
+SQL 
+SQLServer_Aggregate 
+SQLServer_Application_Role 
+SQLServer_Application_Role_Events 
+SQLServer_Application_Role_Permissions 
+SQLServer_Assembly 
+SQLServer_Assembly_Events 
+SQLServer_Assembly_Permissions 
+SQLServer_Assembly_Ref 
+SQLServer_Asymmetric_Key 
+SQLServer_Asymmetric_Key_Permissions 
+794 – ERwin Metamodel Reference 

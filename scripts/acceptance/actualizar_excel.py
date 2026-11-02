@@ -145,12 +145,14 @@ def level_for(test: dict) -> str:
     return "Aceptación automatizada (Pest + PostgreSQL 17)"
 
 
-def build_steps(dado: str, cuando: str, entonces: str, test: dict | None) -> str:
+def build_steps(dado: str, cuando: str, entonces: str, test: dict | None, related: str = "", result: str = "") -> str:
     strip = lambda s, w: re.sub(rf"^{w}\s+", "", s.strip()).rstrip(".")
     steps = (f"1. Preparar: {strip(dado, 'Dado')}. 2. Ejecutar: {strip(cuando, 'Cuando')}. "
              f"3. Verificar: {entonces.strip().rstrip('.')}.")
     if test:
         steps += f" 4. Evidencia: {test['file']} › «{test['name']}»."
+    elif result.startswith("Conforme") and related and not related.startswith("Sin prueba"):
+        steps += f" 4. Evidencia: pruebas relacionadas {related.rstrip('.')}."
     else:
         steps += " 4. Sin prueba automatizada todavía (ver observaciones)."
     return steps
@@ -180,8 +182,12 @@ def main() -> None:
             dado, cuando = scenarios[ca]
             sheet.set(f"{COL['dado']}{r}", dado)
             sheet.set(f"{COL['cuando']}{r}", cuando)
-        if sheet.get(f"{COL['pasos']}{r}").startswith(GENERIC_PASOS) or test:
-            sheet.set(f"{COL['pasos']}{r}", build_steps(dado, cuando, sheet.get(f"{COL['entonces']}{r}"), test))
+        pasos = sheet.get(f"{COL['pasos']}{r}")
+        if pasos.startswith(GENERIC_PASOS) or test or "Sin prueba automatizada todavía" in pasos:
+            sheet.set(f"{COL['pasos']}{r}", build_steps(
+                dado, cuando, sheet.get(f"{COL['entonces']}{r}"), test,
+                sheet.get(f"{COL['pruebas']}{r}"), sheet.get(f"{COL['resultado']}{r}") if not test else "",
+            ))
 
         related = sheet.get(f"{COL['pruebas']}{r}")
         if "audit_work/sql_acceptance.php.txt" in related:

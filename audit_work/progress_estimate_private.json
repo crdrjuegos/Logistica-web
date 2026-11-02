@@ -1,0 +1,27 @@
+{
+  "backend": {
+    "stories": 54,
+    "total_points": 245,
+    "equivalent_points": 194.5,
+    "estimate_percent": 79.39,
+    "excluded_ids": [
+      54,
+      56
+    ]
+  },
+  "frontend": {
+    "stories": 50,
+    "total_points": 230,
+    "equivalent_points": 169.0,
+    "estimate_percent": 73.48,
+    "excluded_ids": [
+      17,
+      18,
+      19,
+      20,
+      21,
+      23
+    ]
+  },
+  "method": "Estimación técnica por historias funcionales HU001-HU056 aplicables a cada capa. Peso 1 para implementado, 0.5 parcial y 0 pendiente; ponderación por puntos del backlog. Se excluyen cámara y captura móvil del backend y las invariantes y conciliación programada de la interfaz. No representa aceptación empresarial ni porcentaje de código terminado."
+}

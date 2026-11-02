@@ -1,0 +1,4 @@
+import fs from 'node:fs/promises';import{FileBlob,SpreadsheetFile}from'@oai/artifact-tool';
+try{const w=await SpreadsheetFile.importXlsx(await FileBlob.load('outputs/revision_formato_2026_10_28/Product_Backlog_WMS_Formato_Docente.xlsx'));w.recalculate();console.log((await w.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!|#NULL!',options:{useRegex:true,maxResults:20},maxChars:800})).ndjson);console.log((await w.inspect({kind:'table',range:"'Gestión PMI'!B8:J8",include:'values',tableMaxCols:9,tableMaxRows:1,maxChars:800})).ndjson);
+for(const[sheet,range,key]of[['Gestión PMI','B5:J24','cabecera'],['Gestión PMI','B25:J46','cuerpo'],['Cronograma','A5:G12','cronograma'],['Sprints','B2:I6','sprints'],['Sprint 1','H8:W16','charts']]){let b=await w.render({sheetName:sheet,range,scale:1,format:'png'});await fs.writeFile(`audit_work/qa_excel_${key}.png`,new Uint8Array(await b.arrayBuffer()));}
+}catch(e){console.error(e.message);process.exitCode=1;}

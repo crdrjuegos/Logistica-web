@@ -1,0 +1,2176 @@
+
+FILE app\Modules\Catalog\Application\CreateProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Catalog\Domain\CatalogException;
+10: use App\Modules\Catalog\Domain\CatalogRepository;
+11: use App\Modules\Catalog\Domain\NewProduct;
+12: use App\Modules\Catalog\Domain\SkuSequence;
+13: use App\Shared\Domain\Transaction;
+14: 
+15: final class CreateProduct
+16: {
+17:     public function __construct(
+18:         private readonly CatalogRepository $catalog,
+19:         private readonly SkuSequence $skus,
+20:         private readonly Transaction $transaction,
+21:         private readonly AuditTrail $audit,
+22:     ) {}
+23: 
+24:     /** @return array{id: int, sku: string} */
+25:     public function __invoke(NewProduct $product): array
+26:     {
+27:         return $this->transaction->run(function () use ($product): array {
+28:             $category = $this->catalog->category($product->categoryId);
+29:             if ($category === null || ! $category->isActive) {
+30:                 throw CatalogException::categoryNotFound($product->categoryId);
+31:             }
+32:             if ($product->brandId !== null && ! $this->catalog->brandExists($product->brandId)) {
+33:                 throw CatalogException::brandNotFound($product->brandId);
+34:             }
+35: 
+36:             $unitIds = array_values(array_unique(array_map(
+37:                 static fn ($p): int => $p->unitId,
+38:                 $product->presentations,
+39:             )));
+40:             $existingUnits = $this->catalog->existingUnitIds($unitIds);
+41:             foreach ($unitIds as $unitId) {
+42:                 if (! in_array($unitId, $existingUnits, true)) {
+43:                     throw CatalogException::unitNotFound($unitId);
+44:                 }
+45:             }
+46: 
+47:             $warehouseIds = array_map(static fn ($p): int => $p->warehouseId, $product->policies);
+48:             $existingWarehouses = $this->catalog->existingWarehouseIds($warehouseIds);
+49:             foreach ($warehouseIds as $warehouseId) {
+50:                 if (! in_array($warehouseId, $existingWarehouses, true)) {
+51:                     throw CatalogException::warehouseNotFound($warehouseId);
+52:                 }
+53:             }
+54: 
+55:             foreach ($product->barcodes as $b) {
+56:                 if ($this->catalog->barcodeOwner($b->barcode->value) !== null) {
+57:                     throw CatalogException::duplicateBarcode($b->barcode->value);
+58:                 }
+59:             }
+60: 
+61:             $sku = $this->skus->next($category->rootCode);
+62:             $id = $this->catalog->insert($product, $sku);
+63: 
+64:             $this->audit->record(new AuditEntry('product.created', 'product', $id, $product->actorId, null, [
+65:                 'sku' => $sku, 'name' => $product->name, 'category_id' => $product->categoryId,
+66:                 'base_unit_id' => $product->baseUnitId, 'barcodes' => count($product->barcodes),
+67:             ]));
+68: 
+69:             return ['id' => $id, 'sku' => $sku];
+70:         });
+71:     }
+72: }
+
+
+FILE app\Modules\Catalog\Application\DeactivateProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Catalog\Domain\CatalogException;
+10: use App\Modules\Catalog\Domain\CatalogRepository;
+11: use App\Modules\Catalog\Domain\ProductStatus;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: final class DeactivateProduct
+15: {
+16:     public function __construct(
+17:         private readonly CatalogRepository $catalog,
+18:         private readonly Transaction $transaction,
+19:         private readonly AuditTrail $audit,
+20:     ) {}
+21: 
+22:     public function __invoke(int $productId, ?int $actorId = null): void
+23:     {
+24:         $this->transaction->run(function () use ($productId, $actorId): void {
+25:             $product = $this->catalog->lock($productId) ?? throw CatalogException::productNotFound($productId);
+26: 
+27:             if ($product->status !== ProductStatus::Active) {
+28:                 return; // idempotente
+29:             }
+30: 
+31:             $stock = $this->catalog->totalStock($productId);
+32:             if (bccomp($stock, '0', 3) > 0) {
+33:                 throw CatalogException::hasStock($product->sku, $stock);
+34:             }
+35: 
+36:             $this->catalog->setStatus($productId, ProductStatus::Inactive);
+37:             $this->audit->record(new AuditEntry(
+38:                 'product.deactivated', 'product', $productId, $actorId,
+39:                 ['status' => 'ACTIVE'], ['status' => 'INACTIVE'],
+40:             ));
+41:         });
+42:     }
+43: }
+
+
+FILE app\Modules\Catalog\Application\FindSimilarProducts.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Application;
+6: 
+7: use App\Modules\Catalog\Domain\CatalogRepository;
+8: use App\Modules\Catalog\Domain\NewProduct;
+9: use App\Modules\Catalog\Domain\SimilarProduct;
+10: 
+11: /** Para advertir de posibles duplicados mientras se escribe el nombre (similitud >= 0.8). */
+12: final class FindSimilarProducts
+13: {
+14:     public const THRESHOLD = 0.8;
+15: 
+16:     public function __construct(private readonly CatalogRepository $catalog) {}
+17: 
+18:     /** @return list<SimilarProduct> */
+19:     public function __invoke(string $name, int $limit = 5): array
+20:     {
+21:         return $this->catalog->similarNames(NewProduct::normalizeName($name), self::THRESHOLD, $limit);
+22:     }
+23: }
+
+
+FILE app\Modules\Catalog\Application\LookupProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Application;
+6: 
+7: use App\Modules\Catalog\Domain\CatalogRepository;
+8: use App\Modules\Catalog\Domain\ProductLookup;
+9: 
+10: /** Escaneo/digitación en la PWA: acepta código de barras o SKU. */
+11: final class LookupProduct
+12: {
+13:     public function __construct(private readonly CatalogRepository $catalog) {}
+14: 
+15:     public function __invoke(string $code): ?ProductLookup
+16:     {
+17:         $code = trim($code);
+18: 
+19:         return $code === '' ? null : $this->catalog->lookup($code);
+20:     }
+21: }
+
+
+FILE app\Modules\Catalog\Application\UpdateProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Catalog\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Catalog\Domain\CatalogException;
+10: use App\Modules\Catalog\Domain\CatalogRepository;
+11: use App\Modules\Catalog\Domain\ProductChanges;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: final class UpdateProduct
+15: {
+16:     public function __construct(
+17:         private readonly CatalogRepository $catalog,
+18:         private readonly Transaction $transaction,
+19:         private readonly AuditTrail $audit,
+20:     ) {}
+21: 
+22:     public function __invoke(int $productId, ProductChanges $changes): void
+23:     {
+24:         $this->transaction->run(function () use ($productId, $changes): void {
+25:             $current = $this->catalog->lock($productId) ?? throw CatalogException::productNotFound($productId);
+26: 
+27:             if ($current->version !== $changes->expectedVersion) {
+28:                 throw CatalogException::staleVersion($changes->expectedVersion, $current->version);
+29:             }
+30: 
+31:             if ($changes->categoryId !== null) {
+32:                 $category = $this->catalog->category($changes->categoryId);
+33:                 if ($category === null || ! $category->isActive) {
+34:                     throw CatalogException::categoryNotFound($changes->categoryId);
+35:                 }
+36:             }
+37:             if ($changes->brandId !== null && ! $this->catalog->brandExists($changes->brandId)) {
+38:                 throw CatalogException::brandNotFound($changes->brandId);
+39:             }
+40: 
+41:             $before = [
+42:                 'name' => $current->name, 'description' => $current->description,
+43:                 'category_id' => $current->categoryId, 'brand_id' => $current->brandId,
+44:                 'reference_price' => $current->referencePrice,
+45:             ];
+46:             $new = $changes->fields();
+47:             $changed = array_filter($new, static fn (mixed $v, string $k): bool => ($before[$k] ?? null) !== $v, ARRAY_FILTER_USE_BOTH);
+48: 
+49:             if ($changed === []) {
+50:                 return; // nada que cambiar: no se incrementa la versión
+51:             }
+52: 
+53:             $this->catalog->update($productId, $changes);
+54:             $this->audit->record(new AuditEntry(
+55:                 'product.updated', 'product', $productId, $changes->actorId,
+56:                 array_intersect_key($before, $changed), $changed,
+57:             ));
+58:         });
+59:     }
+60: }
+
+
+FILE app\Modules\Iam\Application\ActivateUser.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Iam\Domain\IamException;
+10: use App\Modules\Iam\Domain\UserRepository;
+11: use App\Shared\Domain\Transaction;
+12: 
+13: final class ActivateUser
+14: {
+15:     public function __construct(
+16:         private readonly UserRepository $users,
+17:         private readonly Transaction $transaction,
+18:         private readonly AuditTrail $audit,
+19:     ) {}
+20: 
+21:     public function __invoke(int $userId, int $actorId): void
+22:     {
+23:         $this->transaction->run(function () use ($userId, $actorId): void {
+24:             $user = $this->users->find($userId) ?? throw IamException::notFound($userId);
+25: 
+26:             if ($user->isActive) {
+27:                 return; // idempotente
+28:             }
+29: 
+30:             $this->users->setActive($userId, true);
+31:             $this->audit->record(new AuditEntry(
+32:                 'user.activated', 'user', $userId, $actorId,
+33:                 ['is_active' => false], ['is_active' => true],
+34:             ));
+35:         });
+36:     }
+37: }
+
+
+FILE app\Modules\Iam\Application\CreateUser.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Iam\Domain\IamException;
+10: use App\Modules\Iam\Domain\NewUser;
+11: use App\Modules\Iam\Domain\PasswordHasher;
+12: use App\Modules\Iam\Domain\UserRepository;
+13: use App\Shared\Domain\Transaction;
+14: 
+15: final class CreateUser
+16: {
+17:     public function __construct(
+18:         private readonly UserRepository $users,
+19:         private readonly PasswordHasher $hasher,
+20:         private readonly Transaction $transaction,
+21:         private readonly AuditTrail $audit,
+22:     ) {}
+23: 
+24:     /** @return int id del usuario creado */
+25:     public function __invoke(NewUser $user): int
+26:     {
+27:         return $this->transaction->run(function () use ($user): int {
+28:             if ($this->users->usernameExists($user->username)) {
+29:                 throw IamException::usernameTaken($user->username);
+30:             }
+31:             if ($this->users->emailExists($user->email)) {
+32:                 throw IamException::emailTaken($user->email);
+33:             }
+34: 
+35:             $id = $this->users->insert($user, $this->hasher->hash($user->password));
+36: 
+37:             // La contraseña NUNCA se audita.
+38:             $this->audit->record(new AuditEntry(
+39:                 'user.created', 'user', $id, $user->actorId,
+40:                 null, ['username' => $user->username, 'email' => $user->email, 'role' => $user->role->value],
+41:             ));
+42: 
+43:             return $id;
+44:         });
+45:     }
+46: }
+
+
+FILE app\Modules\Iam\Application\DeactivateUser.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Iam\Domain\IamException;
+10: use App\Modules\Iam\Domain\UserRepository;
+11: use App\Shared\Domain\Transaction;
+12: 
+13: final class DeactivateUser
+14: {
+15:     public function __construct(
+16:         private readonly UserRepository $users,
+17:         private readonly Transaction $transaction,
+18:         private readonly AuditTrail $audit,
+19:     ) {}
+20: 
+21:     public function __invoke(int $userId, int $actorId): void
+22:     {
+23:         $this->transaction->run(function () use ($userId, $actorId): void {
+24:             if ($userId === $actorId) {
+25:                 throw IamException::cannotDeactivateSelf();
+26:             }
+27: 
+28:             $user = $this->users->find($userId) ?? throw IamException::notFound($userId);
+29: 
+30:             if (! $user->isActive) {
+31:                 return; // idempotente
+32:             }
+33:             if ($user->isAdmin && $this->users->countActiveAdmins() <= 1) {
+34:                 throw IamException::lastAdmin();
+35:             }
+36: 
+37:             $this->users->setActive($userId, false);
+38:             $this->audit->record(new AuditEntry(
+39:                 'user.deactivated', 'user', $userId, $actorId,
+40:                 ['is_active' => true], ['is_active' => false],
+41:             ));
+42:         });
+43:     }
+44: }
+
+
+FILE app\Modules\Iam\Application\RecordLoginFailure.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Application;
+6: 
+7: use App\Modules\Iam\Domain\LockoutPolicy;
+8: use App\Modules\Iam\Domain\LockoutState;
+9: use App\Modules\Iam\Domain\UserRepository;
+10: use App\Shared\Domain\Clock;
+11: 
+12: final class RecordLoginFailure
+13: {
+14:     public function __construct(private readonly UserRepository $users, private readonly Clock $clock) {}
+15: 
+16:     public function __invoke(int $userId): LockoutState
+17:     {
+18:         $next = LockoutPolicy::afterFailure($this->users->lockoutState($userId), $this->clock->now());
+19:         $this->users->saveLockoutState($userId, $next);
+20: 
+21:         return $next;
+22:     }
+23: }
+
+
+FILE app\Modules\Iam\Application\RecordLoginSuccess.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Application;
+6: 
+7: use App\Modules\Iam\Domain\LockoutState;
+8: use App\Modules\Iam\Domain\UserRepository;
+9: use App\Shared\Domain\Clock;
+10: 
+11: final class RecordLoginSuccess
+12: {
+13:     public function __construct(private readonly UserRepository $users, private readonly Clock $clock) {}
+14: 
+15:     public function __invoke(int $userId): void
+16:     {
+17:         $this->users->saveLockoutState($userId, new LockoutState(0, null));
+18:         $this->users->markLogin($userId, $this->clock->now());
+19:     }
+20: }
+
+
+FILE app\Modules\Iam\Application\ResetUserPassword.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Iam\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Iam\Domain\IamException;
+10: use App\Modules\Iam\Domain\LockoutState;
+11: use App\Modules\Iam\Domain\PasswordHasher;
+12: use App\Modules\Iam\Domain\PasswordPolicy;
+13: use App\Modules\Iam\Domain\UserRepository;
+14: use App\Shared\Domain\Transaction;
+15: 
+16: /**
+17:  * El administrador fija una contraseña nueva a quien la olvidó. También desbloquea la cuenta.
+18:  * La contraseña cumple la misma política (NIST) y NUNCA se guarda en la auditoría.
+19:  */
+20: final class ResetUserPassword
+21: {
+22:     public function __construct(
+23:         private readonly UserRepository $users,
+24:         private readonly PasswordHasher $hasher,
+25:         private readonly Transaction $transaction,
+26:         private readonly AuditTrail $audit,
+27:     ) {}
+28: 
+29:     public function __invoke(int $userId, string $newPassword, int $actorId): void
+30:     {
+31:         $this->transaction->run(function () use ($userId, $newPassword, $actorId): void {
+32:             $user = $this->users->find($userId) ?? throw IamException::notFound($userId);
+33: 
+34:             $violations = PasswordPolicy::violations($newPassword, $user->username, $user->email);
+35:             if ($violations !== []) {
+36:                 throw IamException::invalid(implode(' ', $violations));
+37:             }
+38: 
+39:             $this->users->setPasswordHash($userId, $this->hasher->hash($newPassword));
+40:             $this->users->saveLockoutState($userId, new LockoutState(0, null));
+41:             $this->audit->record(new AuditEntry('user.password_reset', 'user', $userId, $actorId, null, ['by_admin' => $actorId !== $userId]));
+42:         });
+43:     }
+44: }
+
+
+FILE app\Modules\Inventory\Application\GetKardex.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Application;
+6: 
+7: use App\Modules\Inventory\Domain\KardexPage;
+8: use App\Modules\Inventory\Domain\KardexQuery;
+9: use App\Modules\Inventory\Domain\KardexReader;
+10: 
+11: /** Kardex de un producto: por almacén, por ubicación o total, con saldo inicial, saldo corrido y saldo final. */
+12: final class GetKardex
+13: {
+14:     public function __construct(private readonly KardexReader $reader) {}
+15: 
+16:     public function __invoke(KardexQuery $query): KardexPage
+17:     {
+18:         return $this->reader->read($query);
+19:     }
+20: }
+
+
+FILE app\Modules\Inventory\Application\MovementRecorded.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Application;
+6: 
+7: final readonly class MovementRecorded
+8: {
+9:     public function __construct(
+10:         public int $movementId,
+11:         public string $uuid,
+12:         /** true si era un reintento: el movimiento ya existía y no se duplicó. */
+13:         public bool $duplicate,
+14:     ) {}
+15: }
+
+
+FILE app\Modules\Inventory\Application\RegisterMovement.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Inventory\Application;
+6: 
+7: use App\Modules\Inventory\Domain\EventBus;
+8: use App\Modules\Inventory\Domain\Events\StockChanged;
+9: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+10: use App\Modules\Inventory\Domain\LocationState;
+11: use App\Modules\Inventory\Domain\MovementType;
+12: use App\Modules\Inventory\Domain\NewMovement;
+13: use App\Modules\Inventory\Domain\ProductSnapshot;
+14: use App\Modules\Inventory\Domain\StockLedger;
+15: use App\Modules\Inventory\Domain\Transaction;
+16: use App\Modules\Inventory\Domain\UnitCost;
+17: use App\Modules\Inventory\Domain\WeightedAverageCost;
+18: 
+19: /**
+20:  * Único punto de entrada para modificar stock. Atómico, idempotente y sin stock negativo.
+21:  */
+22: final class RegisterMovement
+23: {
+24:     public function __construct(
+25:         private readonly StockLedger $ledger,
+26:         private readonly Transaction $transaction,
+27:         private readonly EventBus $events,
+28:     ) {}
+29: 
+30:     public function __invoke(NewMovement $movement): MovementRecorded
+31:     {
+32:         return $this->transaction->run(fn (): MovementRecorded => $this->execute($movement));
+33:     }
+34: 
+35:     private function execute(NewMovement $m): MovementRecorded
+36:     {
+37:         // 1) El bloqueo del producto va PRIMERO: serializa reintentos concurrentes y el costo promedio.
+38:         $product = $this->ledger->lockProduct($m->productId)
+39:             ?? throw InventoryException::productNotFound($m->productId);
+40: 
+41:         // 2) Idempotencia.
+42:         $existing = $this->ledger->findByIdempotencyKey($m->idempotencyKey);
+43:         if ($existing !== null) {
+44:             if ($existing->uuid !== $m->uuid) {
+45:                 throw InventoryException::idempotencyKeyReused($m->idempotencyKey);
+46:             }
+47: 
+48:             return new MovementRecorded($existing->id, $existing->uuid, true);
+49:         }
+50: 
+51:         // 3) Ubicaciones válidas.
+52:         $locations = $this->resolveLocations($m);
+53: 
+54:         // 4) Stock suficiente en el origen (salidas y transferencias).
+55:         if ($m->fromLocationId !== null) {
+56:             $available = $this->ledger->lockBalance($m->productId, $m->fromLocationId);
+57:             if ($available->lessThan($m->quantity)) {
+58:                 throw InventoryException::insufficientStock($locations[$m->fromLocationId]->code, $available, $m->quantity);
+59:             }
+60:         }
+61: 
+62:         // 5) Valorización.
+63:         $recordedCost = $this->valuate($m, $product);
+64: 
+65:         // 6) Ledger + saldos (misma transacción).
+66:         $movementId = $this->ledger->append($m, $recordedCost);
+67:         $this->applyToBalances($m, $locations);
+68: 
+69:         $this->events->publish(new StockChanged($movementId, $m->productId, $m->type, $m->locationIds()));
+70: 
+71:         return new MovementRecorded($movementId, $m->uuid, false);
+72:     }
+73: 
+74:     /** @return array<int, LocationState> */
+75:     private function resolveLocations(NewMovement $m): array
+76:     {
+77:         $states = $this->ledger->locationStates($m->locationIds());
+78: 
+79:         foreach ($m->locationIds() as $id) {
+80:             $state = $states[$id] ?? throw InventoryException::locationNotFound($id);
+81: 
+82:             if (! $state->isActive) {
+83:                 throw InventoryException::locationInactive($state->code);
+84:             }
+85: 
+86:             if ($state->isFrozen && ! $m->allowsFrozenLocations()) {
+87:                 throw InventoryException::locationFrozen($state->code);
+88:             }
+89:         }
+90: 
+91:         return $states;
+92:     }
+93: 
+94:     private function valuate(NewMovement $m, ProductSnapshot $product): UnitCost
+95:     {
+96:         if (! $m->type->requiresCost()) {
+97:             return $product->costAvg; // salidas, mermas, ajustes y devoluciones valen al promedio vigente
+98:         }
+99: 
+100:         $cost = $m->unitCost ?? throw InventoryException::invalid('Falta el costo unitario.');
+101:         $newAverage = WeightedAverageCost::next(
+102:             $this->ledger->totalQuantity($m->productId),
+103:             $product->costAvg,
+104:             $m->quantity,
+105:             $cost,
+106:         );
+107:         $this->ledger->updateProductCost(
+108:             $m->productId,
+109:             $newAverage,
+110:             $m->type === MovementType::Purchase ? $cost : null,
+111:         );
+112: 
+113:         return $cost;
+114:     }
+115: 
+116:     /** @param array<int, LocationState> $locations */
+117:     private function applyToBalances(NewMovement $m, array $locations): void
+118:     {
+119:         if ($m->fromLocationId !== null && ! $this->ledger->decrease($m->productId, $m->fromLocationId, $m->quantity)) {
+120:             // Defensa en profundidad: el chequeo previo ya debería haberlo impedido.
+121:             $available = $this->ledger->lockBalance($m->productId, $m->fromLocationId);
+122:             throw InventoryException::insufficientStock($locations[$m->fromLocationId]->code, $available, $m->quantity);
+123:         }
+124: 
+125:         if ($m->toLocationId !== null) {
+126:             $this->ledger->increase($m->productId, $m->toLocationId, $m->quantity);
+127:         }
+128:     }
+129: }
+
+
+FILE app\Modules\Locations\Application\ChangeLocationState.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Locations\Domain\LocationException;
+10: use App\Modules\Locations\Domain\LocationRecord;
+11: use App\Modules\Locations\Domain\LocationRepository;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: /**
+15:  * Congelar / descongelar (durante un conteo) y activar / desactivar ubicaciones. Todas idempotentes.
+16:  */
+17: final class ChangeLocationState
+18: {
+19:     public function __construct(
+20:         private readonly LocationRepository $locations,
+21:         private readonly Transaction $transaction,
+22:         private readonly AuditTrail $audit,
+23:     ) {}
+24: 
+25:     public function freeze(int $locationId, ?int $actorId = null): void
+26:     {
+27:         $this->change($locationId, $actorId, 'location.frozen', static function ($loc, LocationRepository $repo): ?array {
+28:             if ($loc->isFrozen) {
+29:                 return null;
+30:             }
+31:             $repo->setFrozen($loc->id, true);
+32: 
+33:             return [['is_frozen' => false], ['is_frozen' => true]];
+34:         });
+35:     }
+36: 
+37:     public function unfreeze(int $locationId, ?int $actorId = null): void
+38:     {
+39:         $this->change($locationId, $actorId, 'location.unfrozen', static function ($loc, LocationRepository $repo): ?array {
+40:             if (! $loc->isFrozen) {
+41:                 return null;
+42:             }
+43:             $repo->setFrozen($loc->id, false);
+44: 
+45:             return [['is_frozen' => true], ['is_frozen' => false]];
+46:         });
+47:     }
+48: 
+49:     /**
+50:      * Congela varias ubicaciones a la vez (inicio de un conteo). Si alguna ya está congelada o desactivada,
+51:      * no se congela ninguna. Una sola entrada de auditoría.
+52:      *
+53:      * @param  list<int>  $locationIds
+54:      */
+55:     public function freezeMany(array $locationIds, ?int $actorId = null, string $reference = ''): int
+56:     {
+57:         return $this->transaction->run(function () use ($locationIds, $actorId, $reference): int {
+58:             $ids = array_values(array_unique($locationIds));
+59:             $records = $this->locations->lockMany($ids);
+60: 
+61:             if (count($records) !== count($ids)) {
+62:                 throw LocationException::notFound(array_values(array_diff($ids, array_map(static fn ($r): int => $r->id, $records)))[0]);
+63:             }
+64:             foreach ($records as $r) {
+65:                 if (! $r->isActive) {
+66:                     throw LocationException::invalid("La ubicación {$r->code} está desactivada.");
+67:                 }
+68:                 if ($r->isFrozen) {
+69:                     throw LocationException::isFrozen($r->code);
+70:                 }
+71:             }
+72: 
+73:             $this->locations->setFrozenMany($ids, true);
+74:             $this->audit->record(new AuditEntry('location.frozen_bulk', 'location', null, $actorId, ['is_frozen' => false], ['is_frozen' => true, 'count' => count($ids), 'reference' => $reference]));
+75: 
+76:             return count($ids);
+77:         });
+78:     }
+79: 
+80:     /** @param list<int> $locationIds */
+81:     public function unfreezeMany(array $locationIds, ?int $actorId = null, string $reference = ''): int
+82:     {
+83:         return $this->transaction->run(function () use ($locationIds, $actorId, $reference): int {
+84:             $ids = array_values(array_unique($locationIds));
+85:             $frozen = array_values(array_map(
+86:                 static fn ($r): int => $r->id,
+87:                 array_filter($this->locations->lockMany($ids), static fn ($r): bool => $r->isFrozen),
+88:             ));
+89: 
+90:             if ($frozen !== []) {
+91:                 $this->locations->setFrozenMany($frozen, false);
+92:                 $this->audit->record(new AuditEntry('location.unfrozen_bulk', 'location', null, $actorId, ['is_frozen' => true], ['is_frozen' => false, 'count' => count($frozen), 'reference' => $reference]));
+93:             }
+94: 
+95:             return count($frozen);
+96:         });
+97:     }
+98: 
+99:     public function deactivate(int $locationId, ?int $actorId = null): void
+100:     {
+101:         $this->change($locationId, $actorId, 'location.deactivated', function ($loc, LocationRepository $repo): ?array {
+102:             if (! $loc->isActive) {
+103:                 return null;
+104:             }
+105:             if ($loc->isStaging) {
+106:                 throw LocationException::isStaging($loc->code);
+107:             }
+108:             if ($loc->isFrozen) {
+109:                 throw LocationException::isFrozen($loc->code);
+110:             }
+111:             $stock = $repo->stockAt($loc->id);
+112:             if (bccomp($stock, '0', 3) > 0) {
+113:                 throw LocationException::hasStock($loc->code, $stock);
+114:             }
+115:             $repo->setActive($loc->id, false);
+116: 
+117:             return [['is_active' => true], ['is_active' => false]];
+118:         });
+119:     }
+120: 
+121:     public function activate(int $locationId, ?int $actorId = null): void
+122:     {
+123:         $this->change($locationId, $actorId, 'location.activated', static function ($loc, LocationRepository $repo): ?array {
+124:             if ($loc->isActive) {
+125:                 return null;
+126:             }
+127:             $repo->setActive($loc->id, true);
+128: 
+129:             return [['is_active' => false], ['is_active' => true]];
+130:         });
+131:     }
+132: 
+133:     /** @param callable(LocationRecord, LocationRepository): (array{0: array<string, mixed>, 1: array<string, mixed>}|null) $apply */
+134:     private function change(int $locationId, ?int $actorId, string $action, callable $apply): void
+135:     {
+136:         $this->transaction->run(function () use ($locationId, $actorId, $action, $apply): void {
+137:             $location = $this->locations->lock($locationId) ?? throw LocationException::notFound($locationId);
+138:             $result = $apply($location, $this->locations);
+139: 
+140:             if ($result !== null) {
+141:                 $this->audit->record(new AuditEntry($action, 'location', $locationId, $actorId, $result[0], $result[1]));
+142:             }
+143:         });
+144:     }
+145: }
+
+
+FILE app\Modules\Locations\Application\GenerateLocations.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Locations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Locations\Domain\LocationBatch;
+10: use App\Modules\Locations\Domain\LocationException;
+11: use App\Modules\Locations\Domain\LocationRepository;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: /** Crea en lote solo las ubicaciones que faltan: se puede repetir sin duplicar. */
+15: final class GenerateLocations
+16: {
+17:     public function __construct(
+18:         private readonly LocationRepository $locations,
+19:         private readonly Transaction $transaction,
+20:         private readonly AuditTrail $audit,
+21:     ) {}
+22: 
+23:     /** @return array{created: int, skipped: int} */
+24:     public function __invoke(LocationBatch $batch): array
+25:     {
+26:         return $this->transaction->run(function () use ($batch): array {
+27:             $warehouse = $this->locations->warehouse($batch->warehouseId);
+28:             if ($warehouse === null || ! $warehouse->isActive) {
+29:                 throw LocationException::warehouseNotFound($batch->warehouseId);
+30:             }
+31: 
+32:             $all = $batch->expand($warehouse->code);
+33:             $existing = array_flip($this->locations->existingCodes(array_map(static fn ($l): string => $l->code, $all)));
+34:             $missing = array_values(array_filter($all, static fn ($l): bool => ! isset($existing[$l->code])));
+35: 
+36:             if ($missing !== []) {
+37:                 $this->locations->insertMany($batch->warehouseId, $missing);
+38:                 $this->audit->record(new AuditEntry('location.generated', 'warehouse', $batch->warehouseId, $batch->actorId, null, [
+39:                     'zone' => 'Z'.$batch->zone, 'created' => count($missing), 'first' => $missing[0]->code, 'last' => $missing[count($missing) - 1]->code,
+40:                 ]));
+41:             }
+42: 
+43:             return ['created' => count($missing), 'skipped' => count($all) - count($missing)];
+44:         });
+45:     }
+46: }
+
+
+FILE app\Modules\Operations\Application\ApproveAdjustment.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\AdjustmentKind;
+10: use App\Modules\Operations\Domain\AdjustmentRepository;
+11: use App\Modules\Operations\Domain\AdjustmentStatus;
+12: use App\Modules\Operations\Domain\MovementRequest;
+13: use App\Modules\Operations\Domain\OperationsException;
+14: use App\Modules\Operations\Domain\StockMovements;
+15: use App\Shared\Domain\Transaction;
+16: 
+17: final class ApproveAdjustment
+18: {
+19:     public function __construct(
+20:         private readonly AdjustmentRepository $adjustments,
+21:         private readonly StockMovements $movements,
+22:         private readonly Transaction $transaction,
+23:         private readonly AuditTrail $audit,
+24:     ) {}
+25: 
+26:     /** @return int id del movimiento generado */
+27:     public function __invoke(int $adjustmentId, int $reviewerId, ?string $reviewNotes = null): int
+28:     {
+29:         return $this->transaction->run(function () use ($adjustmentId, $reviewerId, $reviewNotes): int {
+30:             $record = $this->adjustments->lockAdjustment($adjustmentId) ?? throw OperationsException::notFound('La solicitud de ajuste', $adjustmentId);
+31: 
+32:             if ($record->status === AdjustmentStatus::Approved && $record->movementId !== null) {
+33:                 return $record->movementId; // idempotente
+34:             }
+35:             if ($record->status === AdjustmentStatus::Rejected) {
+36:                 throw OperationsException::wrongState('La solicitud ya fue rechazada.');
+37:             }
+38:             if ($record->request->requestedBy === $reviewerId) {
+39:                 throw OperationsException::separationOfDuties();
+40:             }
+41: 
+42:             $a = $record->request;
+43:             $movementId = $this->movements->register(new MovementRequest(
+44:                 kind: $a->kind->movementKind(),
+45:                 productId: $a->productId,
+46:                 quantity: $a->quantity,
+47:                 userId: $a->requestedBy,
+48:                 idempotencyKey: $record->code.':APPROVE',
+49:                 fromLocationId: $a->kind === AdjustmentKind::Positive ? null : $a->locationId,
+50:                 toLocationId: $a->kind === AdjustmentKind::Positive ? $a->locationId : null,
+51:                 reasonId: $a->reasonId,
+52:                 sourceType: 'ADJUSTMENT',
+53:                 sourceId: $record->id,
+54:                 documentRef: $record->code,
+55:                 notes: $a->notes,
+56:                 approvedBy: $reviewerId,
+57:             ));
+58: 
+59:             $this->adjustments->markApproved($adjustmentId, $reviewerId, $movementId, $reviewNotes);
+60:             $this->audit->record(new AuditEntry('adjustment.approved', 'adjustment', $adjustmentId, $reviewerId, ['status' => 'PENDING'], [
+61:                 'status' => 'APPROVED', 'code' => $record->code, 'movement_id' => $movementId,
+62:             ]));
+63: 
+64:             return $movementId;
+65:         });
+66:     }
+67: }
+
+
+FILE app\Modules\Operations\Application\CancelCount.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\CountLocations;
+10: use App\Modules\Operations\Domain\CountRepository;
+11: use App\Modules\Operations\Domain\CountStatus;
+12: use App\Modules\Operations\Domain\OperationsException;
+13: use App\Shared\Domain\Transaction;
+14: 
+15: /** Anula un conteo en curso o en revisión: descongela y no ajusta nada. Un conteo cerrado no se anula. */
+16: final class CancelCount
+17: {
+18:     public function __construct(
+19:         private readonly CountRepository $counts,
+20:         private readonly CountLocations $locations,
+21:         private readonly Transaction $transaction,
+22:         private readonly AuditTrail $audit,
+23:     ) {}
+24: 
+25:     public function __invoke(int $countId, int $actorId): void
+26:     {
+27:         $this->transaction->run(function () use ($countId, $actorId): void {
+28:             $count = $this->counts->lockCount($countId) ?? throw OperationsException::notFound('El conteo', $countId);
+29: 
+30:             if ($count->status === CountStatus::Cancelled) {
+31:                 return;
+32:             }
+33:             if ($count->status === CountStatus::Closed) {
+34:                 throw OperationsException::wrongState('Un conteo cerrado no se anula: sus ajustes ya están en el ledger.');
+35:             }
+36: 
+37:             $this->locations->unfreeze($count->locationIds, $actorId, $count->code);
+38:             $this->counts->setCountStatus($countId, CountStatus::Cancelled);
+39:             $this->audit->record(new AuditEntry('count.cancelled', 'count', $countId, $actorId, ['status' => $count->status->value], ['status' => 'CANCELLED']));
+40:         });
+41:     }
+42: }
+
+
+FILE app\Modules\Operations\Application\CancelReceipt.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\OperationsException;
+10: use App\Modules\Operations\Domain\ReceiptRepository;
+11: use App\Modules\Operations\Domain\ReceiptStatus;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: /** Solo se anula un borrador. Una recepción confirmada se corrige con un ajuste o una devolución. */
+15: final class CancelReceipt
+16: {
+17:     public function __construct(
+18:         private readonly ReceiptRepository $receipts,
+19:         private readonly Transaction $transaction,
+20:         private readonly AuditTrail $audit,
+21:     ) {}
+22: 
+23:     public function __invoke(int $receiptId, int $actorId): void
+24:     {
+25:         $this->transaction->run(function () use ($receiptId, $actorId): void {
+26:             $receipt = $this->receipts->lockReceipt($receiptId) ?? throw OperationsException::notFound('La recepción', $receiptId);
+27: 
+28:             if ($receipt->status === ReceiptStatus::Cancelled) {
+29:                 return;
+30:             }
+31:             if ($receipt->status === ReceiptStatus::Confirmed) {
+32:                 throw OperationsException::wrongState('Una recepción confirmada no se anula: corríjala con un ajuste o una devolución.');
+33:             }
+34: 
+35:             $this->receipts->setReceiptStatus($receiptId, ReceiptStatus::Cancelled);
+36:             $this->audit->record(new AuditEntry('receipt.cancelled', 'receipt', $receiptId, $actorId, ['status' => 'DRAFT'], ['status' => 'CANCELLED']));
+37:         });
+38:     }
+39: }
+
+
+FILE app\Modules\Operations\Application\CancelTransfer.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\OperationsException;
+10: use App\Modules\Operations\Domain\TransferRepository;
+11: use App\Modules\Operations\Domain\TransferStatus;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: final class CancelTransfer
+15: {
+16:     public function __construct(
+17:         private readonly TransferRepository $transfers,
+18:         private readonly Transaction $transaction,
+19:         private readonly AuditTrail $audit,
+20:     ) {}
+21: 
+22:     public function __invoke(int $transferId, int $actorId): void
+23:     {
+24:         $this->transaction->run(function () use ($transferId, $actorId): void {
+25:             $transfer = $this->transfers->lockTransfer($transferId) ?? throw OperationsException::notFound('La transferencia', $transferId);
+26: 
+27:             if ($transfer->status === TransferStatus::Cancelled) {
+28:                 return;
+29:             }
+30:             if ($transfer->status === TransferStatus::Completed) {
+31:                 throw OperationsException::wrongState('Una transferencia completada no se anula: haga la transferencia inversa.');
+32:             }
+33: 
+34:             $this->transfers->setTransferStatus($transferId, TransferStatus::Cancelled);
+35:             $this->audit->record(new AuditEntry('transfer.cancelled', 'transfer', $transferId, $actorId, ['status' => 'DRAFT'], ['status' => 'CANCELLED']));
+36:         });
+37:     }
+38: }
+
+
+FILE app\Modules\Operations\Application\CloseCount.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Inventory\Domain\Quantity;
+10: use App\Modules\Operations\Domain\AdjustmentKind;
+11: use App\Modules\Operations\Domain\AdjustmentRepository;
+12: use App\Modules\Operations\Domain\CountLineRecord;
+13: use App\Modules\Operations\Domain\CountLocations;
+14: use App\Modules\Operations\Domain\CountRepository;
+15: use App\Modules\Operations\Domain\CountStatus;
+16: use App\Modules\Operations\Domain\DocumentNumbers;
+17: use App\Modules\Operations\Domain\MovementRequest;
+18: use App\Modules\Operations\Domain\NewAdjustment;
+19: use App\Modules\Operations\Domain\OperationsException;
+20: use App\Modules\Operations\Domain\OperationsLookup;
+21: use App\Modules\Operations\Domain\StockMovements;
+22: use App\Shared\Domain\Clock;
+23: use App\Shared\Domain\Transaction;
+24: 
+25: /**
+26:  * Cierra el conteo: aplica las diferencias al ledger (ajustes que quedan enlazados al conteo), descongela y
+27:  * calcula la exactitud del inventario. Quien cierra NO puede haber contado las líneas con diferencia.
+28:  */
+29: final class CloseCount
+30: {
+31:     public function __construct(
+32:         private readonly CountRepository $counts,
+33:         private readonly AdjustmentRepository $adjustments,
+34:         private readonly StockMovements $movements,
+35:         private readonly CountLocations $locations,
+36:         private readonly OperationsLookup $lookup,
+37:         private readonly DocumentNumbers $numbers,
+38:         private readonly Transaction $transaction,
+39:         private readonly AuditTrail $audit,
+40:         private readonly Clock $clock,
+41:     ) {}
+42: 
+43:     /** @return array{adjustments: int, lines: int, accuracyPct: string} */
+44:     public function __invoke(int $countId, int $closerId): array
+45:     {
+46:         return $this->transaction->run(function () use ($countId, $closerId): array {
+47:             $count = $this->counts->lockCount($countId) ?? throw OperationsException::notFound('El conteo', $countId);
+48:             $lines = $this->counts->countLines($countId);
+49: 
+50:             if ($count->status === CountStatus::Closed) {
+51:                 return $this->summary($lines); // idempotente
+52:             }
+53:             if ($count->status !== CountStatus::Review) {
+54:                 throw OperationsException::wrongState('Solo un conteo en revisión se puede cerrar.');
+55:             }
+56: 
+57:             $pendingRecounts = count(array_filter($lines, static fn (CountLineRecord $l): bool => $l->recountRequested));
+58:             if ($pendingRecounts > 0) {
+59:                 throw OperationsException::wrongState("Faltan {$pendingRecounts} líneas por recontar antes de cerrar.");
+60:             }
+61: 
+62:             $different = array_values(array_filter($lines, static fn (CountLineRecord $l): bool => $l->hasDifference()));
+63:             foreach ($different as $line) {
+64:                 if ($line->countedBy === $closerId) {
+65:                     throw OperationsException::separationOfDuties(); // otra persona debe cerrar si usted contó diferencias
+66:                 }
+67:             }
+68: 
+69:             $favor = $this->lookup->reasonIdByCode('AJU_CONTEO_FAVOR');
+70:             $error = $this->lookup->reasonIdByCode('AJU_ERROR_CONTEO');
+71:             if ($different !== [] && ($favor === null || $error === null)) {
+72:                 throw OperationsException::invalid('Faltan los motivos de ajuste por conteo en el catálogo de motivos.');
+73:             }
+74: 
+75:             usort($different, static fn (CountLineRecord $a, CountLineRecord $b): int => [$a->productId, $a->locationId] <=> [$b->productId, $b->locationId]);
+76:             foreach ($different as $line) {
+77:                 $this->applyDifference($count->code, $countId, $line, $closerId, (int) $favor, (int) $error);
+78:             }
+79: 
+80:             $this->locations->unfreeze($count->locationIds, $closerId, $count->code);
+81:             $this->counts->setCountStatus($countId, CountStatus::Closed, $closerId, $this->clock->now());
+82: 
+83:             $result = $this->summary($this->counts->countLines($countId));
+84:             $this->audit->record(new AuditEntry('count.closed', 'count', $countId, $closerId, ['status' => 'REVIEW'], [
+85:                 'status' => 'CLOSED', 'code' => $count->code, 'adjustments' => count($different),
+86:                 'lines' => $result['lines'], 'accuracy_pct' => $result['accuracyPct'],
+87:             ]));
+88: 
+89:             return $result;
+90:         });
+91:     }
+92: 
+93:     private function applyDifference(string $countCode, int $countId, CountLineRecord $line, int $closerId, int $favorReason, int $errorReason): void
+94:     {
+95:         $difference = (string) $line->difference();
+96:         $positive = bccomp($difference, '0', 3) > 0;
+97:         $quantity = Quantity::of(ltrim($difference, '-'));
+98:         $kind = $positive ? AdjustmentKind::Positive : AdjustmentKind::Negative;
+99:         $requestedBy = (int) $line->countedBy;
+100:         $notes = "Conteo {$countCode}: esperado {$line->expected->value}, contado ".($line->counted->value ?? '0');
+101: 
+102:         $adjustment = new NewAdjustment($kind, $line->productId, $line->locationId, $quantity, $positive ? $favorReason : $errorReason, $notes, $requestedBy);
+103:         $adjustmentCode = $this->numbers->next('AJU');
+104:         $adjustmentId = $this->adjustments->insertAdjustment($adjustment, $adjustmentCode);
+105: 
+106:         $movementId = $this->movements->register(new MovementRequest(
+107:             kind: $kind->movementKind(),
+108:             productId: $line->productId,
+109:             quantity: $quantity,
+110:             userId: $requestedBy,
+111:             idempotencyKey: $countCode.':L'.$line->id,
+112:             fromLocationId: $positive ? null : $line->locationId,
+113:             toLocationId: $positive ? $line->locationId : null,
+114:             reasonId: $positive ? $favorReason : $errorReason,
+115:             sourceType: 'COUNT', // permitido sobre ubicaciones congeladas por este conteo
+116:             sourceId: $countId,
+117:             documentRef: $countCode,
+118:             notes: $notes,
+119:             approvedBy: $closerId,
+120:         ));
+121: 
+122:         $this->adjustments->markApproved($adjustmentId, $closerId, $movementId, "Aplicado al cerrar el conteo {$countCode}");
+123:         $this->counts->setLineAdjustment($line->id, $adjustmentId);
+124:     }
+125: 
+126:     /**
+127:      * @param  list<CountLineRecord>  $lines
+128:      * @return array{adjustments: int, lines: int, accuracyPct: string}
+129:      */
+130:     private function summary(array $lines): array
+131:     {
+132:         $total = count($lines);
+133:         $withDifference = count(array_filter($lines, static fn (CountLineRecord $l): bool => $l->hasDifference()));
+134:         $accuracy = $total === 0 ? '100.00' : bcmul(bcdiv((string) ($total - $withDifference), (string) $total, 6), '100', 2);
+135: 
+136:         return ['adjustments' => $withDifference, 'lines' => $total, 'accuracyPct' => $accuracy];
+137:     }
+138: }
+
+
+FILE app\Modules\Operations\Application\CompleteTransfer.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\MovementKind;
+10: use App\Modules\Operations\Domain\MovementRequest;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use App\Modules\Operations\Domain\StockMovements;
+13: use App\Modules\Operations\Domain\TransferLineRecord;
+14: use App\Modules\Operations\Domain\TransferRepository;
+15: use App\Modules\Operations\Domain\TransferStatus;
+16: use App\Shared\Domain\Clock;
+17: use App\Shared\Domain\Transaction;
+18: 
+19: /** Completa todas las líneas en una sola transacción: si una falla (p. ej. stock insuficiente), no se mueve nada. */
+20: final class CompleteTransfer
+21: {
+22:     public function __construct(
+23:         private readonly TransferRepository $transfers,
+24:         private readonly StockMovements $movements,
+25:         private readonly Transaction $transaction,
+26:         private readonly AuditTrail $audit,
+27:         private readonly Clock $clock,
+28:     ) {}
+29: 
+30:     /** @return array{movements: int} */
+31:     public function __invoke(int $transferId, int $actorId): array
+32:     {
+33:         return $this->transaction->run(function () use ($transferId, $actorId): array {
+34:             $transfer = $this->transfers->lockTransfer($transferId) ?? throw OperationsException::notFound('La transferencia', $transferId);
+35: 
+36:             if ($transfer->status === TransferStatus::Completed) {
+37:                 return ['movements' => count($transfer->lines)]; // idempotente
+38:             }
+39:             if ($transfer->status === TransferStatus::Cancelled) {
+40:                 throw OperationsException::wrongState('La transferencia está anulada.');
+41:             }
+42: 
+43:             $lines = $transfer->lines;
+44:             usort($lines, static fn (TransferLineRecord $a, TransferLineRecord $b): int => [$a->line->productId, $a->line->fromLocationId, $a->line->toLocationId, $a->id]
+45:                 <=> [$b->line->productId, $b->line->fromLocationId, $b->line->toLocationId, $b->id]);
+46: 
+47:             foreach ($lines as $record) {
+48:                 $movementId = $this->movements->register(new MovementRequest(
+49:                     kind: MovementKind::Transfer,
+50:                     productId: $record->line->productId,
+51:                     quantity: $record->line->quantity,
+52:                     userId: $actorId,
+53:                     idempotencyKey: $transfer->code.':L'.$record->id,
+54:                     fromLocationId: $record->line->fromLocationId,
+55:                     toLocationId: $record->line->toLocationId,
+56:                     sourceType: 'TRANSFER_ORDER',
+57:                     sourceId: $transfer->id,
+58:                     documentRef: $transfer->code,
+59:                 ));
+60:                 $this->transfers->setLineMovement($record->id, $movementId);
+61:             }
+62: 
+63:             $this->transfers->setTransferStatus($transferId, TransferStatus::Completed, $this->clock->now());
+64:             $this->audit->record(new AuditEntry('transfer.completed', 'transfer', $transferId, $actorId, ['status' => 'DRAFT'], [
+65:                 'status' => 'COMPLETED', 'code' => $transfer->code, 'movements' => count($lines),
+66:             ]));
+67: 
+68:             return ['movements' => count($lines)];
+69:         });
+70:     }
+71: }
+
+
+FILE app\Modules\Operations\Application\ConfirmReceipt.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\MovementKind;
+10: use App\Modules\Operations\Domain\MovementRequest;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use App\Modules\Operations\Domain\ReceiptItemRecord;
+13: use App\Modules\Operations\Domain\ReceiptRepository;
+14: use App\Modules\Operations\Domain\ReceiptStatus;
+15: use App\Modules\Operations\Domain\StockMovements;
+16: use App\Shared\Domain\Clock;
+17: use App\Shared\Domain\Transaction;
+18: 
+19: /** Confirmar = registrar todas las entradas en UNA transacción: o entra todo o no entra nada. */
+20: final class ConfirmReceipt
+21: {
+22:     public function __construct(
+23:         private readonly ReceiptRepository $receipts,
+24:         private readonly StockMovements $movements,
+25:         private readonly Transaction $transaction,
+26:         private readonly AuditTrail $audit,
+27:         private readonly Clock $clock,
+28:     ) {}
+29: 
+30:     /** @return array{movements: int, discrepancies: int} */
+31:     public function __invoke(int $receiptId, int $actorId): array
+32:     {
+33:         return $this->transaction->run(function () use ($receiptId, $actorId): array {
+34:             $receipt = $this->receipts->lockReceipt($receiptId) ?? throw OperationsException::notFound('La recepción', $receiptId);
+35: 
+36:             $discrepancies = count(array_filter($receipt->items, static fn (ReceiptItemRecord $i): bool => $i->line->hasDiscrepancy()));
+37: 
+38:             if ($receipt->status === ReceiptStatus::Confirmed) {
+39:                 return [ // idempotente: no se vuelve a registrar nada
+40:                     'movements' => count(array_filter($receipt->items, static fn (ReceiptItemRecord $i): bool => $i->movementId !== null)),
+41:                     'discrepancies' => $discrepancies,
+42:                 ];
+43:             }
+44:             if ($receipt->status === ReceiptStatus::Cancelled) {
+45:                 throw OperationsException::wrongState('La recepción está anulada.');
+46:             }
+47: 
+48:             $items = array_values(array_filter($receipt->items, static fn (ReceiptItemRecord $i): bool => $i->line->quantity->isPositive()));
+49:             if ($items === []) {
+50:                 throw OperationsException::invalid('No hay cantidades recibidas para confirmar.');
+51:             }
+52:             // Orden fijo por producto: dos confirmaciones simultáneas no pueden bloquearse entre sí.
+53:             usort($items, static fn (ReceiptItemRecord $a, ReceiptItemRecord $b): int => [$a->line->productId, $a->id] <=> [$b->line->productId, $b->id]);
+54: 
+55:             foreach ($items as $item) {
+56:                 $line = $item->line;
+57:                 $movementId = $this->movements->register(new MovementRequest(
+58:                     kind: MovementKind::Purchase,
+59:                     productId: $line->productId,
+60:                     quantity: $line->quantity,
+61:                     userId: $actorId,
+62:                     idempotencyKey: $receipt->code.':L'.$item->id,
+63:                     toLocationId: $line->locationId,
+64:                     unitCost: $line->unitCost,
+65:                     presentationId: $line->presentationId,
+66:                     presentationQty: $line->presentationQty,
+67:                     sourceType: 'RECEIPT',
+68:                     sourceId: $receipt->id,
+69:                     documentRef: mb_substr($receipt->docType.' '.$receipt->docNumber, 0, 60),
+70:                 ));
+71:                 $this->receipts->setItemMovement($item->id, $movementId);
+72:             }
+73: 
+74:             $this->receipts->setReceiptStatus($receiptId, ReceiptStatus::Confirmed, $this->clock->now());
+75:             $this->audit->record(new AuditEntry('receipt.confirmed', 'receipt', $receiptId, $actorId, ['status' => 'DRAFT'], [
+76:                 'status' => 'CONFIRMED', 'code' => $receipt->code, 'movements' => count($items), 'discrepancies' => $discrepancies,
+77:             ]));
+78: 
+79:             return ['movements' => count($items), 'discrepancies' => $discrepancies];
+80:         });
+81:     }
+82: }
+
+
+FILE app\Modules\Operations\Application\CreateReceiptDraft.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\DocumentNumbers;
+10: use App\Modules\Operations\Domain\NewReceipt;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use App\Modules\Operations\Domain\OperationsLookup;
+13: use App\Modules\Operations\Domain\ReceiptRepository;
+14: use App\Shared\Domain\Clock;
+15: use App\Shared\Domain\Transaction;
+16: 
+17: final class CreateReceiptDraft
+18: {
+19:     public function __construct(
+20:         private readonly ReceiptRepository $receipts,
+21:         private readonly OperationsLookup $lookup,
+22:         private readonly DocumentNumbers $numbers,
+23:         private readonly Transaction $transaction,
+24:         private readonly AuditTrail $audit,
+25:         private readonly Clock $clock,
+26:     ) {}
+27: 
+28:     /** @return array{id: int, code: string} */
+29:     public function __invoke(NewReceipt $receipt): array
+30:     {
+31:         return $this->transaction->run(function () use ($receipt): array {
+32:             if (! $this->lookup->supplierIsActive($receipt->supplierId)) {
+33:                 throw OperationsException::supplierInactive();
+34:             }
+35:             if (! $this->lookup->warehouseIsActive($receipt->warehouseId)) {
+36:                 throw OperationsException::warehouseNotFound();
+37:             }
+38:             // Tolerancia de un día por la diferencia horaria con UTC.
+39:             if ($receipt->docDate > $this->clock->now()->modify('+1 day')->format('Y-m-d')) {
+40:                 throw OperationsException::invalid('La fecha del documento no puede ser futura.');
+41:             }
+42:             foreach ($receipt->lines as $line) {
+43:                 if ($this->lookup->locationWarehouseId($line->locationId) !== $receipt->warehouseId) {
+44:                     throw OperationsException::locationNotInWarehouse($line->locationId);
+45:                 }
+46:             }
+47:             if ($this->receipts->activeDocumentExists($receipt->supplierId, $receipt->docType, $receipt->docNumber)) {
+48:                 throw OperationsException::duplicateDocument($receipt->docType->value, $receipt->docNumber);
+49:             }
+50: 
+51:             $code = $this->numbers->next('REC');
+52:             $id = $this->receipts->insertReceipt($receipt, $code);
+53: 
+54:             $this->audit->record(new AuditEntry('receipt.drafted', 'receipt', $id, $receipt->receivedBy, null, [
+55:                 'code' => $code, 'supplier_id' => $receipt->supplierId, 'document' => $receipt->docType->value.' '.$receipt->docNumber,
+56:                 'lines' => count($receipt->lines),
+57:             ]));
+58: 
+59:             return ['id' => $id, 'code' => $code];
+60:         });
+61:     }
+62: }
+
+
+FILE app\Modules\Operations\Application\CreateTransferDraft.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\DocumentNumbers;
+10: use App\Modules\Operations\Domain\NewTransfer;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use App\Modules\Operations\Domain\OperationsLookup;
+13: use App\Modules\Operations\Domain\TransferRepository;
+14: use App\Shared\Domain\Transaction;
+15: 
+16: final class CreateTransferDraft
+17: {
+18:     public function __construct(
+19:         private readonly TransferRepository $transfers,
+20:         private readonly OperationsLookup $lookup,
+21:         private readonly DocumentNumbers $numbers,
+22:         private readonly Transaction $transaction,
+23:         private readonly AuditTrail $audit,
+24:     ) {}
+25: 
+26:     /** @return array{id: int, code: string} */
+27:     public function __invoke(NewTransfer $transfer): array
+28:     {
+29:         return $this->transaction->run(function () use ($transfer): array {
+30:             foreach ($transfer->lines as $line) {
+31:                 foreach ([$line->fromLocationId, $line->toLocationId] as $locationId) {
+32:                     if ($this->lookup->locationWarehouseId($locationId) === null) {
+33:                         throw OperationsException::notFound('La ubicación', $locationId);
+34:                     }
+35:                 }
+36:             }
+37: 
+38:             $code = $this->numbers->next('TRF');
+39:             $id = $this->transfers->insertTransfer($transfer, $code);
+40:             $this->audit->record(new AuditEntry('transfer.drafted', 'transfer', $id, $transfer->requestedBy, null, ['code' => $code, 'lines' => count($transfer->lines)]));
+41: 
+42:             return ['id' => $id, 'code' => $code];
+43:         });
+44:     }
+45: }
+
+
+FILE app\Modules\Operations\Application\ImportPosSales.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Inventory\Domain\Quantity;
+10: use App\Modules\Operations\Domain\ImportError;
+11: use App\Modules\Operations\Domain\ImportJobs;
+12: use App\Modules\Operations\Domain\ImportResult;
+13: use App\Modules\Operations\Domain\MovementKind;
+14: use App\Modules\Operations\Domain\MovementRequest;
+15: use App\Modules\Operations\Domain\OperationsException;
+16: use App\Modules\Operations\Domain\PosSalesParser;
+17: use App\Modules\Operations\Domain\SalesTargets;
+18: use App\Modules\Operations\Domain\StockMovements;
+19: use App\Shared\Domain\Clock;
+20: use App\Shared\Domain\Transaction;
+21: 
+22: /**
+23:  * Descuenta del piso de venta las ventas del día que exporta la caja (CSV: sku, cantidad).
+24:  * Las filas con error van al reporte; las válidas se aplican. El mismo archivo no se confirma dos veces.
+25:  * La simulación (commit = false) calcula todo sin tocar el stock.
+26:  */
+27: final class ImportPosSales
+28: {
+29:     private const KIND = 'POS_SALES';
+30: 
+31:     public function __construct(
+32:         private readonly SalesTargets $targets,
+33:         private readonly StockMovements $movements,
+34:         private readonly ImportJobs $jobs,
+35:         private readonly Transaction $transaction,
+36:         private readonly AuditTrail $audit,
+37:         private readonly Clock $clock,
+38:     ) {}
+39: 
+40:     public function __invoke(string $csv, string $fileName, string $businessDate, int $userId, bool $commit): ImportResult
+41:     {
+42:         $this->assertDate($businessDate);
+43:         $name = mb_substr(basename(str_replace('\\', '/', trim($fileName))), 0, 200);
+44:         if ($name === '' || $name === '.') {
+45:             throw OperationsException::invalid('El archivo no tiene nombre.');
+46:         }
+47:         $sha = hash('sha256', $csv);
+48:         $parsed = PosSalesParser::parse($csv);
+49: 
+50:         return $this->transaction->run(function () use ($parsed, $name, $sha, $businessDate, $userId, $commit): ImportResult {
+51:             if ($commit && $this->jobs->committedBefore(self::KIND, $sha)) {
+52:                 throw OperationsException::wrongState('Este archivo ya se importó antes. Si faltó alguna fila, súbala en un archivo nuevo solo con esas filas.');
+53:             }
+54: 
+55:             $errors = $parsed->errors;
+56: 
+57:             // Agrupa por producto + ubicación (la caja puede repetir un mismo SKU en varias filas).
+58:             $groups = [];
+59:             foreach ($parsed->rows as $row) {
+60:                 $target = $this->targets->resolve($row->code);
+61:                 if ($target === null) {
+62:                     $errors[] = new ImportError($row->line, "No se encontró el producto '{$row->code}' o no tiene ubicación en el piso de venta.");
+63: 
+64:                     continue;
+65:                 }
+66:                 $key = $target->productId.':'.$target->locationId;
+67:                 $groups[$key] ??= ['target' => $target, 'line' => $row->line, 'quantity' => '0.000'];
+68:                 $groups[$key]['quantity'] = bcadd($groups[$key]['quantity'], $row->quantity, 3);
+69:             }
+70:             uasort($groups, static fn (array $a, array $b): int => [$a['target']->productId, $a['target']->locationId] <=> [$b['target']->productId, $b['target']->locationId]);
+71: 
+72:             $ok = 0;
+73:             $units = '0.000';
+74:             $failedGroups = 0;
+75:             foreach ($groups as $group) {
+76:                 $target = $group['target'];
+77: 
+78:                 if (bccomp($target->available, $group['quantity'], 3) < 0) {
+79:                     $errors[] = new ImportError($group['line'], "Stock insuficiente de {$target->sku} en {$target->locationCode}: disponible {$target->available}, vendido {$group['quantity']}.");
+80:                     $failedGroups++;
+81: 
+82:                     continue;
+83:                 }
+84:                 if ($commit) {
+85:                     try {
+86:                         $this->movements->register(new MovementRequest(
+87:                             kind: MovementKind::Sale,
+88:                             productId: $target->productId,
+89:                             quantity: Quantity::of($group['quantity']),
+90:                             userId: $userId,
+91:                             idempotencyKey: 'POS-'.substr($sha, 0, 16).'-'.$target->productId.'-'.$target->locationId,
+92:                             fromLocationId: $target->locationId,
+93:                             sourceType: 'POS_IMPORT',
+94:                             documentRef: 'POS '.$businessDate,
+95:                             notes: 'Importación '.mb_substr($name, 0, 60),
+96:                         ));
+97:                     } catch (OperationsException $e) {
+98:                         $errors[] = new ImportError($group['line'], $e->getMessage());
+99:                         $failedGroups++;
+100: 
+101:                         continue;
+102:                     }
+103:                 }
+104:                 $ok++;
+105:                 $units = bcadd($units, $group['quantity'], 3);
+106:             }
+107: 
+108:             usort($errors, static fn (ImportError $a, ImportError $b): int => $a->line <=> $b->line);
+109:             $importId = $this->jobs->record(self::KIND, $name, $sha, $commit, $parsed->totalRows, $ok, count($errors), $userId);
+110: 
+111:             $this->audit->record(new AuditEntry($commit ? 'pos.imported' : 'pos.simulated', 'import', $importId, $userId, null, [
+112:                 'file' => $name, 'business_date' => $businessDate, 'rows' => $parsed->totalRows,
+113:                 'products_applied' => $ok, 'errors' => count($errors), 'units' => $units, 'at' => $this->clock->now()->format('c'),
+114:             ]));
+115: 
+116:             return new ImportResult($importId, $commit, $parsed->totalRows, $ok, $errors, $units);
+117:         });
+118:     }
+119: 
+120:     private function assertDate(string $date): void
+121:     {
+122:         $parts = explode('-', $date);
+123:         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1 || ! checkdate((int) $parts[1], (int) $parts[2], (int) $parts[0])) {
+124:             throw OperationsException::invalid('La fecha de las ventas no es válida (use AAAA-MM-DD).');
+125:         }
+126:         if ($date > $this->clock->now()->modify('+1 day')->format('Y-m-d')) {
+127:             throw OperationsException::invalid('La fecha de las ventas no puede ser futura.');
+128:         }
+129:     }
+130: }
+
+
+FILE app\Modules\Operations\Application\RecordCount.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Inventory\Domain\Quantity;
+8: use App\Modules\Operations\Domain\CountRepository;
+9: use App\Modules\Operations\Domain\CountStatus;
+10: use App\Modules\Operations\Domain\OperationsException;
+11: use App\Modules\Operations\Domain\OperationsLookup;
+12: use App\Shared\Domain\Clock;
+13: use App\Shared\Domain\Transaction;
+14: 
+15: /**
+16:  * Registra lo contado de un producto en una ubicación. Contar de nuevo la misma línea reemplaza el valor.
+17:  * En REVIEW solo se pueden recontar las líneas marcadas para reconteo.
+18:  */
+19: final class RecordCount
+20: {
+21:     public function __construct(
+22:         private readonly CountRepository $counts,
+23:         private readonly OperationsLookup $lookup,
+24:         private readonly Transaction $transaction,
+25:         private readonly Clock $clock,
+26:     ) {}
+27: 
+28:     public function __invoke(int $countId, int $productId, int $locationId, Quantity $counted, int $userId): void
+29:     {
+30:         $this->transaction->run(function () use ($countId, $productId, $locationId, $counted, $userId): void {
+31:             $count = $this->counts->lockCount($countId) ?? throw OperationsException::notFound('El conteo', $countId);
+32: 
+33:             if (! in_array($locationId, $count->locationIds, true)) {
+34:                 throw OperationsException::invalid('Esa ubicación no pertenece a este conteo.');
+35:             }
+36: 
+37:             $line = $this->counts->findLine($countId, $productId, $locationId);
+38: 
+39:             if ($count->status === CountStatus::Counting) {
+40:                 if ($line === null && $this->lookup->averageCost($productId) === null) {
+41:                     throw OperationsException::notFound('El producto', $productId); // hallazgo de un producto que no existe
+42:                 }
+43:                 $this->counts->saveCounted($countId, $productId, $locationId, $counted, $userId, $this->clock->now(), false);
+44: 
+45:                 return;
+46:             }
+47: 
+48:             if ($count->status === CountStatus::Review) {
+49:                 if ($line === null || ! $line->recountRequested) {
+50:                     throw OperationsException::wrongState('En revisión solo se pueden recontar las líneas marcadas para reconteo.');
+51:                 }
+52:                 $this->counts->saveCounted($countId, $productId, $locationId, $counted, $userId, $this->clock->now(), false);
+53: 
+54:                 return;
+55:             }
+56: 
+57:             throw OperationsException::wrongState('El conteo ya no admite cambios.');
+58:         });
+59:     }
+60: }
+
+
+FILE app\Modules\Operations\Application\RecordDirectAdjustment.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\AdjustmentKind;
+10: use App\Modules\Operations\Domain\MovementRequest;
+11: use App\Modules\Operations\Domain\NewAdjustment;
+12: use App\Modules\Operations\Domain\OperationsException;
+13: use App\Modules\Operations\Domain\OperationsLookup;
+14: use App\Modules\Operations\Domain\StockMovements;
+15: use App\Shared\Domain\Transaction;
+16: 
+17: /**
+18:  * Registro directo (sin segunda persona) para supervisores, solo si el valor del ajuste no supera el límite
+19:  * configurado (adjustment.auto_approve_limit_pen; 0 = deshabilitado). Queda auditado como "directo".
+20:  * El permiso (inventory.adjust.approve) lo exige la capa de presentación.
+21:  */
+22: final class RecordDirectAdjustment
+23: {
+24:     public function __construct(
+25:         private readonly OperationsLookup $lookup,
+26:         private readonly StockMovements $movements,
+27:         private readonly Transaction $transaction,
+28:         private readonly AuditTrail $audit,
+29:     ) {}
+30: 
+31:     /** @return int id del movimiento */
+32:     public function __invoke(NewAdjustment $adjustment, string $idempotencyKey): int
+33:     {
+34:         return $this->transaction->run(function () use ($adjustment, $idempotencyKey): int {
+35:             RequestAdjustment::assertValid($this->lookup, $adjustment);
+36: 
+37:             $value = bcmul($adjustment->quantity->value, (string) $this->lookup->averageCost($adjustment->productId), 4);
+38:             $limit = $this->lookup->directAdjustmentLimit();
+39:             if (bccomp($limit, '0', 2) === 0 || bccomp($value, $limit, 4) > 0) {
+40:                 throw OperationsException::exceedsDirectLimit(bcadd($value, '0', 2), $limit);
+41:             }
+42: 
+43:             $positive = $adjustment->kind === AdjustmentKind::Positive;
+44:             $movementId = $this->movements->register(new MovementRequest(
+45:                 kind: $adjustment->kind->movementKind(),
+46:                 productId: $adjustment->productId,
+47:                 quantity: $adjustment->quantity,
+48:                 userId: $adjustment->requestedBy,
+49:                 idempotencyKey: $idempotencyKey,
+50:                 fromLocationId: $positive ? null : $adjustment->locationId,
+51:                 toLocationId: $positive ? $adjustment->locationId : null,
+52:                 reasonId: $adjustment->reasonId,
+53:                 sourceType: 'ADJUSTMENT',
+54:                 documentRef: 'DIRECTO',
+55:                 notes: $adjustment->notes,
+56:                 approvedBy: $adjustment->requestedBy,
+57:             ));
+58: 
+59:             $this->audit->record(new AuditEntry('adjustment.direct', 'adjustment', $movementId, $adjustment->requestedBy, null, [
+60:                 'kind' => $adjustment->kind->value, 'product_id' => $adjustment->productId, 'quantity' => $adjustment->quantity->value,
+61:                 'value_pen' => bcadd($value, '0', 2), 'movement_id' => $movementId,
+62:             ]));
+63: 
+64:             return $movementId;
+65:         });
+66:     }
+67: }
+
+
+FILE app\Modules\Operations\Application\RejectAdjustment.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\AdjustmentRepository;
+10: use App\Modules\Operations\Domain\AdjustmentStatus;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: final class RejectAdjustment
+15: {
+16:     public function __construct(
+17:         private readonly AdjustmentRepository $adjustments,
+18:         private readonly Transaction $transaction,
+19:         private readonly AuditTrail $audit,
+20:     ) {}
+21: 
+22:     public function __invoke(int $adjustmentId, int $reviewerId, string $reviewNotes): void
+23:     {
+24:         $notes = trim($reviewNotes);
+25:         if (mb_strlen($notes) < 5 || mb_strlen($notes) > 500) {
+26:             throw OperationsException::invalid('Explique por qué se rechaza (entre 5 y 500 caracteres).');
+27:         }
+28: 
+29:         $this->transaction->run(function () use ($adjustmentId, $reviewerId, $notes): void {
+30:             $record = $this->adjustments->lockAdjustment($adjustmentId) ?? throw OperationsException::notFound('La solicitud de ajuste', $adjustmentId);
+31: 
+32:             if ($record->status === AdjustmentStatus::Rejected) {
+33:                 return;
+34:             }
+35:             if ($record->status === AdjustmentStatus::Approved) {
+36:                 throw OperationsException::wrongState('La solicitud ya fue aprobada y no se puede rechazar.');
+37:             }
+38:             if ($record->request->requestedBy === $reviewerId) {
+39:                 throw OperationsException::separationOfDuties();
+40:             }
+41: 
+42:             $this->adjustments->markRejected($adjustmentId, $reviewerId, $notes);
+43:             $this->audit->record(new AuditEntry('adjustment.rejected', 'adjustment', $adjustmentId, $reviewerId, ['status' => 'PENDING'], [
+44:                 'status' => 'REJECTED', 'code' => $record->code, 'review_notes' => $notes,
+45:             ]));
+46:         });
+47:     }
+48: }
+
+
+FILE app\Modules\Operations\Application\ReplaceReceiptItems.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Operations\Domain\NewReceipt;
+8: use App\Modules\Operations\Domain\OperationsException;
+9: use App\Modules\Operations\Domain\OperationsLookup;
+10: use App\Modules\Operations\Domain\ReceiptLine;
+11: use App\Modules\Operations\Domain\ReceiptRepository;
+12: use App\Modules\Operations\Domain\ReceiptStatus;
+13: use App\Shared\Domain\Transaction;
+14: 
+15: /** Reemplaza las líneas de un BORRADOR (guardado automático mientras se escanea). */
+16: final class ReplaceReceiptItems
+17: {
+18:     public function __construct(
+19:         private readonly ReceiptRepository $receipts,
+20:         private readonly OperationsLookup $lookup,
+21:         private readonly Transaction $transaction,
+22:     ) {}
+23: 
+24:     /** @param list<ReceiptLine> $lines */
+25:     public function __invoke(int $receiptId, array $lines): void
+26:     {
+27:         if ($lines === [] || count($lines) > NewReceipt::MAX_LINES) {
+28:             throw OperationsException::invalid('La recepción debe tener entre 1 y '.NewReceipt::MAX_LINES.' líneas.');
+29:         }
+30: 
+31:         $this->transaction->run(function () use ($receiptId, $lines): void {
+32:             $receipt = $this->receipts->lockReceipt($receiptId) ?? throw OperationsException::notFound('La recepción', $receiptId);
+33: 
+34:             if ($receipt->status !== ReceiptStatus::Draft) {
+35:                 throw OperationsException::wrongState('Solo se pueden modificar recepciones en borrador.');
+36:             }
+37:             foreach ($lines as $line) {
+38:                 if ($this->lookup->locationWarehouseId($line->locationId) !== $receipt->warehouseId) {
+39:                     throw OperationsException::locationNotInWarehouse($line->locationId);
+40:                 }
+41:             }
+42: 
+43:             $this->receipts->replaceReceiptItems($receiptId, $lines);
+44:         });
+45:     }
+46: }
+
+
+FILE app\Modules\Operations\Application\RequestAdjustment.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\AdjustmentRepository;
+10: use App\Modules\Operations\Domain\DocumentNumbers;
+11: use App\Modules\Operations\Domain\NewAdjustment;
+12: use App\Modules\Operations\Domain\OperationsException;
+13: use App\Modules\Operations\Domain\OperationsLookup;
+14: use App\Shared\Domain\Transaction;
+15: 
+16: /** Un almacenero SOLICITA el ajuste o la merma; otra persona lo aprueba. No toca el stock todavía. */
+17: final class RequestAdjustment
+18: {
+19:     public function __construct(
+20:         private readonly AdjustmentRepository $adjustments,
+21:         private readonly OperationsLookup $lookup,
+22:         private readonly DocumentNumbers $numbers,
+23:         private readonly Transaction $transaction,
+24:         private readonly AuditTrail $audit,
+25:     ) {}
+26: 
+27:     /** @return array{id: int, code: string} */
+28:     public function __invoke(NewAdjustment $adjustment): array
+29:     {
+30:         return $this->transaction->run(function () use ($adjustment): array {
+31:             self::assertValid($this->lookup, $adjustment);
+32: 
+33:             $code = $this->numbers->next('AJU');
+34:             $id = $this->adjustments->insertAdjustment($adjustment, $code);
+35:             $this->audit->record(new AuditEntry('adjustment.requested', 'adjustment', $id, $adjustment->requestedBy, null, [
+36:                 'code' => $code, 'kind' => $adjustment->kind->value, 'product_id' => $adjustment->productId,
+37:                 'location_id' => $adjustment->locationId, 'quantity' => $adjustment->quantity->value,
+38:             ]));
+39: 
+40:             return ['id' => $id, 'code' => $code];
+41:         });
+42:     }
+43: 
+44:     /** Validaciones comunes a la solicitud y al registro directo. */
+45:     public static function assertValid(OperationsLookup $lookup, NewAdjustment $adjustment): void
+46:     {
+47:         $reason = $lookup->reason($adjustment->reasonId);
+48:         if ($reason === null || ! $reason->isActive) {
+49:             throw OperationsException::invalid('El motivo no existe o está desactivado.');
+50:         }
+51:         if ($reason->movementType !== $adjustment->kind->reasonMovementType()) {
+52:             throw OperationsException::invalid('El motivo elegido no corresponde a este tipo de ajuste.');
+53:         }
+54:         if ($lookup->locationWarehouseId($adjustment->locationId) === null) {
+55:             throw OperationsException::notFound('La ubicación', $adjustment->locationId);
+56:         }
+57:         if ($lookup->averageCost($adjustment->productId) === null) {
+58:             throw OperationsException::notFound('El producto', $adjustment->productId);
+59:         }
+60:     }
+61: }
+
+
+FILE app\Modules\Operations\Application\StartCount.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\CountLocations;
+10: use App\Modules\Operations\Domain\CountRepository;
+11: use App\Modules\Operations\Domain\CountScopeResolver;
+12: use App\Modules\Operations\Domain\DocumentNumbers;
+13: use App\Modules\Operations\Domain\NewCount;
+14: use App\Modules\Operations\Domain\OperationsException;
+15: use App\Modules\Operations\Domain\OperationsLookup;
+16: use App\Shared\Domain\Clock;
+17: use App\Shared\Domain\Transaction;
+18: 
+19: /** Inicia el conteo: fija el stock esperado (foto) y congela las ubicaciones para que nada lo altere mientras se cuenta. */
+20: final class StartCount
+21: {
+22:     public function __construct(
+23:         private readonly CountRepository $counts,
+24:         private readonly CountScopeResolver $scopes,
+25:         private readonly CountLocations $locations,
+26:         private readonly OperationsLookup $lookup,
+27:         private readonly DocumentNumbers $numbers,
+28:         private readonly Transaction $transaction,
+29:         private readonly AuditTrail $audit,
+30:         private readonly Clock $clock,
+31:     ) {}
+32: 
+33:     /** @return array{id: int, code: string, locations: int, lines: int} */
+34:     public function __invoke(NewCount $count): array
+35:     {
+36:         return $this->transaction->run(function () use ($count): array {
+37:             if (! $this->lookup->warehouseIsActive($count->warehouseId)) {
+38:                 throw OperationsException::warehouseNotFound();
+39:             }
+40: 
+41:             $scope = $this->scopes->resolve($count->warehouseId, $count->scopeType, $count->scopeValue);
+42:             if ($scope->locationIds === []) {
+43:                 throw OperationsException::invalid('El alcance elegido no tiene ubicaciones para contar.');
+44:             }
+45: 
+46:             $code = $this->numbers->next('CNT');
+47:             $this->locations->freeze($scope->locationIds, $count->openedBy, $code); // falla si otra operación ya las congeló
+48:             $id = $this->counts->insertCount($count, $code, $scope, $this->clock->now());
+49: 
+50:             $this->audit->record(new AuditEntry('count.started', 'count', $id, $count->openedBy, null, [
+51:                 'code' => $code, 'scope' => $count->scopeType->value, 'value' => $count->scopeValue,
+52:                 'locations' => count($scope->locationIds), 'lines' => count($scope->balances),
+53:             ]));
+54: 
+55:             return ['id' => $id, 'code' => $code, 'locations' => count($scope->locationIds), 'lines' => count($scope->balances)];
+56:         });
+57:     }
+58: }
+
+
+FILE app\Modules\Operations\Application\SubmitCountForReview.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Operations\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Operations\Domain\CountLineRecord;
+10: use App\Modules\Operations\Domain\CountRepository;
+11: use App\Modules\Operations\Domain\CountStatus;
+12: use App\Modules\Operations\Domain\OperationsException;
+13: use App\Shared\Domain\Transaction;
+14: 
+15: /** Pasa a revisión. Toda línea debe estar contada (no contar NO significa cero). Las diferencias piden un reconteo. */
+16: final class SubmitCountForReview
+17: {
+18:     public function __construct(
+19:         private readonly CountRepository $counts,
+20:         private readonly Transaction $transaction,
+21:         private readonly AuditTrail $audit,
+22:     ) {}
+23: 
+24:     /** @return array{lines: int, withDifference: int} */
+25:     public function __invoke(int $countId, int $actorId): array
+26:     {
+27:         return $this->transaction->run(function () use ($countId, $actorId): array {
+28:             $count = $this->counts->lockCount($countId) ?? throw OperationsException::notFound('El conteo', $countId);
+29: 
+30:             if ($count->status !== CountStatus::Counting) {
+31:                 throw OperationsException::wrongState('Solo un conteo en curso se puede enviar a revisión.');
+32:             }
+33: 
+34:             $lines = $this->counts->countLines($countId);
+35:             $pending = count(array_filter($lines, static fn (CountLineRecord $l): bool => $l->counted === null));
+36:             if ($pending > 0) {
+37:                 throw OperationsException::wrongState("Faltan {$pending} líneas por contar. Si no hay producto, cuéntelo como 0.");
+38:             }
+39: 
+40:             $different = array_values(array_filter($lines, static fn (CountLineRecord $l): bool => $l->hasDifference()));
+41:             $this->counts->flagRecounts($countId, array_map(static fn (CountLineRecord $l): int => $l->id, $different));
+42:             $this->counts->setCountStatus($countId, CountStatus::Review);
+43: 
+44:             $this->audit->record(new AuditEntry('count.submitted', 'count', $countId, $actorId, ['status' => 'COUNTING'], [
+45:                 'status' => 'REVIEW', 'lines' => count($lines), 'with_difference' => count($different),
+46:             ]));
+47: 
+48:             return ['lines' => count($lines), 'withDifference' => count($different)];
+49:         });
+50:     }
+51: }
+
+
+FILE app\Modules\Suppliers\Application\ChangeSupplierState.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Suppliers\Domain\SupplierException;
+10: use App\Modules\Suppliers\Domain\SupplierRepository;
+11: use App\Shared\Domain\Transaction;
+12: 
+13: /** Un proveedor nunca se borra (puede tener recepciones): se activa o desactiva. */
+14: final class ChangeSupplierState
+15: {
+16:     public function __construct(
+17:         private readonly SupplierRepository $suppliers,
+18:         private readonly Transaction $transaction,
+19:         private readonly AuditTrail $audit,
+20:     ) {}
+21: 
+22:     public function deactivate(int $supplierId, ?int $actorId = null): void
+23:     {
+24:         $this->set($supplierId, false, $actorId, 'supplier.deactivated');
+25:     }
+26: 
+27:     public function activate(int $supplierId, ?int $actorId = null): void
+28:     {
+29:         $this->set($supplierId, true, $actorId, 'supplier.activated');
+30:     }
+31: 
+32:     private function set(int $supplierId, bool $active, ?int $actorId, string $action): void
+33:     {
+34:         $this->transaction->run(function () use ($supplierId, $active, $actorId, $action): void {
+35:             $supplier = $this->suppliers->lock($supplierId) ?? throw SupplierException::notFound($supplierId);
+36: 
+37:             if ($supplier->isActive === $active) {
+38:                 return; // idempotente
+39:             }
+40: 
+41:             $this->suppliers->setActive($supplierId, $active);
+42:             $this->audit->record(new AuditEntry($action, 'supplier', $supplierId, $actorId, ['is_active' => ! $active], ['is_active' => $active]));
+43:         });
+44:     }
+45: }
+
+
+FILE app\Modules\Suppliers\Application\CreateSupplier.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Suppliers\Domain\NewSupplier;
+10: use App\Modules\Suppliers\Domain\SupplierException;
+11: use App\Modules\Suppliers\Domain\SupplierRepository;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: final class CreateSupplier
+15: {
+16:     public function __construct(
+17:         private readonly SupplierRepository $suppliers,
+18:         private readonly Transaction $transaction,
+19:         private readonly AuditTrail $audit,
+20:     ) {}
+21: 
+22:     public function __invoke(NewSupplier $supplier): int
+23:     {
+24:         return $this->transaction->run(function () use ($supplier): int {
+25:             if ($this->suppliers->rucExists($supplier->ruc->value)) {
+26:                 throw SupplierException::rucTaken($supplier->ruc->value);
+27:             }
+28: 
+29:             $id = $this->suppliers->insert($supplier);
+30:             $this->audit->record(new AuditEntry('supplier.created', 'supplier', $id, $supplier->actorId, null, [
+31:                 'ruc' => $supplier->ruc->value, 'business_name' => $supplier->businessName,
+32:             ]));
+33: 
+34:             return $id;
+35:         });
+36:     }
+37: }
+
+
+FILE app\Modules\Suppliers\Application\LinkProductToSupplier.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Suppliers\Domain\SupplierException;
+10: use App\Modules\Suppliers\Domain\SupplierRepository;
+11: use App\Shared\Domain\Transaction;
+12: 
+13: final class LinkProductToSupplier
+14: {
+15:     public function __construct(
+16:         private readonly SupplierRepository $suppliers,
+17:         private readonly Transaction $transaction,
+18:         private readonly AuditTrail $audit,
+19:     ) {}
+20: 
+21:     public function __invoke(int $productId, int $supplierId, ?string $supplierSku = null, ?string $lastCost = null, bool $preferred = false, ?int $actorId = null): void
+22:     {
+23:         $sku = $supplierSku === null || trim($supplierSku) === '' ? null : trim($supplierSku);
+24:         if ($sku !== null && mb_strlen($sku) > 40) {
+25:             throw SupplierException::invalid('El código del proveedor no puede superar 40 caracteres.');
+26:         }
+27:         if ($lastCost !== null && preg_match('/^\d{1,10}(\.\d{1,4})?$/', $lastCost) !== 1) {
+28:             throw SupplierException::invalid('El último costo no es válido.');
+29:         }
+30: 
+31:         $this->transaction->run(function () use ($productId, $supplierId, $sku, $lastCost, $preferred, $actorId): void {
+32:             $supplier = $this->suppliers->lock($supplierId) ?? throw SupplierException::notFound($supplierId);
+33:             if (! $supplier->isActive) {
+34:                 throw SupplierException::inactive($supplier->businessName);
+35:             }
+36:             if (! $this->suppliers->productExists($productId)) {
+37:                 throw SupplierException::productNotFound($productId);
+38:             }
+39: 
+40:             if ($preferred) {
+41:                 $this->suppliers->clearPreferred($productId); // un solo proveedor preferido por producto
+42:             }
+43:             $this->suppliers->linkProduct($productId, $supplierId, $sku, $lastCost === null ? null : bcadd($lastCost, '0', 4), $preferred);
+44: 
+45:             $this->audit->record(new AuditEntry('supplier.product_linked', 'supplier', $supplierId, $actorId, null, [
+46:                 'product_id' => $productId, 'supplier_sku' => $sku, 'last_cost' => $lastCost, 'preferred' => $preferred,
+47:             ]));
+48:         });
+49:     }
+50: }
+
+
+FILE app\Modules\Suppliers\Application\UpdateSupplier.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Modules\Suppliers\Application;
+6: 
+7: use App\Modules\Audit\Domain\AuditEntry;
+8: use App\Modules\Audit\Domain\AuditTrail;
+9: use App\Modules\Suppliers\Domain\SupplierChanges;
+10: use App\Modules\Suppliers\Domain\SupplierException;
+11: use App\Modules\Suppliers\Domain\SupplierRepository;
+12: use App\Shared\Domain\Transaction;
+13: 
+14: final class UpdateSupplier
+15: {
+16:     public function __construct(
+17:         private readonly SupplierRepository $suppliers,
+18:         private readonly Transaction $transaction,
+19:         private readonly AuditTrail $audit,
+20:     ) {}
+21: 
+22:     public function __invoke(int $supplierId, SupplierChanges $changes): void
+23:     {
+24:         $this->transaction->run(function () use ($supplierId, $changes): void {
+25:             $current = $this->suppliers->lock($supplierId) ?? throw SupplierException::notFound($supplierId);
+26: 
+27:             $new = $changes->fields();
+28:             $changed = array_filter($new, static fn (mixed $v, string $k): bool => ($current->data[$k] ?? null) !== $v, ARRAY_FILTER_USE_BOTH);
+29: 
+30:             if ($changed === []) {
+31:                 return;
+32:             }
+33: 
+34:             $this->suppliers->update($supplierId, $changes);
+35:             $this->audit->record(new AuditEntry(
+36:                 'supplier.updated', 'supplier', $supplierId, $changes->actorId,
+37:                 array_intersect_key($current->data, $changed), $changed,
+38:             ));
+39:         });
+40:     }
+41: }

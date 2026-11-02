@@ -1,0 +1,335 @@
+{
+    "date": "2026-10-28",
+    "runtime": "8.4.26",
+    "runner": "Comprobador independiente de aceptación de dominio, sin Composer ni Pest",
+    "results": [
+        {
+            "id": "CA-001-1",
+            "scenario": "Alta con normalización y auditoría sin contraseña",
+            "status": "Conforme en dominio",
+            "observed": "ana; correo normalizado; password no incluido en auditoría. Hasher doble de prueba, no se evalúa criptografía.",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.2124
+        },
+        {
+            "id": "CA-001-2",
+            "scenario": "Usuario y correo duplicados",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0123
+        },
+        {
+            "id": "CA-001-3",
+            "scenario": "Contraseñas de 11 caracteres, comunes o con usuario",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-003-1",
+            "scenario": "Quinto fallo bloquea 15 minutos",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0149
+        },
+        {
+            "id": "CA-003-2",
+            "scenario": "Bloqueo vigente a los 14 minutos 59 segundos",
+            "status": "Conforme en dominio",
+            "observed": "Política bloqueada; no se ejercita formulario de inicio de sesión.",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-003-3",
+            "scenario": "Bloqueo expira exactamente a los 15 minutos",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-009-1",
+            "scenario": "EAN13 válido",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0455
+        },
+        {
+            "id": "CA-009-2",
+            "scenario": "EAN13 con dígito verificador incorrecto",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0143
+        },
+        {
+            "id": "CA-009-3",
+            "scenario": "Código ya asociado a otro producto",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.1562
+        },
+        {
+            "id": "CA-012-1",
+            "scenario": "No dar de baja producto con stock",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-012-2",
+            "scenario": "Baja sin stock conserva registro",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-012-3",
+            "scenario": "Baja repetida no duplica auditoría",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-017-1",
+            "scenario": "Movimiento válido recibe identificador y saldo",
+            "status": "Conforme en dominio",
+            "observed": "Movimiento 1 y saldo 10.000 en doble en memoria; inmutabilidad SQL pendiente.",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.2322
+        },
+        {
+            "id": "CA-018-1",
+            "scenario": "10 unidades menos 4 deja 6",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-018-2",
+            "scenario": "3 unidades no permiten retirar 5",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0175
+        },
+        {
+            "id": "CA-018-3",
+            "scenario": "5 unidades menos 5 deja 0",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-019-1",
+            "scenario": "Primera operación con clave nueva",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-019-2",
+            "scenario": "Reintento idéntico no duplica",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0114
+        },
+        {
+            "id": "CA-019-3",
+            "scenario": "Clave con UUID distinto se rechaza",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-019-4",
+            "scenario": "Misma clave y UUID con cantidad alterada debe rechazarse",
+            "status": "No conforme",
+            "observed": "No rechazó la operación; se esperaba App\\Modules\\Inventory\\Domain\\Exceptions\\InventoryException",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-020-1",
+            "scenario": "10 a 2 más 10 a 4 promedia 3",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-020-2",
+            "scenario": "Salida al promedio conserva el costo",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-020-3",
+            "scenario": "Compra con stock cero toma costo 5",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-021-1",
+            "scenario": "Transferencia conserva total global",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-021-2",
+            "scenario": "Fallo al incrementar destino revierte origen",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-021-3",
+            "scenario": "Ubicación congelada rechaza entrada ordinaria",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-025-1",
+            "scenario": "Confirmar recepción con tres líneas",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.3041
+        },
+        {
+            "id": "CA-025-2",
+            "scenario": "Una línea rechazada revierte toda recepción",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0132
+        },
+        {
+            "id": "CA-025-3",
+            "scenario": "Confirmar dos veces registra una vez",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0002
+        },
+        {
+            "id": "CA-026-1",
+            "scenario": "Dos cajas de 12 a 24 por caja",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-030-1",
+            "scenario": "Aprobador distinto registra merma",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.095
+        },
+        {
+            "id": "CA-030-2",
+            "scenario": "Autoaprobación rechazada",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0002
+        },
+        {
+            "id": "CA-030-3",
+            "scenario": "Rechazo sin explicación no modifica stock",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-035-1",
+            "scenario": "Cierre con diferencia aplica y descongela",
+            "status": "Conforme en dominio",
+            "observed": "1 ajuste; 2 de 3 líneas exactas; exactitud 66.66 % por truncamiento actual a 2 decimales.",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.2072
+        },
+        {
+            "id": "CA-035-2",
+            "scenario": "Quien contó diferencias no cierra",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-035-3",
+            "scenario": "Fallo de ajuste revierte cierre de conteo",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-042-1",
+            "scenario": "RUC válido y proveedor activo",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0992
+        },
+        {
+            "id": "CA-042-2",
+            "scenario": "RUC inválido se rechaza",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0155
+        },
+        {
+            "id": "CA-042-3",
+            "scenario": "RUC repetido conserva solo un proveedor",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0001
+        },
+        {
+            "id": "CA-010-2",
+            "scenario": "Factor cero se rechaza",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0
+        },
+        {
+            "id": "CA-016-2",
+            "scenario": "Mínimo superior a máximo se rechaza",
+            "status": "Conforme en dominio",
+            "observed": "Se cumplieron las aserciones indicadas",
+            "scope": "Dominio y casos de uso con dobles en memoria; sin BD ni navegador",
+            "seconds": 0.0142
+        }
+    ]
+}

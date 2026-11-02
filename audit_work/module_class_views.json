@@ -1,0 +1,5381 @@
+[
+  {
+    "key": "clases_usuarios",
+    "title": "Clases de usuarios roles y creación de cuentas",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Iam\\Application\\CreateUser",
+        "name": "CreateUser",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Application/CreateUser.php",
+        "attributes": [
+          {
+            "name": "users",
+            "type": "UserRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "hasher",
+            "type": "PasswordHasher",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "user",
+                "type": "NewUser"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Application/CreateUser.php\nFirma del constructor __construct(users: UserRepository, hasher: PasswordHasher, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Domain\\NewUser",
+        "name": "NewUser",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/NewUser.php",
+        "attributes": [
+          {
+            "name": "name",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "username",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "role",
+            "type": "RoleName",
+            "visibility": "Public"
+          },
+          {
+            "name": "defaultWarehouseId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "actorId",
+            "type": "?int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Iam/Domain/NewUser.php\nFirma del constructor __construct(name: string, username: string, email: string, password: string, role: RoleName, defaultWarehouseId: ?int, actorId: ?int)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Domain\\UserRepository",
+        "name": "UserRepository",
+        "kind": "Interface",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/UserRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "usernameExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "username",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "emailExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "email",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "insert",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "user",
+                "type": "NewUser"
+              },
+              {
+                "name": "passwordHash",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "find",
+            "type": "?UserRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "countActiveAdmins",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "setActive",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "active",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "setPasswordHash",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "passwordHash",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lockoutState",
+            "type": "LockoutState",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "saveLockoutState",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "state",
+                "type": "LockoutState"
+              }
+            ]
+          },
+          {
+            "name": "markLogin",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "at",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Domain/UserRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Infrastructure\\DatabaseUserRepository",
+        "name": "DatabaseUserRepository",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Infrastructure/DatabaseUserRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "usernameExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "username",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "emailExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "email",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "insert",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "user",
+                "type": "NewUser"
+              },
+              {
+                "name": "passwordHash",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "find",
+            "type": "?UserRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "countActiveAdmins",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "setActive",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "active",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "setPasswordHash",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "passwordHash",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lockoutState",
+            "type": "LockoutState",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "saveLockoutState",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "state",
+                "type": "LockoutState"
+              }
+            ]
+          },
+          {
+            "name": "markLogin",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "at",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Infrastructure/DatabaseUserRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Domain\\UserRecord",
+        "name": "UserRecord",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/UserRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "username",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "isActive",
+            "type": "bool",
+            "visibility": "Public"
+          },
+          {
+            "name": "isAdmin",
+            "type": "bool",
+            "visibility": "Public"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Iam/Domain/UserRecord.php\nFirma del constructor __construct(id: int, username: string, isActive: bool, isAdmin: bool, email: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Domain\\RoleName",
+        "name": "RoleName",
+        "kind": "Enumeration",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/RoleName.php",
+        "attributes": [],
+        "methods": [],
+        "notes": "app/Modules/Iam/Domain/RoleName.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "literals": [
+          {
+            "name": "Admin",
+            "value": "admin"
+          },
+          {
+            "name": "Supervisor",
+            "value": "supervisor"
+          },
+          {
+            "name": "Almacenero",
+            "value": "almacenero"
+          },
+          {
+            "name": "Compras",
+            "value": "compras"
+          },
+          {
+            "name": "Lectura",
+            "value": "lectura"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Iam\\Application\\CreateUser",
+        "b": "App\\Modules\\Iam\\Domain\\NewUser",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Application\\CreateUser",
+        "b": "App\\Modules\\Iam\\Domain\\UserRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Domain\\NewUser",
+        "b": "App\\Modules\\Iam\\Domain\\RoleName",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Domain\\UserRepository",
+        "b": "App\\Modules\\Iam\\Domain\\NewUser",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Domain\\UserRepository",
+        "b": "App\\Modules\\Iam\\Domain\\UserRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Infrastructure\\DatabaseUserRepository",
+        "b": "App\\Modules\\Iam\\Domain\\NewUser",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Infrastructure\\DatabaseUserRepository",
+        "b": "App\\Modules\\Iam\\Domain\\UserRepository",
+        "type": "Realisation",
+        "name": "implementa"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Infrastructure\\DatabaseUserRepository",
+        "b": "App\\Modules\\Iam\\Domain\\UserRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Infrastructure\\DatabaseUserRepository",
+        "b": "App\\Modules\\Iam\\Domain\\RoleName",
+        "type": "Dependency",
+        "name": "utiliza"
+      }
+    ]
+  },
+  {
+    "key": "clases_autenticacion",
+    "title": "Clases de contraseñas y control de intentos",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Iam\\Domain\\LockoutPolicy",
+        "name": "LockoutPolicy",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/LockoutPolicy.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "afterFailure",
+            "type": "LockoutState",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "current",
+                "type": "LockoutState"
+              },
+              {
+                "name": "now",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          },
+          {
+            "name": "isLocked",
+            "type": "bool",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "state",
+                "type": "LockoutState"
+              },
+              {
+                "name": "now",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Domain/LockoutPolicy.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Domain\\LockoutState",
+        "name": "LockoutState",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/LockoutState.php",
+        "attributes": [
+          {
+            "name": "failedAttempts",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "lockedUntil",
+            "type": "DateTimeImmutable",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Iam/Domain/LockoutState.php\nFirma del constructor __construct(failedAttempts: int, lockedUntil: DateTimeImmutable)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Application\\RecordLoginFailure",
+        "name": "RecordLoginFailure",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Application/RecordLoginFailure.php",
+        "attributes": [
+          {
+            "name": "users",
+            "type": "UserRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "LockoutState",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "userId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Application/RecordLoginFailure.php\nFirma del constructor __construct(users: UserRepository, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Application\\RecordLoginSuccess",
+        "name": "RecordLoginSuccess",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Application/RecordLoginSuccess.php",
+        "attributes": [
+          {
+            "name": "users",
+            "type": "UserRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "userId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Application/RecordLoginSuccess.php\nFirma del constructor __construct(users: UserRepository, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Application\\ResetUserPassword",
+        "name": "ResetUserPassword",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Application/ResetUserPassword.php",
+        "attributes": [
+          {
+            "name": "users",
+            "type": "UserRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "hasher",
+            "type": "PasswordHasher",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "userId",
+                "type": "int"
+              },
+              {
+                "name": "newPassword",
+                "type": "string"
+              },
+              {
+                "name": "actorId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Application/ResetUserPassword.php\nFirma del constructor __construct(users: UserRepository, hasher: PasswordHasher, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Domain\\PasswordPolicy",
+        "name": "PasswordPolicy",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/PasswordPolicy.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "violations",
+            "type": "array",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "password",
+                "type": "string"
+              },
+              {
+                "name": "username",
+                "type": "string"
+              },
+              {
+                "name": "email",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Domain/PasswordPolicy.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Domain\\PasswordHasher",
+        "name": "PasswordHasher",
+        "kind": "Interface",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Domain/PasswordHasher.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "hash",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "plain",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Domain/PasswordHasher.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Iam\\Infrastructure\\LaravelPasswordHasher",
+        "name": "LaravelPasswordHasher",
+        "kind": "Class",
+        "module": "Iam",
+        "path": "app/Modules/Iam/Infrastructure/LaravelPasswordHasher.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "hash",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "plain",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Iam/Infrastructure/LaravelPasswordHasher.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Iam\\Domain\\LockoutPolicy",
+        "b": "App\\Modules\\Iam\\Domain\\LockoutState",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Application\\RecordLoginFailure",
+        "b": "App\\Modules\\Iam\\Domain\\LockoutPolicy",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Application\\RecordLoginFailure",
+        "b": "App\\Modules\\Iam\\Domain\\LockoutState",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Application\\ResetUserPassword",
+        "b": "App\\Modules\\Iam\\Domain\\PasswordPolicy",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Application\\ResetUserPassword",
+        "b": "App\\Modules\\Iam\\Domain\\PasswordHasher",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Iam\\Infrastructure\\LaravelPasswordHasher",
+        "b": "App\\Modules\\Iam\\Domain\\PasswordHasher",
+        "type": "Realisation",
+        "name": "implementa"
+      }
+    ]
+  },
+  {
+    "key": "clases_catalogo_alta",
+    "title": "Clases de catálogo y generación de SKU",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Catalog\\Application\\CreateProduct",
+        "name": "CreateProduct",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Application/CreateProduct.php",
+        "attributes": [
+          {
+            "name": "catalog",
+            "type": "CatalogRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "skus",
+            "type": "SkuSequence",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "product",
+                "type": "NewProduct"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Application/CreateProduct.php\nFirma del constructor __construct(catalog: CatalogRepository, skus: SkuSequence, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\NewProduct",
+        "name": "NewProduct",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/NewProduct.php",
+        "attributes": [
+          {
+            "name": "name",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "description",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "presentations",
+            "type": "array",
+            "visibility": "Public"
+          },
+          {
+            "name": "barcodes",
+            "type": "array",
+            "visibility": "Public"
+          },
+          {
+            "name": "policies",
+            "type": "array",
+            "visibility": "Public"
+          },
+          {
+            "name": "categoryId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "baseUnitId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "actorId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "brandId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "referencePrice",
+            "type": "?string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "normalizeName",
+            "type": "string",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "name",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "normalizeDescription",
+            "type": "?string",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "description",
+                "type": "?string"
+              }
+            ]
+          },
+          {
+            "name": "normalizePresentations",
+            "type": "array",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "baseUnitId",
+                "type": "int"
+              },
+              {
+                "name": "input",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "normalizeBarcodes",
+            "type": "array",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "barcodes",
+                "type": "array"
+              },
+              {
+                "name": "presentations",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "normalizePolicies",
+            "type": "array",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "policies",
+                "type": "array"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Domain/NewProduct.php\nFirma del constructor __construct(name: string, categoryId: int, baseUnitId: int, actorId: ?int, description: ?string, brandId: ?int, referencePrice: ?string, presentations: array, barcodes: array, policies: array)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\CatalogRepository",
+        "name": "CatalogRepository",
+        "kind": "Interface",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/CatalogRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "category",
+            "type": "?CategoryInfo",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "brandExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "existingUnitIds",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "existingWarehouseIds",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "barcodeOwner",
+            "type": "?int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "barcode",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "insert",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "product",
+                "type": "NewProduct"
+              },
+              {
+                "name": "sku",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lock",
+            "type": "?ProductRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "update",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "changes",
+                "type": "ProductChanges"
+              }
+            ]
+          },
+          {
+            "name": "setStatus",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "status",
+                "type": "ProductStatus"
+              }
+            ]
+          },
+          {
+            "name": "totalStock",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "similarNames",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "threshold",
+                "type": "float"
+              },
+              {
+                "name": "limit",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "lookup",
+            "type": "?ProductLookup",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Domain/CatalogRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Infrastructure\\DatabaseCatalogRepository",
+        "name": "DatabaseCatalogRepository",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Infrastructure/DatabaseCatalogRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "category",
+            "type": "?CategoryInfo",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "brandExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "existingUnitIds",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "existingWarehouseIds",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "barcodeOwner",
+            "type": "?int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "barcode",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "insert",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "product",
+                "type": "NewProduct"
+              },
+              {
+                "name": "sku",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lock",
+            "type": "?ProductRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "update",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "changes",
+                "type": "ProductChanges"
+              }
+            ]
+          },
+          {
+            "name": "setStatus",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "status",
+                "type": "ProductStatus"
+              }
+            ]
+          },
+          {
+            "name": "totalStock",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "similarNames",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "threshold",
+                "type": "float"
+              },
+              {
+                "name": "limit",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "lookup",
+            "type": "?ProductLookup",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Infrastructure/DatabaseCatalogRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\ProductRecord",
+        "name": "ProductRecord",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/ProductRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "sku",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "description",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "categoryId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "brandId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "referencePrice",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "status",
+            "type": "ProductStatus",
+            "visibility": "Public"
+          },
+          {
+            "name": "version",
+            "type": "int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Catalog/Domain/ProductRecord.php\nFirma del constructor __construct(id: int, sku: string, name: string, description: ?string, categoryId: int, brandId: ?int, referencePrice: ?string, status: ProductStatus, version: int)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\SkuSequence",
+        "name": "SkuSequence",
+        "kind": "Interface",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/SkuSequence.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "next",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "categoryRootCode",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Domain/SkuSequence.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Infrastructure\\DatabaseSkuSequence",
+        "name": "DatabaseSkuSequence",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Infrastructure/DatabaseSkuSequence.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "next",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "categoryRootCode",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Infrastructure/DatabaseSkuSequence.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Catalog\\Application\\CreateProduct",
+        "b": "App\\Modules\\Catalog\\Domain\\NewProduct",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Application\\CreateProduct",
+        "b": "App\\Modules\\Catalog\\Domain\\CatalogRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Application\\CreateProduct",
+        "b": "App\\Modules\\Catalog\\Domain\\SkuSequence",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Domain\\CatalogRepository",
+        "b": "App\\Modules\\Catalog\\Domain\\NewProduct",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Domain\\CatalogRepository",
+        "b": "App\\Modules\\Catalog\\Domain\\ProductRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Infrastructure\\DatabaseCatalogRepository",
+        "b": "App\\Modules\\Catalog\\Domain\\NewProduct",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Infrastructure\\DatabaseCatalogRepository",
+        "b": "App\\Modules\\Catalog\\Domain\\CatalogRepository",
+        "type": "Realisation",
+        "name": "implementa"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Infrastructure\\DatabaseCatalogRepository",
+        "b": "App\\Modules\\Catalog\\Domain\\ProductRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Infrastructure\\DatabaseSkuSequence",
+        "b": "App\\Modules\\Catalog\\Domain\\SkuSequence",
+        "type": "Realisation",
+        "name": "implementa"
+      }
+    ]
+  },
+  {
+    "key": "clases_catalogo_valores",
+    "title": "Clases de códigos presentaciones y políticas",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\Barcode",
+        "name": "Barcode",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/Barcode.php",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "symbology",
+            "type": "Symbology",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "of",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string"
+              },
+              {
+                "name": "symbology",
+                "type": "Symbology"
+              }
+            ]
+          },
+          {
+            "name": "hasValidCheckDigit",
+            "type": "bool",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Domain/Barcode.php\nFirma del constructor __construct(value: string, symbology: Symbology)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\Symbology",
+        "name": "Symbology",
+        "kind": "Enumeration",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/Symbology.php",
+        "attributes": [],
+        "methods": [],
+        "notes": "app/Modules/Catalog/Domain/Symbology.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "literals": [
+          {
+            "name": "Ean13",
+            "value": "EAN13"
+          },
+          {
+            "name": "Ean8",
+            "value": "EAN8"
+          },
+          {
+            "name": "UpcA",
+            "value": "UPCA"
+          },
+          {
+            "name": "Code128",
+            "value": "CODE128"
+          },
+          {
+            "name": "Qr",
+            "value": "QR"
+          },
+          {
+            "name": "Internal",
+            "value": "INTERNAL"
+          }
+        ]
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\PresentationInput",
+        "name": "PresentationInput",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/PresentationInput.php",
+        "attributes": [
+          {
+            "name": "unitId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "factor",
+            "type": "Factor",
+            "visibility": "Public"
+          },
+          {
+            "name": "isPurchaseDefault",
+            "type": "bool",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Catalog/Domain/PresentationInput.php\nFirma del constructor __construct(unitId: int, factor: Factor, isPurchaseDefault: bool)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\Factor",
+        "name": "Factor",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/Factor.php",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "of",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string|int"
+              }
+            ]
+          },
+          {
+            "name": "isOne",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Catalog/Domain/Factor.php\nFirma del constructor __construct(value: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\StockPolicy",
+        "name": "StockPolicy",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/StockPolicy.php",
+        "attributes": [
+          {
+            "name": "minQty",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "maxQty",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "reorderQty",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "warehouseId",
+            "type": "int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "qty",
+            "type": "string",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string|int"
+              },
+              {
+                "name": "label",
+                "type": "string"
+              },
+              {
+                "name": "allowZero",
+                "type": "bool"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Domain/StockPolicy.php\nFirma del constructor __construct(warehouseId: int, minQty: string|int, maxQty: string|int|null, reorderQty: string|int|null)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Application\\UpdateProduct",
+        "name": "UpdateProduct",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Application/UpdateProduct.php",
+        "attributes": [
+          {
+            "name": "catalog",
+            "type": "CatalogRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "changes",
+                "type": "ProductChanges"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Application/UpdateProduct.php\nFirma del constructor __construct(catalog: CatalogRepository, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\ProductChanges",
+        "name": "ProductChanges",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/ProductChanges.php",
+        "attributes": [
+          {
+            "name": "name",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "description",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "expectedVersion",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "actorId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "categoryId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "brandId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "referencePrice",
+            "type": "?string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "fields",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Catalog/Domain/ProductChanges.php\nFirma del constructor __construct(expectedVersion: int, actorId: ?int, name: ?string, description: ?string, categoryId: ?int, brandId: ?int, referencePrice: ?string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Application\\LookupProduct",
+        "name": "LookupProduct",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Application/LookupProduct.php",
+        "attributes": [
+          {
+            "name": "catalog",
+            "type": "CatalogRepository",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "?ProductLookup",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Catalog/Application/LookupProduct.php\nFirma del constructor __construct(catalog: CatalogRepository)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Catalog\\Domain\\ProductLookup",
+        "name": "ProductLookup",
+        "kind": "Class",
+        "module": "Catalog",
+        "path": "app/Modules/Catalog/Domain/ProductLookup.php",
+        "attributes": [
+          {
+            "name": "productId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "sku",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "presentationId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "presentationFactor",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "costAvg",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "stock",
+            "type": "array",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Catalog/Domain/ProductLookup.php\nFirma del constructor __construct(productId: int, sku: string, name: string, status: string, presentationId: ?int, presentationFactor: string, costAvg: string, stock: array)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Catalog\\Domain\\Barcode",
+        "b": "App\\Modules\\Catalog\\Domain\\Symbology",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Domain\\PresentationInput",
+        "b": "App\\Modules\\Catalog\\Domain\\Factor",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Application\\UpdateProduct",
+        "b": "App\\Modules\\Catalog\\Domain\\ProductChanges",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Catalog\\Application\\LookupProduct",
+        "b": "App\\Modules\\Catalog\\Domain\\ProductLookup",
+        "type": "Dependency",
+        "name": "firma"
+      }
+    ]
+  },
+  {
+    "key": "clases_ubicaciones",
+    "title": "Clases de almacenes ubicaciones y estados",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Locations\\Application\\GenerateLocations",
+        "name": "GenerateLocations",
+        "kind": "Class",
+        "module": "Locations",
+        "path": "app/Modules/Locations/Application/GenerateLocations.php",
+        "attributes": [
+          {
+            "name": "locations",
+            "type": "LocationRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "batch",
+                "type": "LocationBatch"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Locations/Application/GenerateLocations.php\nFirma del constructor __construct(locations: LocationRepository, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Locations\\Application\\ChangeLocationState",
+        "name": "ChangeLocationState",
+        "kind": "Class",
+        "module": "Locations",
+        "path": "app/Modules/Locations/Application/ChangeLocationState.php",
+        "attributes": [
+          {
+            "name": "locations",
+            "type": "LocationRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "freeze",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              }
+            ]
+          },
+          {
+            "name": "unfreeze",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              }
+            ]
+          },
+          {
+            "name": "freezeMany",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationIds",
+                "type": "array"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              },
+              {
+                "name": "reference",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "unfreezeMany",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationIds",
+                "type": "array"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              },
+              {
+                "name": "reference",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "deactivate",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              }
+            ]
+          },
+          {
+            "name": "activate",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              }
+            ]
+          },
+          {
+            "name": "change",
+            "type": "void",
+            "visibility": "Private",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              },
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "apply",
+                "type": "callable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Locations/Application/ChangeLocationState.php\nFirma del constructor __construct(locations: LocationRepository, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Locations\\Domain\\LocationBatch",
+        "name": "LocationBatch",
+        "kind": "Class",
+        "module": "Locations",
+        "path": "app/Modules/Locations/Domain/LocationBatch.php",
+        "attributes": [
+          {
+            "name": "warehouseId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "zone",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "aisleFrom",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "aisleTo",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "rackFrom",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "rackTo",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "levelFrom",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "levelTo",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "actorId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "maxCapacity",
+            "type": "?string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "count",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "expand",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "warehouseCode",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Locations/Domain/LocationBatch.php\nFirma del constructor __construct(warehouseId: int, zone: int, aisleFrom: int, aisleTo: int, rackFrom: int, rackTo: int, levelFrom: int, levelTo: int, actorId: ?int, maxCapacity: ?string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Locations\\Domain\\LocationCode",
+        "name": "LocationCode",
+        "kind": "Class",
+        "module": "Locations",
+        "path": "app/Modules/Locations/Domain/LocationCode.php",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "build",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "warehouseCode",
+                "type": "string"
+              },
+              {
+                "name": "zone",
+                "type": "int"
+              },
+              {
+                "name": "aisle",
+                "type": "int"
+              },
+              {
+                "name": "rack",
+                "type": "int"
+              },
+              {
+                "name": "level",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "normalize",
+            "type": "string",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "scanned",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "__toString",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Locations/Domain/LocationCode.php\nFirma del constructor __construct(value: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Locations\\Domain\\LocationRecord",
+        "name": "LocationRecord",
+        "kind": "Class",
+        "module": "Locations",
+        "path": "app/Modules/Locations/Domain/LocationRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "isStaging",
+            "type": "bool",
+            "visibility": "Public"
+          },
+          {
+            "name": "isFrozen",
+            "type": "bool",
+            "visibility": "Public"
+          },
+          {
+            "name": "isActive",
+            "type": "bool",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Locations/Domain/LocationRecord.php\nFirma del constructor __construct(id: int, code: string, isStaging: bool, isFrozen: bool, isActive: bool)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Locations\\Domain\\LocationRepository",
+        "name": "LocationRepository",
+        "kind": "Interface",
+        "module": "Locations",
+        "path": "app/Modules/Locations/Domain/LocationRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "warehouse",
+            "type": "?WarehouseInfo",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "existingCodes",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "codes",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "insertMany",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "warehouseId",
+                "type": "int"
+              },
+              {
+                "name": "locations",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "lock",
+            "type": "?LocationRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "stockAt",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "lockMany",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "setFrozenMany",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              },
+              {
+                "name": "frozen",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "setFrozen",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "frozen",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "setActive",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "active",
+                "type": "bool"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Locations/Domain/LocationRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Locations\\Infrastructure\\DatabaseLocationRepository",
+        "name": "DatabaseLocationRepository",
+        "kind": "Class",
+        "module": "Locations",
+        "path": "app/Modules/Locations/Infrastructure/DatabaseLocationRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "warehouse",
+            "type": "?WarehouseInfo",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "existingCodes",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "codes",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "insertMany",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "warehouseId",
+                "type": "int"
+              },
+              {
+                "name": "locations",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "lock",
+            "type": "?LocationRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "lockMany",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "setFrozenMany",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ids",
+                "type": "array"
+              },
+              {
+                "name": "frozen",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "stockAt",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setFrozen",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "frozen",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "setActive",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "active",
+                "type": "bool"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Locations/Infrastructure/DatabaseLocationRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Locations\\Application\\GenerateLocations",
+        "b": "App\\Modules\\Locations\\Domain\\LocationBatch",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Locations\\Application\\GenerateLocations",
+        "b": "App\\Modules\\Locations\\Domain\\LocationRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Locations\\Application\\ChangeLocationState",
+        "b": "App\\Modules\\Locations\\Domain\\LocationRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Locations\\Domain\\LocationBatch",
+        "b": "App\\Modules\\Locations\\Domain\\LocationCode",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Locations\\Domain\\LocationRepository",
+        "b": "App\\Modules\\Locations\\Domain\\LocationRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Locations\\Infrastructure\\DatabaseLocationRepository",
+        "b": "App\\Modules\\Locations\\Domain\\LocationRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Locations\\Infrastructure\\DatabaseLocationRepository",
+        "b": "App\\Modules\\Locations\\Domain\\LocationRepository",
+        "type": "Realisation",
+        "name": "implementa"
+      }
+    ]
+  },
+  {
+    "key": "clases_proveedores",
+    "title": "Clases de proveedores RUC y asociaciones",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Suppliers\\Application\\CreateSupplier",
+        "name": "CreateSupplier",
+        "kind": "Class",
+        "module": "Suppliers",
+        "path": "app/Modules/Suppliers/Application/CreateSupplier.php",
+        "attributes": [
+          {
+            "name": "suppliers",
+            "type": "SupplierRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "supplier",
+                "type": "NewSupplier"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Suppliers/Application/CreateSupplier.php\nFirma del constructor __construct(suppliers: SupplierRepository, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Suppliers\\Application\\UpdateSupplier",
+        "name": "UpdateSupplier",
+        "kind": "Class",
+        "module": "Suppliers",
+        "path": "app/Modules/Suppliers/Application/UpdateSupplier.php",
+        "attributes": [
+          {
+            "name": "suppliers",
+            "type": "SupplierRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "supplierId",
+                "type": "int"
+              },
+              {
+                "name": "changes",
+                "type": "SupplierChanges"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Suppliers/Application/UpdateSupplier.php\nFirma del constructor __construct(suppliers: SupplierRepository, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Suppliers\\Application\\LinkProductToSupplier",
+        "name": "LinkProductToSupplier",
+        "kind": "Class",
+        "module": "Suppliers",
+        "path": "app/Modules/Suppliers/Application/LinkProductToSupplier.php",
+        "attributes": [
+          {
+            "name": "suppliers",
+            "type": "SupplierRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "supplierId",
+                "type": "int"
+              },
+              {
+                "name": "supplierSku",
+                "type": "?string"
+              },
+              {
+                "name": "lastCost",
+                "type": "?string"
+              },
+              {
+                "name": "preferred",
+                "type": "bool"
+              },
+              {
+                "name": "actorId",
+                "type": "?int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Suppliers/Application/LinkProductToSupplier.php\nFirma del constructor __construct(suppliers: SupplierRepository, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Suppliers\\Domain\\NewSupplier",
+        "name": "NewSupplier",
+        "kind": "Class",
+        "module": "Suppliers",
+        "path": "app/Modules/Suppliers/Domain/NewSupplier.php",
+        "attributes": [
+          {
+            "name": "businessName",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "contactName",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "phone",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "email",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "address",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "ruc",
+            "type": "Ruc",
+            "visibility": "Public"
+          },
+          {
+            "name": "leadTimeDays",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "actorId",
+            "type": "?int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Suppliers/Domain/NewSupplier.php\nFirma del constructor __construct(ruc: Ruc, businessName: string, contactName: ?string, phone: ?string, email: ?string, address: ?string, leadTimeDays: ?int, actorId: ?int)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Suppliers\\Domain\\Ruc",
+        "name": "Ruc",
+        "kind": "Class",
+        "module": "Suppliers",
+        "path": "app/Modules/Suppliers/Domain/Ruc.php",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "of",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "__toString",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Suppliers/Domain/Ruc.php\nFirma del constructor __construct(value: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Suppliers\\Domain\\SupplierRepository",
+        "name": "SupplierRepository",
+        "kind": "Interface",
+        "module": "Suppliers",
+        "path": "app/Modules/Suppliers/Domain/SupplierRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "rucExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ruc",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "insert",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "supplier",
+                "type": "NewSupplier"
+              }
+            ]
+          },
+          {
+            "name": "lock",
+            "type": "?SupplierRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "update",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "changes",
+                "type": "SupplierChanges"
+              }
+            ]
+          },
+          {
+            "name": "setActive",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "active",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "productExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "linkProduct",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "supplierId",
+                "type": "int"
+              },
+              {
+                "name": "supplierSku",
+                "type": "?string"
+              },
+              {
+                "name": "lastCost",
+                "type": "?string"
+              },
+              {
+                "name": "preferred",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "clearPreferred",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Suppliers/Domain/SupplierRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Suppliers\\Infrastructure\\DatabaseSupplierRepository",
+        "name": "DatabaseSupplierRepository",
+        "kind": "Class",
+        "module": "Suppliers",
+        "path": "app/Modules/Suppliers/Infrastructure/DatabaseSupplierRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "rucExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "ruc",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "insert",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "supplier",
+                "type": "NewSupplier"
+              }
+            ]
+          },
+          {
+            "name": "lock",
+            "type": "?SupplierRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "update",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "changes",
+                "type": "SupplierChanges"
+              }
+            ]
+          },
+          {
+            "name": "setActive",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "active",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "productExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "linkProduct",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "supplierId",
+                "type": "int"
+              },
+              {
+                "name": "supplierSku",
+                "type": "?string"
+              },
+              {
+                "name": "lastCost",
+                "type": "?string"
+              },
+              {
+                "name": "preferred",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "clearPreferred",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Suppliers/Infrastructure/DatabaseSupplierRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Suppliers\\Application\\CreateSupplier",
+        "b": "App\\Modules\\Suppliers\\Domain\\NewSupplier",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Suppliers\\Application\\CreateSupplier",
+        "b": "App\\Modules\\Suppliers\\Domain\\SupplierRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Suppliers\\Application\\UpdateSupplier",
+        "b": "App\\Modules\\Suppliers\\Domain\\SupplierRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Suppliers\\Application\\LinkProductToSupplier",
+        "b": "App\\Modules\\Suppliers\\Domain\\SupplierRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Suppliers\\Domain\\NewSupplier",
+        "b": "App\\Modules\\Suppliers\\Domain\\Ruc",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Suppliers\\Domain\\SupplierRepository",
+        "b": "App\\Modules\\Suppliers\\Domain\\NewSupplier",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Suppliers\\Infrastructure\\DatabaseSupplierRepository",
+        "b": "App\\Modules\\Suppliers\\Domain\\NewSupplier",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Suppliers\\Infrastructure\\DatabaseSupplierRepository",
+        "b": "App\\Modules\\Suppliers\\Domain\\SupplierRepository",
+        "type": "Realisation",
+        "name": "implementa"
+      }
+    ]
+  },
+  {
+    "key": "clases_auditoria",
+    "title": "Clases de contratos y persistencia de auditoría",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Audit\\Domain\\AuditEntry",
+        "name": "AuditEntry",
+        "kind": "Class",
+        "module": "Audit",
+        "path": "app/Modules/Audit/Domain/AuditEntry.php",
+        "attributes": [
+          {
+            "name": "action",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "entityType",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "entityId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "actorId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "oldValues",
+            "type": "?array",
+            "visibility": "Public"
+          },
+          {
+            "name": "newValues",
+            "type": "?array",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Audit/Domain/AuditEntry.php\nFirma del constructor __construct(action: string, entityType: string, entityId: ?int, actorId: ?int, oldValues: ?array, newValues: ?array)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Audit\\Domain\\AuditTrail",
+        "name": "AuditTrail",
+        "kind": "Interface",
+        "module": "Audit",
+        "path": "app/Modules/Audit/Domain/AuditTrail.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "record",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "entry",
+                "type": "AuditEntry"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Audit/Domain/AuditTrail.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Audit\\Infrastructure\\DatabaseAuditTrail",
+        "name": "DatabaseAuditTrail",
+        "kind": "Class",
+        "module": "Audit",
+        "path": "app/Modules/Audit/Infrastructure/DatabaseAuditTrail.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "record",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "entry",
+                "type": "AuditEntry"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Audit/Infrastructure/DatabaseAuditTrail.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Audit\\Domain\\AuditTrail",
+        "b": "App\\Modules\\Audit\\Domain\\AuditEntry",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Audit\\Infrastructure\\DatabaseAuditTrail",
+        "b": "App\\Modules\\Audit\\Domain\\AuditEntry",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Audit\\Infrastructure\\DatabaseAuditTrail",
+        "b": "App\\Modules\\Audit\\Domain\\AuditTrail",
+        "type": "Realisation",
+        "name": "implementa"
+      }
+    ]
+  },
+  {
+    "key": "clases_conteos",
+    "title": "Clases de apertura registro y cierre de conteos",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Operations\\Application\\StartCount",
+        "name": "StartCount",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/StartCount.php",
+        "attributes": [
+          {
+            "name": "counts",
+            "type": "CountRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "scopes",
+            "type": "CountScopeResolver",
+            "visibility": "Private"
+          },
+          {
+            "name": "locations",
+            "type": "CountLocations",
+            "visibility": "Private"
+          },
+          {
+            "name": "lookup",
+            "type": "OperationsLookup",
+            "visibility": "Private"
+          },
+          {
+            "name": "numbers",
+            "type": "DocumentNumbers",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "count",
+                "type": "NewCount"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/StartCount.php\nFirma del constructor __construct(counts: CountRepository, scopes: CountScopeResolver, locations: CountLocations, lookup: OperationsLookup, numbers: DocumentNumbers, transaction: Transaction, audit: AuditTrail, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Application\\RecordCount",
+        "name": "RecordCount",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/RecordCount.php",
+        "attributes": [
+          {
+            "name": "counts",
+            "type": "CountRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "lookup",
+            "type": "OperationsLookup",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "counted",
+                "type": "Quantity"
+              },
+              {
+                "name": "userId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/RecordCount.php\nFirma del constructor __construct(counts: CountRepository, lookup: OperationsLookup, transaction: Transaction, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Application\\CloseCount",
+        "name": "CloseCount",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/CloseCount.php",
+        "attributes": [
+          {
+            "name": "counts",
+            "type": "CountRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "adjustments",
+            "type": "AdjustmentRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "movements",
+            "type": "StockMovements",
+            "visibility": "Private"
+          },
+          {
+            "name": "locations",
+            "type": "CountLocations",
+            "visibility": "Private"
+          },
+          {
+            "name": "lookup",
+            "type": "OperationsLookup",
+            "visibility": "Private"
+          },
+          {
+            "name": "numbers",
+            "type": "DocumentNumbers",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "closerId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "applyDifference",
+            "type": "void",
+            "visibility": "Private",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countCode",
+                "type": "string"
+              },
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "line",
+                "type": "CountLineRecord"
+              },
+              {
+                "name": "closerId",
+                "type": "int"
+              },
+              {
+                "name": "favorReason",
+                "type": "int"
+              },
+              {
+                "name": "errorReason",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "summary",
+            "type": "array",
+            "visibility": "Private",
+            "static": false,
+            "parameters": [
+              {
+                "name": "lines",
+                "type": "array"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/CloseCount.php\nFirma del constructor __construct(counts: CountRepository, adjustments: AdjustmentRepository, movements: StockMovements, locations: CountLocations, lookup: OperationsLookup, numbers: DocumentNumbers, transaction: Transaction, audit: AuditTrail, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "name": "CountRepository",
+        "kind": "Interface",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/CountRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "insertCount",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "count",
+                "type": "NewCount"
+              },
+              {
+                "name": "code",
+                "type": "string"
+              },
+              {
+                "name": "scope",
+                "type": "CountScope"
+              },
+              {
+                "name": "snapshotAt",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          },
+          {
+            "name": "lockCount",
+            "type": "?CountRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "countLines",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "findLine",
+            "type": "?CountLineRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "saveCounted",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "counted",
+                "type": "Quantity"
+              },
+              {
+                "name": "userId",
+                "type": "int"
+              },
+              {
+                "name": "at",
+                "type": "DateTimeImmutable"
+              },
+              {
+                "name": "recountRequested",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "flagRecounts",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "lineIds",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "setLineAdjustment",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "lineId",
+                "type": "int"
+              },
+              {
+                "name": "adjustmentId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setCountStatus",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "status",
+                "type": "CountStatus"
+              },
+              {
+                "name": "closedBy",
+                "type": "?int"
+              },
+              {
+                "name": "closedAt",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/CountRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Infrastructure\\DatabaseCountRepository",
+        "name": "DatabaseCountRepository",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Infrastructure/DatabaseCountRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "insertCount",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "count",
+                "type": "NewCount"
+              },
+              {
+                "name": "code",
+                "type": "string"
+              },
+              {
+                "name": "scope",
+                "type": "CountScope"
+              },
+              {
+                "name": "snapshotAt",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          },
+          {
+            "name": "lockCount",
+            "type": "?CountRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "countLines",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "findLine",
+            "type": "?CountLineRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "saveCounted",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "counted",
+                "type": "Quantity"
+              },
+              {
+                "name": "userId",
+                "type": "int"
+              },
+              {
+                "name": "at",
+                "type": "DateTimeImmutable"
+              },
+              {
+                "name": "recountRequested",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "flagRecounts",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "countId",
+                "type": "int"
+              },
+              {
+                "name": "lineIds",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "setLineAdjustment",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "lineId",
+                "type": "int"
+              },
+              {
+                "name": "adjustmentId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setCountStatus",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "status",
+                "type": "CountStatus"
+              },
+              {
+                "name": "closedBy",
+                "type": "?int"
+              },
+              {
+                "name": "closedAt",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          },
+          {
+            "name": "toRecord",
+            "type": "CountLineRecord",
+            "visibility": "Private",
+            "static": false,
+            "parameters": [
+              {
+                "name": "r",
+                "type": "object"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Infrastructure/DatabaseCountRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\CountRecord",
+        "name": "CountRecord",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/CountRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "warehouseId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "status",
+            "type": "CountStatus",
+            "visibility": "Public"
+          },
+          {
+            "name": "openedBy",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "locationIds",
+            "type": "array",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/CountRecord.php\nFirma del constructor __construct(id: int, code: string, warehouseId: int, status: CountStatus, openedBy: int, locationIds: array)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\CountLineRecord",
+        "name": "CountLineRecord",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/CountLineRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "productId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "locationId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "expected",
+            "type": "Quantity",
+            "visibility": "Public"
+          },
+          {
+            "name": "counted",
+            "type": "?Quantity",
+            "visibility": "Public"
+          },
+          {
+            "name": "recountRequested",
+            "type": "bool",
+            "visibility": "Public"
+          },
+          {
+            "name": "countedBy",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "adjustmentId",
+            "type": "?int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "difference",
+            "type": "?string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "hasDifference",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/CountLineRecord.php\nFirma del constructor __construct(id: int, productId: int, locationId: int, expected: Quantity, counted: ?Quantity, recountRequested: bool, countedBy: ?int, adjustmentId: ?int)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\CountStatus",
+        "name": "CountStatus",
+        "kind": "Enumeration",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/CountStatus.php",
+        "attributes": [],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/CountStatus.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "literals": [
+          {
+            "name": "Open",
+            "value": "OPEN"
+          },
+          {
+            "name": "Counting",
+            "value": "COUNTING"
+          },
+          {
+            "name": "Review",
+            "value": "REVIEW"
+          },
+          {
+            "name": "Closed",
+            "value": "CLOSED"
+          },
+          {
+            "name": "Cancelled",
+            "value": "CANCELLED"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Operations\\Application\\StartCount",
+        "b": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\RecordCount",
+        "b": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\RecordCount",
+        "b": "App\\Modules\\Operations\\Domain\\CountStatus",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\CloseCount",
+        "b": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\CloseCount",
+        "b": "App\\Modules\\Operations\\Domain\\CountLineRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\CloseCount",
+        "b": "App\\Modules\\Operations\\Domain\\CountStatus",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "b": "App\\Modules\\Operations\\Domain\\CountRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "b": "App\\Modules\\Operations\\Domain\\CountLineRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "b": "App\\Modules\\Operations\\Domain\\CountStatus",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Infrastructure\\DatabaseCountRepository",
+        "b": "App\\Modules\\Operations\\Domain\\CountRepository",
+        "type": "Realisation",
+        "name": "implementa"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Infrastructure\\DatabaseCountRepository",
+        "b": "App\\Modules\\Operations\\Domain\\CountRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Infrastructure\\DatabaseCountRepository",
+        "b": "App\\Modules\\Operations\\Domain\\CountLineRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Infrastructure\\DatabaseCountRepository",
+        "b": "App\\Modules\\Operations\\Domain\\CountStatus",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\CountRecord",
+        "b": "App\\Modules\\Operations\\Domain\\CountStatus",
+        "type": "Association",
+        "name": "referencia"
+      }
+    ]
+  },
+  {
+    "key": "clases_pos",
+    "title": "Clases de importación de ventas y errores",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Operations\\Application\\ImportPosSales",
+        "name": "ImportPosSales",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/ImportPosSales.php",
+        "attributes": [
+          {
+            "name": "targets",
+            "type": "SalesTargets",
+            "visibility": "Private"
+          },
+          {
+            "name": "movements",
+            "type": "StockMovements",
+            "visibility": "Private"
+          },
+          {
+            "name": "jobs",
+            "type": "ImportJobs",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "ImportResult",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "csv",
+                "type": "string"
+              },
+              {
+                "name": "fileName",
+                "type": "string"
+              },
+              {
+                "name": "businessDate",
+                "type": "string"
+              },
+              {
+                "name": "userId",
+                "type": "int"
+              },
+              {
+                "name": "commit",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "assertDate",
+            "type": "void",
+            "visibility": "Private",
+            "static": false,
+            "parameters": [
+              {
+                "name": "date",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/ImportPosSales.php\nFirma del constructor __construct(targets: SalesTargets, movements: StockMovements, jobs: ImportJobs, transaction: Transaction, audit: AuditTrail, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\PosSalesParser",
+        "name": "PosSalesParser",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/PosSalesParser.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "parse",
+            "type": "PosParseResult",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "csv",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "detectDelimiter",
+            "type": "string",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "header",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "normalizeHeader",
+            "type": "string",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "header",
+                "type": "?string"
+              }
+            ]
+          },
+          {
+            "name": "indexOf",
+            "type": "?int",
+            "visibility": "Private",
+            "static": true,
+            "parameters": [
+              {
+                "name": "headers",
+                "type": "array"
+              },
+              {
+                "name": "accepted",
+                "type": "array"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/PosSalesParser.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\PosParseResult",
+        "name": "PosParseResult",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/PosParseResult.php",
+        "attributes": [
+          {
+            "name": "rows",
+            "type": "array",
+            "visibility": "Public"
+          },
+          {
+            "name": "errors",
+            "type": "array",
+            "visibility": "Public"
+          },
+          {
+            "name": "totalRows",
+            "type": "int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/PosParseResult.php\nFirma del constructor __construct(rows: array, errors: array, totalRows: int)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\PosSaleRow",
+        "name": "PosSaleRow",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/PosSaleRow.php",
+        "attributes": [
+          {
+            "name": "line",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "quantity",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/PosSaleRow.php\nFirma del constructor __construct(line: int, code: string, quantity: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\ImportJobs",
+        "name": "ImportJobs",
+        "kind": "Interface",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/ImportJobs.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "committedBefore",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "kind",
+                "type": "string"
+              },
+              {
+                "name": "sha256",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "record",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "kind",
+                "type": "string"
+              },
+              {
+                "name": "fileName",
+                "type": "string"
+              },
+              {
+                "name": "sha256",
+                "type": "string"
+              },
+              {
+                "name": "commit",
+                "type": "bool"
+              },
+              {
+                "name": "totalRows",
+                "type": "int"
+              },
+              {
+                "name": "okRows",
+                "type": "int"
+              },
+              {
+                "name": "errorRows",
+                "type": "int"
+              },
+              {
+                "name": "userId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/ImportJobs.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\ImportResult",
+        "name": "ImportResult",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/ImportResult.php",
+        "attributes": [
+          {
+            "name": "importId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "committed",
+            "type": "bool",
+            "visibility": "Public"
+          },
+          {
+            "name": "totalRows",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "okRows",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "errors",
+            "type": "array",
+            "visibility": "Public"
+          },
+          {
+            "name": "units",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "errorReportCsv",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/ImportResult.php\nFirma del constructor __construct(importId: int, committed: bool, totalRows: int, okRows: int, errors: array, units: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\ImportError",
+        "name": "ImportError",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/ImportError.php",
+        "attributes": [
+          {
+            "name": "line",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/ImportError.php\nFirma del constructor __construct(line: int, message: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Operations\\Application\\ImportPosSales",
+        "b": "App\\Modules\\Operations\\Domain\\PosSalesParser",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\ImportPosSales",
+        "b": "App\\Modules\\Operations\\Domain\\ImportJobs",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\ImportPosSales",
+        "b": "App\\Modules\\Operations\\Domain\\ImportResult",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\PosSalesParser",
+        "b": "App\\Modules\\Operations\\Domain\\PosParseResult",
+        "type": "Dependency",
+        "name": "firma"
+      }
+    ]
+  },
+  {
+    "key": "clases_transferencias",
+    "title": "Clases de transferencias y confirmación",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Operations\\Application\\CreateTransferDraft",
+        "name": "CreateTransferDraft",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/CreateTransferDraft.php",
+        "attributes": [
+          {
+            "name": "transfers",
+            "type": "TransferRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "lookup",
+            "type": "OperationsLookup",
+            "visibility": "Private"
+          },
+          {
+            "name": "numbers",
+            "type": "DocumentNumbers",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "transfer",
+                "type": "NewTransfer"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/CreateTransferDraft.php\nFirma del constructor __construct(transfers: TransferRepository, lookup: OperationsLookup, numbers: DocumentNumbers, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Application\\CompleteTransfer",
+        "name": "CompleteTransfer",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/CompleteTransfer.php",
+        "attributes": [
+          {
+            "name": "transfers",
+            "type": "TransferRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "movements",
+            "type": "StockMovements",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "transferId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/CompleteTransfer.php\nFirma del constructor __construct(transfers: TransferRepository, movements: StockMovements, transaction: Transaction, audit: AuditTrail, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\TransferRepository",
+        "name": "TransferRepository",
+        "kind": "Interface",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/TransferRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "insertTransfer",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "transfer",
+                "type": "NewTransfer"
+              },
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lockTransfer",
+            "type": "?TransferRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setLineMovement",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "lineId",
+                "type": "int"
+              },
+              {
+                "name": "movementId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setTransferStatus",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "status",
+                "type": "TransferStatus"
+              },
+              {
+                "name": "completedAt",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/TransferRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Infrastructure\\DatabaseTransferRepository",
+        "name": "DatabaseTransferRepository",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Infrastructure/DatabaseTransferRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "insertTransfer",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "transfer",
+                "type": "NewTransfer"
+              },
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lockTransfer",
+            "type": "?TransferRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setLineMovement",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "lineId",
+                "type": "int"
+              },
+              {
+                "name": "movementId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setTransferStatus",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "status",
+                "type": "TransferStatus"
+              },
+              {
+                "name": "completedAt",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Infrastructure/DatabaseTransferRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\TransferRecord",
+        "name": "TransferRecord",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/TransferRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "status",
+            "type": "TransferStatus",
+            "visibility": "Public"
+          },
+          {
+            "name": "requestedBy",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "lines",
+            "type": "array",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/TransferRecord.php\nFirma del constructor __construct(id: int, code: string, status: TransferStatus, requestedBy: int, lines: array)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\TransferLine",
+        "name": "TransferLine",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/TransferLine.php",
+        "attributes": [
+          {
+            "name": "productId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "fromLocationId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "toLocationId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "quantity",
+            "type": "Quantity",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/TransferLine.php\nFirma del constructor __construct(productId: int, fromLocationId: int, toLocationId: int, quantity: Quantity)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Operations\\Application\\CreateTransferDraft",
+        "b": "App\\Modules\\Operations\\Domain\\TransferRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\CompleteTransfer",
+        "b": "App\\Modules\\Operations\\Domain\\TransferRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\TransferRepository",
+        "b": "App\\Modules\\Operations\\Domain\\TransferRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Infrastructure\\DatabaseTransferRepository",
+        "b": "App\\Modules\\Operations\\Domain\\TransferRepository",
+        "type": "Realisation",
+        "name": "implementa"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Infrastructure\\DatabaseTransferRepository",
+        "b": "App\\Modules\\Operations\\Domain\\TransferRecord",
+        "type": "Dependency",
+        "name": "firma"
+      }
+    ]
+  },
+  {
+    "key": "clases_ajustes",
+    "title": "Clases de ajustes solicitud y aprobación",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Operations\\Application\\RequestAdjustment",
+        "name": "RequestAdjustment",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/RequestAdjustment.php",
+        "attributes": [
+          {
+            "name": "adjustments",
+            "type": "AdjustmentRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "lookup",
+            "type": "OperationsLookup",
+            "visibility": "Private"
+          },
+          {
+            "name": "numbers",
+            "type": "DocumentNumbers",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "adjustment",
+                "type": "NewAdjustment"
+              }
+            ]
+          },
+          {
+            "name": "assertValid",
+            "type": "void",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "lookup",
+                "type": "OperationsLookup"
+              },
+              {
+                "name": "adjustment",
+                "type": "NewAdjustment"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/RequestAdjustment.php\nFirma del constructor __construct(adjustments: AdjustmentRepository, lookup: OperationsLookup, numbers: DocumentNumbers, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Application\\ApproveAdjustment",
+        "name": "ApproveAdjustment",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/ApproveAdjustment.php",
+        "attributes": [
+          {
+            "name": "adjustments",
+            "type": "AdjustmentRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "movements",
+            "type": "StockMovements",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "adjustmentId",
+                "type": "int"
+              },
+              {
+                "name": "reviewerId",
+                "type": "int"
+              },
+              {
+                "name": "reviewNotes",
+                "type": "?string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/ApproveAdjustment.php\nFirma del constructor __construct(adjustments: AdjustmentRepository, movements: StockMovements, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Application\\RejectAdjustment",
+        "name": "RejectAdjustment",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/RejectAdjustment.php",
+        "attributes": [
+          {
+            "name": "adjustments",
+            "type": "AdjustmentRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "adjustmentId",
+                "type": "int"
+              },
+              {
+                "name": "reviewerId",
+                "type": "int"
+              },
+              {
+                "name": "reviewNotes",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/RejectAdjustment.php\nFirma del constructor __construct(adjustments: AdjustmentRepository, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Application\\RecordDirectAdjustment",
+        "name": "RecordDirectAdjustment",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/RecordDirectAdjustment.php",
+        "attributes": [
+          {
+            "name": "lookup",
+            "type": "OperationsLookup",
+            "visibility": "Private"
+          },
+          {
+            "name": "movements",
+            "type": "StockMovements",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "adjustment",
+                "type": "NewAdjustment"
+              },
+              {
+                "name": "idempotencyKey",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/RecordDirectAdjustment.php\nFirma del constructor __construct(lookup: OperationsLookup, movements: StockMovements, transaction: Transaction, audit: AuditTrail)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\AdjustmentRepository",
+        "name": "AdjustmentRepository",
+        "kind": "Interface",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/AdjustmentRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "insertAdjustment",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "adjustment",
+                "type": "NewAdjustment"
+              },
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lockAdjustment",
+            "type": "?AdjustmentRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "markApproved",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "reviewerId",
+                "type": "int"
+              },
+              {
+                "name": "movementId",
+                "type": "int"
+              },
+              {
+                "name": "reviewNotes",
+                "type": "?string"
+              }
+            ]
+          },
+          {
+            "name": "markRejected",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "reviewerId",
+                "type": "int"
+              },
+              {
+                "name": "reviewNotes",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/AdjustmentRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\AdjustmentRecord",
+        "name": "AdjustmentRecord",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/AdjustmentRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "status",
+            "type": "AdjustmentStatus",
+            "visibility": "Public"
+          },
+          {
+            "name": "request",
+            "type": "NewAdjustment",
+            "visibility": "Public"
+          },
+          {
+            "name": "movementId",
+            "type": "?int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/AdjustmentRecord.php\nFirma del constructor __construct(id: int, code: string, status: AdjustmentStatus, request: NewAdjustment, movementId: ?int)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente"
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\AdjustmentStatus",
+        "name": "AdjustmentStatus",
+        "kind": "Enumeration",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/AdjustmentStatus.php",
+        "attributes": [],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/AdjustmentStatus.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "literals": [
+          {
+            "name": "Pending",
+            "value": "PENDING"
+          },
+          {
+            "name": "Approved",
+            "value": "APPROVED"
+          },
+          {
+            "name": "Rejected",
+            "value": "REJECTED"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Operations\\Application\\RequestAdjustment",
+        "b": "App\\Modules\\Operations\\Domain\\AdjustmentRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\ApproveAdjustment",
+        "b": "App\\Modules\\Operations\\Domain\\AdjustmentRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\ApproveAdjustment",
+        "b": "App\\Modules\\Operations\\Domain\\AdjustmentStatus",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\RejectAdjustment",
+        "b": "App\\Modules\\Operations\\Domain\\AdjustmentRepository",
+        "type": "Association",
+        "name": "referencia"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\RejectAdjustment",
+        "b": "App\\Modules\\Operations\\Domain\\AdjustmentStatus",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\RecordDirectAdjustment",
+        "b": "App\\Modules\\Operations\\Application\\RequestAdjustment",
+        "type": "Dependency",
+        "name": "utiliza"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\AdjustmentRepository",
+        "b": "App\\Modules\\Operations\\Domain\\AdjustmentRecord",
+        "type": "Dependency",
+        "name": "firma"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\AdjustmentRecord",
+        "b": "App\\Modules\\Operations\\Domain\\AdjustmentStatus",
+        "type": "Association",
+        "name": "referencia"
+      }
+    ]
+  },
+  {
+    "key": "clases_continuidad",
+    "title": "Clases propuestas de respaldo y restauración",
+    "nodes": [
+      {
+        "id": "Target\\Operations\\BackupDatabaseJob",
+        "name": "BackupDatabaseJob",
+        "kind": "Class",
+        "module": "Objetivo Operations",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "encryptor",
+            "type": "BackupEncryptor",
+            "visibility": "Private"
+          },
+          {
+            "name": "storage",
+            "type": "ExternalBackupStore",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "handle",
+            "type": "BackupResult",
+            "parameters": [
+              {
+                "name": "destination",
+                "type": "BackupDestination"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-060. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto"
+      },
+      {
+        "id": "Target\\Operations\\RestoreBackup",
+        "name": "RestoreBackup",
+        "kind": "Class",
+        "module": "Objetivo Operations",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "verifier",
+            "type": "BackupVerifier",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "execute",
+            "type": "RestoreResult",
+            "parameters": [
+              {
+                "name": "backupId",
+                "type": "string"
+              },
+              {
+                "name": "isolatedDatabase",
+                "type": "string"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-060. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto"
+      }
+    ],
+    "edges": []
+  }
+]

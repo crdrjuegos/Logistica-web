@@ -1,0 +1,79 @@
+<?php
+declare(strict_types=1);
+// Comprobaciones de aceptación del dominio. No sustituye Pest, PostgreSQL ni la validación del usuario.
+$root=dirname(__DIR__);
+spl_autoload_register(function(string $c) use($root):void {
+ foreach(['App\\'=>'app/','Tests\\'=>'tests/'] as $prefix=>$dir){
+  if(str_starts_with($c,$prefix)){ $p=$root.'/'.$dir.str_replace('\\','/',substr($c,strlen($prefix))).'.php'; if(is_file($p))require $p; }
+ }
+});
+use Tests\Support\Scenario as S;
+use Tests\Support\MovementFactory as M;
+use App\Modules\Inventory\Domain\Quantity as Q;
+use App\Modules\Inventory\Domain\UnitCost as C;
+use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+use App\Modules\Catalog\Domain\{Barcode,Symbology,CatalogException,NewProduct,ProductStatus,Factor,StockPolicy};
+use App\Modules\Catalog\Application\{CreateProduct,DeactivateProduct};
+use App\Modules\Iam\Domain\{NewUser,RoleName,IamException,PasswordPolicy,LockoutPolicy,LockoutState};
+use App\Modules\Iam\Application\CreateUser;
+use App\Modules\Suppliers\Domain\{Ruc,NewSupplier,SupplierException};
+use App\Modules\Suppliers\Application\CreateSupplier;
+use App\Modules\Operations\Application\{CreateReceiptDraft,ConfirmReceipt,RequestAdjustment,ApproveAdjustment,RejectAdjustment,StartCount,RecordCount,SubmitCountForReview,CloseCount};
+use App\Modules\Operations\Domain\{NewReceipt,ReceiptLine,DocumentType,ReceiptStatus,OperationsException,AdjustmentKind,NewAdjustment,CountScope,CountBalance,CountScopeType,NewCount,CountStatus};
+use Tests\Support\Operations\{OperationsKit,InMemoryCountStore,SnapshotTransaction};
+use Tests\Support\{RecordingAuditTrail,PassthroughTransaction,FakeHasher};
+$results=[];
+function eq(mixed $actual,mixed $expected):void {if($actual!==$expected)throw new RuntimeException('Esperado '.json_encode($expected).'; obtenido '.json_encode($actual));}
+function raises(callable $f,string $type):void{try{$f();}catch(Throwable $e){if($e instanceof $type)return;throw $e;}throw new RuntimeException('No rechazó la operación; se esperaba '.$type);}
+function probe(string $id,string $name,callable $f):void{global $results;$start=microtime(true);try{$observed=$f();$status='Conforme en dominio';}catch(Throwable $e){$status='No conforme';$observed=$e->getMessage();}$results[]=['id'=>$id,'scenario'=>$name,'status'=>$status,'observed'=>$observed??'Se cumplieron las aserciones indicadas','scope'=>'Dominio y casos de uso con dobles en memoria; sin BD ni navegador','seconds'=>round(microtime(true)-$start,4)];}
+function iam():array{$r=new Tests\Support\Iam\InMemoryUserRepository;$a=new RecordingAuditTrail;return [$r,$a,new CreateUser($r,new FakeHasher,new PassthroughTransaction,$a)];}
+function user(string $u='ana',string $e='ana@cityofertas.test'):NewUser{return new NewUser('Ana Pérez',$u,$e,'caballo-azul-lluvia-77',RoleName::Almacenero);}
+function catalog():array{$r=new Tests\Support\Catalog\InMemoryCatalogRepository;$r->categories=[1=>new App\Modules\Catalog\Domain\CategoryInfo(1,'LIB',true)];$r->units=[1];$a=new RecordingAuditTrail;$tx=new PassthroughTransaction;return [$r,$a,new CreateProduct($r,new Tests\Support\Catalog\InMemorySkuSequence,$tx,$a),new DeactivateProduct($r,$tx,$a)];}
+function receipt(OperationsKit $k,array $lines):array{$create=new CreateReceiptDraft($k->store,$k->store,$k->store,$k->tx,$k->audit,$k->clock);$confirm=new ConfirmReceipt($k->store,$k->movements,$k->tx,$k->audit,$k->clock);$r=$create(new NewReceipt(1,1,DocumentType::Invoice,'F001-234','2026-10-09',7,$lines));return [$r['id'],$confirm];}
+function line(int $p,string $q):ReceiptLine{return new ReceiptLine($p,10,Q::of($q),C::of('2'));}
+function adjustment():array{$k=new OperationsKit;$request=new RequestAdjustment($k->store,$k->store,$k->store,$k->tx,$k->audit);$id=$request(new NewAdjustment(AdjustmentKind::WriteOff,5,10,Q::of('2'),1,'Se mojaron dos unidades',7))['id'];return [$k,$id,new ApproveAdjustment($k->store,$k->movements,$k->tx,$k->audit),new RejectAdjustment($k->store,$k->tx,$k->audit)];}
+function counting(bool $difference=true):array{$k=new OperationsKit;$s=new InMemoryCountStore;$s->scope=new CountScope([10,11],[new CountBalance(5,10,Q::of('10')),new CountBalance(6,10,Q::of('4')),new CountBalance(5,11,Q::of('2'))]);$tx=new SnapshotTransaction([$k->store,$k->movements,$s]);$start=new StartCount($s,$s,$s,$k->store,$k->store,$tx,$k->audit,$k->clock);$id=$start(new NewCount(1,CountScopeType::Full,null,7))['id'];$record=new RecordCount($s,$k->store,$tx,$k->clock);foreach([[5,10,'10'],[6,10,$difference?'3':'4'],[5,11,'2']] as [$p,$l,$q])$record($id,$p,$l,Q::of($q),8);$submit=new SubmitCountForReview($s,$tx,$k->audit);$submit($id,8);if($difference)$record($id,6,10,Q::of('3'),8);$close=new CloseCount($s,$k->store,$k->movements,$s,$k->store,$k->store,$tx,$k->audit,$k->clock);return [$k,$s,$id,$close];}
+probe('CA-001-1','Alta con normalización y auditoría sin contraseña',function(){[$r,$a,$create]=iam();$id=$create(user('ANA','ANA@cityofertas.test'));eq($r->rows[$id]['username'],'ana');eq($r->rows[$id]['email'],'ana@cityofertas.test');eq(str_contains(json_encode($a->entries),'caballo'),false);return 'ana; correo normalizado; password no incluido en auditoría. Hasher doble de prueba, no se evalúa criptografía.';});
+probe('CA-001-2','Usuario y correo duplicados',function(){[$r,$a,$c]=iam();$c(user());raises(fn()=>$c(user('ANA','otro@cityofertas.test')),IamException::class);raises(fn()=>$c(user('otro','ANA@cityofertas.test')),IamException::class);eq(count($r->rows),1);});
+probe('CA-001-3','Contraseñas de 11 caracteres, comunes o con usuario',function(){foreach(['Abcdef!2345','123456789012','ana-clave-larga-2026'] as $p)eq(count(PasswordPolicy::violations($p,'ana','ana@cityofertas.test'))>0,true);});
+probe('CA-003-1','Quinto fallo bloquea 15 minutos',function(){$t=new DateTimeImmutable('2026-10-28T10:00:00-05:00');$s=new LockoutState(4,null);$s=LockoutPolicy::afterFailure($s,$t);eq($s->lockedUntil->format('H:i:s'),'10:15:00');eq($s->failedAttempts,0);});
+probe('CA-003-2','Bloqueo vigente a los 14 minutos 59 segundos',function(){$t=new DateTimeImmutable('2026-10-28T10:00:00-05:00');$s=LockoutPolicy::afterFailure(new LockoutState(4,null),$t);eq(LockoutPolicy::isLocked($s,$t->modify('+14 minutes 59 seconds')),true);return 'Política bloqueada; no se ejercita formulario de inicio de sesión.';});
+probe('CA-003-3','Bloqueo expira exactamente a los 15 minutos',function(){$t=new DateTimeImmutable('2026-10-28T10:00:00-05:00');$s=LockoutPolicy::afterFailure(new LockoutState(4,null),$t);eq(LockoutPolicy::isLocked($s,$t->modify('+15 minutes')),false);});
+probe('CA-009-1','EAN13 válido',fn()=>eq(Barcode::of('4006381333931',Symbology::Ean13)->value,'4006381333931'));
+probe('CA-009-2','EAN13 con dígito verificador incorrecto',fn()=>raises(fn()=>Barcode::of('4006381333932',Symbology::Ean13),CatalogException::class));
+probe('CA-009-3','Código ya asociado a otro producto',function(){[$r,$a,$c]=catalog();$b=new App\Modules\Catalog\Domain\BarcodeInput(Barcode::of('4006381333931',Symbology::Ean13));$c(new NewProduct('Cuaderno uno',1,1,7,barcodes:[$b]));raises(fn()=>$c(new NewProduct('Cuaderno dos',1,1,7,barcodes:[$b])),CatalogException::class);eq(count($r->products),1);});
+probe('CA-012-1','No dar de baja producto con stock',function(){[$r,$a,$c,$d]=catalog();$id=$c(new NewProduct('Cuaderno A4',1,1,7))['id'];$r->stock[$id]='1.000';raises(fn()=>$d($id,7),CatalogException::class);});
+probe('CA-012-2','Baja sin stock conserva registro',function(){[$r,$a,$c,$d]=catalog();$id=$c(new NewProduct('Cuaderno A4',1,1,7))['id'];$d($id,7);eq($r->products[$id]->status,ProductStatus::Inactive);});
+probe('CA-012-3','Baja repetida no duplica auditoría',function(){[$r,$a,$c,$d]=catalog();$id=$c(new NewProduct('Cuaderno A4',1,1,7))['id'];$d($id,7);$n=count($a->entries);$d($id,7);eq(count($a->entries),$n);});
+probe('CA-017-1','Movimiento válido recibe identificador y saldo',function(){$s=new S;$r=($s->register)(M::purchase(1,10,10,'2',7));eq($r->movementId,1);eq($s->balance(10),'10.000');return 'Movimiento 1 y saldo 10.000 en doble en memoria; inmutabilidad SQL pendiente.';});
+probe('CA-018-1','10 unidades menos 4 deja 6',function(){$s=new S;($s->register)(M::purchase(1,10,10,'2'));($s->register)(M::sale(1,10,4));eq($s->balance(10),'6.000');});
+probe('CA-018-2','3 unidades no permiten retirar 5',function(){$s=new S;($s->register)(M::purchase(1,10,3));raises(fn()=>($s->register)(M::sale(1,10,5)),InventoryException::class);eq($s->balance(10),'3.000');eq(count($s->ledger->movements),1);});
+probe('CA-018-3','5 unidades menos 5 deja 0',function(){$s=new S;($s->register)(M::purchase(1,10,5));($s->register)(M::sale(1,10,5));eq($s->balance(10),'0.000');});
+probe('CA-019-1','Primera operación con clave nueva',function(){$s=new S;$r=($s->register)(M::purchase(1,10,10,'2'));eq($r->duplicate,false);eq(count($s->ledger->movements),1);});
+probe('CA-019-2','Reintento idéntico no duplica',function(){$s=new S;$m=M::purchase(1,10,10,'2');$a=($s->register)($m);$b=($s->register)($m);eq($a->movementId,$b->movementId);eq($b->duplicate,true);eq($s->balance(10),'10.000');eq(count($s->events->events),1);});
+probe('CA-019-3','Clave con UUID distinto se rechaza',function(){$s=new S;($s->register)(M::purchase(1,10,10,'2',key:'aceptacion-019'));raises(fn()=>($s->register)(M::purchase(1,10,99,'2',key:'aceptacion-019')),InventoryException::class);});
+probe('CA-019-4','Misma clave y UUID con cantidad alterada debe rechazarse',function(){$s=new S;$uuid=Tests\Support\Ids::uuid();($s->register)(M::purchase(1,10,10,'2',uuid:$uuid,key:'aceptacion-conflicto'));raises(fn()=>($s->register)(M::purchase(1,10,99,'2',uuid:$uuid,key:'aceptacion-conflicto')),InventoryException::class);});
+probe('CA-020-1','10 a 2 más 10 a 4 promedia 3',function(){$s=new S;($s->register)(M::purchase(1,10,10,'2'));($s->register)(M::purchase(1,10,10,'4'));eq($s->ledger->productCosts[1],'3.0000');});
+probe('CA-020-2','Salida al promedio conserva el costo',function(){$s=new S;($s->register)(M::purchase(1,10,10,'3'));($s->register)(M::sale(1,10,5));eq($s->ledger->productCosts[1],'3.0000');eq($s->ledger->movements[1]['cost'],'3.0000');});
+probe('CA-020-3','Compra con stock cero toma costo 5',function(){$s=new S;($s->register)(M::purchase(1,10,10,'5'));eq($s->ledger->productCosts[1],'5.0000');});
+probe('CA-021-1','Transferencia conserva total global',function(){$s=new S;($s->register)(M::purchase(1,10,20));($s->register)(M::transfer(1,10,11,5));eq([$s->balance(10),$s->balance(11)],['15.000','5.000']);});
+probe('CA-021-2','Fallo al incrementar destino revierte origen',function(){$s=new S;($s->register)(M::purchase(1,10,20));$s->ledger->failOnIncrease=true;raises(fn()=>($s->register)(M::transfer(1,10,11,5)),RuntimeException::class);eq([$s->balance(10),$s->balance(11)],['20.000','0.000']);});
+probe('CA-021-3','Ubicación congelada rechaza entrada ordinaria',function(){$s=new S;raises(fn()=>($s->register)(M::purchase(1,12,1)),InventoryException::class);eq(count($s->ledger->movements),0);});
+probe('CA-025-1','Confirmar recepción con tres líneas',function(){$k=new OperationsKit;[$id,$c]=receipt($k,[line(5,'10'),line(6,'4'),line(5,'2')]);$result=$c($id,9);eq($result['movements'],3);eq($k->store->receipts[$id]['status'],ReceiptStatus::Confirmed);});
+probe('CA-025-2','Una línea rechazada revierte toda recepción',function(){$k=new OperationsKit;[$id,$c]=receipt($k,[line(5,'10'),line(6,'4')]);$k->movements->rejectProducts=[6];raises(fn()=>$c($id,9),OperationsException::class);eq(count($k->movements->requests),0);eq($k->store->receipts[$id]['status'],ReceiptStatus::Draft);});
+probe('CA-025-3','Confirmar dos veces registra una vez',function(){$k=new OperationsKit;[$id,$c]=receipt($k,[line(5,'10')]);$c($id,9);$c($id,9);eq(count($k->movements->requests),1);});
+probe('CA-026-1','Dos cajas de 12 a 24 por caja',function(){$l=ReceiptLine::fromPresentation(5,10,1,Q::of('2'),'12','24');eq($l->quantity->value,'24.000');eq($l->unitCost->value,'2.0000');});
+probe('CA-030-1','Aprobador distinto registra merma',function(){[$k,$id,$a]=adjustment();$a($id,9);eq(count($k->movements->requests),1);eq($k->movements->requests[0]->approvedBy,9);eq($k->movements->requests[0]->userId,7);});
+probe('CA-030-2','Autoaprobación rechazada',function(){[$k,$id,$a]=adjustment();raises(fn()=>$a($id,7),OperationsException::class);eq(count($k->movements->requests),0);});
+probe('CA-030-3','Rechazo sin explicación no modifica stock',function(){[$k,$id,$a,$reject]=adjustment();raises(fn()=>$reject($id,9,''),OperationsException::class);eq(count($k->movements->requests),0);});
+probe('CA-035-1','Cierre con diferencia aplica y descongela',function(){[$k,$s,$id,$close]=counting();$r=$close($id,9);eq($r['adjustments'],1);eq($r['accuracyPct'],'66.66');eq($s->frozen,[]);eq($s->counts[$id]['status'],CountStatus::Closed);return '1 ajuste; 2 de 3 líneas exactas; exactitud 66.66 % por truncamiento actual a 2 decimales.';});
+probe('CA-035-2','Quien contó diferencias no cierra',function(){[$k,$s,$id,$close]=counting();raises(fn()=>$close($id,8),OperationsException::class);eq($s->counts[$id]['status'],CountStatus::Review);});
+probe('CA-035-3','Fallo de ajuste revierte cierre de conteo',function(){[$k,$s,$id,$close]=counting();$k->movements->rejectProducts=[6];raises(fn()=>$close($id,9),OperationsException::class);eq($s->counts[$id]['status'],CountStatus::Review);eq($s->frozen,[10,11]);eq($k->store->adjustments,[]);});
+probe('CA-042-1','RUC válido y proveedor activo',function(){$r=new Tests\Support\Suppliers\InMemorySupplierRepository;$a=new RecordingAuditTrail;$c=new CreateSupplier($r,new PassthroughTransaction,$a);$id=$c(new NewSupplier(Ruc::of('20611519886'),'Proveedor de prueba',actorId:7));eq($r->rows[$id]['active'],true);eq(count($a->entries),1);});
+probe('CA-042-2','RUC inválido se rechaza',function(){foreach(['20611519887','2061151988','30611519886','2061151988A'] as $r)raises(fn()=>Ruc::of($r),SupplierException::class);});
+probe('CA-042-3','RUC repetido conserva solo un proveedor',function(){$r=new Tests\Support\Suppliers\InMemorySupplierRepository;$a=new RecordingAuditTrail;$c=new CreateSupplier($r,new PassthroughTransaction,$a);$c(new NewSupplier(Ruc::of('20611519886'),'Proveedor uno'));raises(fn()=>$c(new NewSupplier(Ruc::of('20611519886'),'Proveedor dos')),SupplierException::class);eq(count($r->rows),1);});
+probe('CA-010-2','Factor cero se rechaza',fn()=>raises(fn()=>Factor::of('0'),CatalogException::class));
+probe('CA-016-2','Mínimo superior a máximo se rechaza',fn()=>raises(fn()=>new StockPolicy(1,'20','10'),CatalogException::class));
+file_put_contents(__DIR__.'/acceptance_results.json',json_encode(['date'=>'2026-10-28','runtime'=>PHP_VERSION,'runner'=>'Comprobador independiente de aceptación de dominio, sin Composer ni Pest','results'=>$results],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+foreach($results as $r)echo $r['id'].' '.$r['status'].' '.$r['scenario'].' => '.$r['observed'].PHP_EOL;
+$failed=count(array_filter($results,fn($r)=>$r['status']==='No conforme'));echo 'TOTAL='.count($results).' FAILED='.$failed.PHP_EOL;exit($failed?1:0);

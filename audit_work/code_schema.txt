@@ -1,0 +1,1195 @@
+
+FILE database\migrations\0001_01_01_000001_create_cache_table.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Database\Schema\Blueprint;
+5: use Illuminate\Support\Facades\Schema;
+6: 
+7: return new class extends Migration
+8: {
+9:     /**
+10:      * Run the migrations.
+11:      */
+12:     public function up(): void
+13:     {
+14:         Schema::create('cache', function (Blueprint $table) {
+15:             $table->string('key')->primary();
+16:             $table->mediumText('value');
+17:             $table->bigInteger('expiration')->index();
+18:         });
+19: 
+20:         Schema::create('cache_locks', function (Blueprint $table) {
+21:             $table->string('key')->primary();
+22:             $table->string('owner');
+23:             $table->bigInteger('expiration')->index();
+24:         });
+25:     }
+26: 
+27:     /**
+28:      * Reverse the migrations.
+29:      */
+30:     public function down(): void
+31:     {
+32:         Schema::dropIfExists('cache');
+33:         Schema::dropIfExists('cache_locks');
+34:     }
+35: };
+
+
+FILE database\migrations\0001_01_01_000002_create_jobs_table.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Database\Schema\Blueprint;
+5: use Illuminate\Support\Facades\Schema;
+6: 
+7: return new class extends Migration
+8: {
+9:     /**
+10:      * Run the migrations.
+11:      */
+12:     public function up(): void
+13:     {
+14:         Schema::create('jobs', function (Blueprint $table) {
+15:             $table->id();
+16:             $table->string('queue')->index();
+17:             $table->longText('payload');
+18:             $table->unsignedSmallInteger('attempts');
+19:             $table->unsignedInteger('reserved_at')->nullable();
+20:             $table->unsignedInteger('available_at');
+21:             $table->unsignedInteger('created_at');
+22:         });
+23: 
+24:         Schema::create('job_batches', function (Blueprint $table) {
+25:             $table->string('id')->primary();
+26:             $table->string('name');
+27:             $table->integer('total_jobs');
+28:             $table->integer('pending_jobs');
+29:             $table->integer('failed_jobs');
+30:             $table->longText('failed_job_ids');
+31:             $table->mediumText('options')->nullable();
+32:             $table->integer('cancelled_at')->nullable();
+33:             $table->integer('created_at');
+34:             $table->integer('finished_at')->nullable();
+35:         });
+36: 
+37:         Schema::create('failed_jobs', function (Blueprint $table) {
+38:             $table->id();
+39:             $table->string('uuid')->unique();
+40:             $table->string('connection');
+41:             $table->string('queue');
+42:             $table->longText('payload');
+43:             $table->longText('exception');
+44:             $table->timestamp('failed_at')->useCurrent();
+45: 
+46:             $table->index(['connection', 'queue', 'failed_at']);
+47:         });
+48:     }
+49: 
+50:     /**
+51:      * Reverse the migrations.
+52:      */
+53:     public function down(): void
+54:     {
+55:         Schema::dropIfExists('jobs');
+56:         Schema::dropIfExists('job_batches');
+57:         Schema::dropIfExists('failed_jobs');
+58:     }
+59: };
+
+
+FILE database\migrations\2026_10_03_001419_create_permission_tables.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Database\Schema\Blueprint;
+5: use Illuminate\Support\Facades\Schema;
+6: 
+7: return new class extends Migration
+8: {
+9:     /**
+10:      * Run the migrations.
+11:      */
+12:     public function up(): void
+13:     {
+14:         $teams = config('permission.teams');
+15:         $tableNames = config('permission.table_names');
+16:         $columnNames = config('permission.column_names');
+17:         $pivotRole = $columnNames['role_pivot_key'] ?? 'role_id';
+18:         $pivotPermission = $columnNames['permission_pivot_key'] ?? 'permission_id';
+19: 
+20:         throw_if(empty($tableNames), 'Error: config/permission.php not loaded. Run [php artisan config:clear] and try again.');
+21:         throw_if($teams && empty($columnNames['team_foreign_key'] ?? null), 'Error: team_foreign_key on config/permission.php not loaded. Run [php artisan config:clear] and try again.');
+22: 
+23:         /**
+24:          * See `docs/prerequisites.md` for suggested lengths on 'name' and 'guard_name' if "1071 Specified key was too long" errors are encountered.
+25:          */
+26:         Schema::create($tableNames['permissions'], static function (Blueprint $table) {
+27:             $table->id(); // permission id
+28:             $table->string('name');
+29:             $table->string('guard_name');
+30:             $table->timestamps();
+31: 
+32:             $table->unique(['name', 'guard_name']);
+33:         });
+34: 
+35:         /**
+36:          * See `docs/prerequisites.md` for suggested lengths on 'name' and 'guard_name' if "1071 Specified key was too long" errors are encountered.
+37:          */
+38:         Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $columnNames) {
+39:             $table->id(); // role id
+40:             if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
+41:                 $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
+42:                 $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
+43:             }
+44:             $table->string('name');
+45:             $table->string('guard_name');
+46:             $table->timestamps();
+47:             if ($teams || config('permission.testing')) {
+48:                 $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
+49:             } else {
+50:                 $table->unique(['name', 'guard_name']);
+51:             }
+52:         });
+53: 
+54:         Schema::create($tableNames['model_has_permissions'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {
+55:             $table->unsignedBigInteger($pivotPermission);
+56: 
+57:             $table->string('model_type');
+58:             $table->unsignedBigInteger($columnNames['model_morph_key']);
+59:             $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_permissions_model_id_model_type_index');
+60: 
+61:             $table->foreign($pivotPermission)
+62:                 ->references('id') // permission id
+63:                 ->on($tableNames['permissions'])
+64:                 ->cascadeOnDelete();
+65:             if ($teams) {
+66:                 $table->unsignedBigInteger($columnNames['team_foreign_key']);
+67:                 $table->index($columnNames['team_foreign_key'], 'model_has_permissions_team_foreign_key_index');
+68: 
+69:                 $table->primary([$columnNames['team_foreign_key'], $pivotPermission, $columnNames['model_morph_key'], 'model_type'],
+70:                     'model_has_permissions_permission_model_type_primary');
+71:             } else {
+72:                 $table->primary([$pivotPermission, $columnNames['model_morph_key'], 'model_type'],
+73:                     'model_has_permissions_permission_model_type_primary');
+74:             }
+75:         });
+76: 
+77:         Schema::create($tableNames['model_has_roles'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotRole, $teams) {
+78:             $table->unsignedBigInteger($pivotRole);
+79: 
+80:             $table->string('model_type');
+81:             $table->unsignedBigInteger($columnNames['model_morph_key']);
+82:             $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_roles_model_id_model_type_index');
+83: 
+84:             $table->foreign($pivotRole)
+85:                 ->references('id') // role id
+86:                 ->on($tableNames['roles'])
+87:                 ->cascadeOnDelete();
+88:             if ($teams) {
+89:                 $table->unsignedBigInteger($columnNames['team_foreign_key']);
+90:                 $table->index($columnNames['team_foreign_key'], 'model_has_roles_team_foreign_key_index');
+91: 
+92:                 $table->primary([$columnNames['team_foreign_key'], $pivotRole, $columnNames['model_morph_key'], 'model_type'],
+93:                     'model_has_roles_role_model_type_primary');
+94:             } else {
+95:                 $table->primary([$pivotRole, $columnNames['model_morph_key'], 'model_type'],
+96:                     'model_has_roles_role_model_type_primary');
+97:             }
+98:         });
+99: 
+100:         Schema::create($tableNames['role_has_permissions'], static function (Blueprint $table) use ($tableNames, $pivotRole, $pivotPermission) {
+101:             $table->unsignedBigInteger($pivotPermission);
+102:             $table->unsignedBigInteger($pivotRole);
+103: 
+104:             $table->foreign($pivotPermission)
+105:                 ->references('id') // permission id
+106:                 ->on($tableNames['permissions'])
+107:                 ->cascadeOnDelete();
+108: 
+109:             $table->foreign($pivotRole)
+110:                 ->references('id') // role id
+111:                 ->on($tableNames['roles'])
+112:                 ->cascadeOnDelete();
+113: 
+114:             $table->primary([$pivotPermission, $pivotRole], 'role_has_permissions_permission_id_role_id_primary');
+115:         });
+116: 
+117:         app('cache')
+118:             ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
+119:             ->forget(config('permission.cache.key'));
+120:     }
+121: 
+122:     /**
+123:      * Reverse the migrations.
+124:      */
+125:     public function down(): void
+126:     {
+127:         $tableNames = config('permission.table_names');
+128: 
+129:         throw_if(empty($tableNames), 'Error: config/permission.php not found and defaults could not be merged. Please publish the package configuration before proceeding, or drop the tables manually.');
+130: 
+131:         Schema::dropIfExists($tableNames['role_has_permissions']);
+132:         Schema::dropIfExists($tableNames['model_has_roles']);
+133:         Schema::dropIfExists($tableNames['model_has_permissions']);
+134:         Schema::dropIfExists($tableNames['roles']);
+135:         Schema::dropIfExists($tableNames['permissions']);
+136:     }
+137: };
+
+
+FILE database\migrations\2026_10_03_001430_create_activity_log_table.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Database\Schema\Blueprint;
+5: use Illuminate\Support\Facades\Schema;
+6: 
+7: return new class extends Migration
+8: {
+9:     public function up(): void
+10:     {
+11:         Schema::create('activity_log', function (Blueprint $table) {
+12:             $table->id();
+13:             $table->string('log_name')->nullable()->index();
+14:             $table->text('description');
+15:             $table->nullableMorphs('subject', 'subject');
+16:             $table->string('event')->nullable();
+17:             $table->nullableMorphs('causer', 'causer');
+18:             $table->json('attribute_changes')->nullable();
+19:             $table->json('properties')->nullable();
+20:             $table->timestamps();
+21:         });
+22:     }
+23: };
+
+
+FILE database\migrations\2026_10_10_000001_create_wms_schema.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: /**
+7:  * Esquema base del WMS. Las vistas, triggers, particiones y CHECKs complejos no se expresan
+8:  * con Blueprint, por lo que la fuente de verdad es database/sql/wms_schema.sql.
+9:  * Una vez fusionada, esta migración NO se edita: los cambios van en migraciones nuevas.
+10:  */
+11: return new class extends Migration
+12: {
+13:     public function up(): void
+14:     {
+15:         DB::unprepared((string) file_get_contents(database_path('sql/wms_schema.sql')));
+16:     }
+17: 
+18:     public function down(): void
+19:     {
+20:         DB::unprepared(<<<'SQL'
+21:         DROP MATERIALIZED VIEW IF EXISTS mv_product_rotation_90d;
+22:         DROP VIEW IF EXISTS v_kardex, v_product_stock, v_movement_effects;
+23:         DROP FUNCTION IF EXISTS fn_reconcile_ledger(), fn_refresh_rotation(), forbid_ledger_mutation() CASCADE;
+24:         DROP TABLE IF EXISTS
+25:           settings, import_jobs, stock_daily_snapshots, alerts,
+26:           stock_count_lines, stock_counts, stock_adjustment_requests,
+27:           transfer_order_items, transfer_orders, purchase_receipt_items, purchase_receipts,
+28:           stock_balances, stock_movements, movement_reasons,
+29:           product_suppliers, suppliers, product_locations, product_stock_policies,
+30:           product_barcodes, product_units, products, locations, users,
+31:           warehouses, categories, brands, units
+32:         CASCADE;
+33:         SQL);
+34:     }
+35: };
+
+
+FILE database\migrations\2026_10_10_000002_create_auth_support_tables.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Database\Schema\Blueprint;
+5: use Illuminate\Support\Facades\Schema;
+6: 
+7: return new class extends Migration
+8: {
+9:     public function up(): void
+10:     {
+11:         Schema::create('password_reset_tokens', function (Blueprint $table): void {
+12:             $table->string('email')->primary();
+13:             $table->string('token');
+14:             $table->timestampTz('created_at')->nullable();
+15:         });
+16: 
+17:         Schema::create('sessions', function (Blueprint $table): void {
+18:             $table->string('id')->primary();
+19:             $table->foreignId('user_id')->nullable()->index();
+20:             $table->string('ip_address', 45)->nullable();
+21:             $table->text('user_agent')->nullable();
+22:             $table->longText('payload');
+23:             $table->integer('last_activity')->index();
+24:         });
+25:     }
+26: 
+27:     public function down(): void
+28:     {
+29:         Schema::dropIfExists('sessions');
+30:         Schema::dropIfExists('password_reset_tokens');
+31:     }
+32: };
+
+
+FILE database\migrations\2026_10_10_000003_harden_database_privileges.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: /**
+7:  * Mínimo privilegio: la app corre como `wms_app` (sin UPDATE/DELETE/TRUNCATE sobre el ledger).
+8:  * Si el rol no existe (p. ej. en CI), la migración no hace nada.
+9:  */
+10: return new class extends Migration
+11: {
+12:     public function up(): void
+13:     {
+14:         DB::unprepared(<<<'SQL'
+15:         DO $$
+16:         BEGIN
+17:           IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'wms_app') THEN
+18:             GRANT USAGE ON SCHEMA public TO wms_app;
+19:             GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO wms_app;
+20:             GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO wms_app;
+21:             REVOKE UPDATE, DELETE, TRUNCATE ON stock_movements FROM wms_app;
+22:             GRANT EXECUTE ON FUNCTION fn_refresh_rotation() TO wms_app;
+23:             ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO wms_app;
+24:             ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO wms_app;
+25:           END IF;
+26:         END $$;
+27:         SQL);
+28:     }
+29: 
+30:     public function down(): void
+31:     {
+32:         // Intencionalmente vacío: no se revocan privilegios en un rollback.
+33:     }
+34: };
+
+
+FILE database\migrations\2026_10_11_000004_create_catalog_and_audit_support.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: return new class extends Migration
+7: {
+8:     public function up(): void
+9:     {
+10:         DB::unprepared(<<<'SQL'
+11:         -- Correlativo de SKU por prefijo de categoría raíz (se incrementa de forma atómica).
+12:         CREATE TABLE sku_counters (
+13:           category_code VARCHAR(4) PRIMARY KEY,
+14:           last_value INT NOT NULL DEFAULT 0 CHECK (last_value >= 0)
+15:         );
+16: 
+17:         -- Auditoría propia, append-only (misma filosofía que el ledger).
+18:         CREATE TABLE audit_logs (
+19:           id BIGSERIAL PRIMARY KEY,
+20:           actor_id BIGINT REFERENCES users(id),
+21:           action VARCHAR(60) NOT NULL,
+22:           entity_type VARCHAR(40) NOT NULL,
+23:           entity_id BIGINT,
+24:           old_values JSONB,
+25:           new_values JSONB,
+26:           ip VARCHAR(45),
+27:           user_agent VARCHAR(255),
+28:           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+29:         );
+30:         CREATE INDEX ix_audit_entity ON audit_logs (entity_type, entity_id, created_at DESC);
+31:         CREATE INDEX ix_audit_actor ON audit_logs (actor_id, created_at DESC);
+32:         CREATE INDEX ix_audit_action ON audit_logs (action, created_at DESC);
+33: 
+34:         CREATE OR REPLACE FUNCTION forbid_audit_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
+35:         BEGIN
+36:           RAISE EXCEPTION 'audit_logs es inmutable: la auditoría no se modifica ni se borra';
+37:         END; $$;
+38:         CREATE TRIGGER trg_audit_no_update_delete
+39:           BEFORE UPDATE OR DELETE ON audit_logs
+40:           FOR EACH ROW EXECUTE FUNCTION forbid_audit_mutation();
+41:         CREATE TRIGGER trg_audit_no_truncate
+42:           BEFORE TRUNCATE ON audit_logs
+43:           FOR EACH STATEMENT EXECUTE FUNCTION forbid_audit_mutation();
+44: 
+45:         DO $$
+46:         BEGIN
+47:           IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'wms_app') THEN
+48:             REVOKE UPDATE, DELETE, TRUNCATE ON audit_logs FROM wms_app;
+49:           END IF;
+50:         END $$;
+51:         SQL);
+52:     }
+53: 
+54:     public function down(): void
+55:     {
+56:         DB::unprepared('DROP TABLE IF EXISTS audit_logs, sku_counters CASCADE; DROP FUNCTION IF EXISTS forbid_audit_mutation() CASCADE;');
+57:     }
+58: };
+
+
+FILE database\migrations\2026_10_12_000005_create_operations_support.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: return new class extends Migration
+7: {
+8:     public function up(): void
+9:     {
+10:         DB::unprepared(<<<'SQL'
+11:         -- Correlativos anuales de documentos (REC-2026-000001, TRF-..., AJU-..., CNT-...).
+12:         CREATE TABLE document_counters (
+13:           prefix VARCHAR(4) NOT NULL,
+14:           year SMALLINT NOT NULL,
+15:           last_value INT NOT NULL DEFAULT 0 CHECK (last_value >= 0),
+16:           PRIMARY KEY (prefix, year)
+17:         );
+18: 
+19:         -- Lo que el usuario escaneó/digitó (p. ej. 5 cajas) además de la cantidad en unidad base.
+20:         ALTER TABLE purchase_receipt_items ADD COLUMN presentation_qty NUMERIC(14,3) CHECK (presentation_qty > 0);
+21: 
+22:         -- El orden real de los movimientos de un producto es el de su id (se asigna dentro del bloqueo del producto).
+23:         CREATE OR REPLACE VIEW v_kardex AS
+24:         SELECT e.movement_id, e.product_id, e.location_id, l.warehouse_id, e.type, e.delta, e.created_at,
+25:                SUM(e.delta) OVER (PARTITION BY e.product_id, e.location_id
+26:                                   ORDER BY e.movement_id) AS running_balance
+27:           FROM v_movement_effects e JOIN locations l ON l.id = e.location_id;
+28:         SQL);
+29:     }
+30: 
+31:     public function down(): void
+32:     {
+33:         DB::unprepared('ALTER TABLE purchase_receipt_items DROP COLUMN IF EXISTS presentation_qty; DROP TABLE IF EXISTS document_counters;');
+34:     }
+35: };
+
+
+FILE database\migrations\2026_10_13_000006_create_count_locations.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: return new class extends Migration
+7: {
+8:     public function up(): void
+9:     {
+10:         DB::unprepared(<<<'SQL'
+11:         -- Ubicaciones congeladas por cada conteo (incluye las vacías, para detectar hallazgos).
+12:         CREATE TABLE stock_count_locations (
+13:           count_id BIGINT NOT NULL REFERENCES stock_counts(id) ON DELETE CASCADE,
+14:           location_id BIGINT NOT NULL REFERENCES locations(id),
+15:           PRIMARY KEY (count_id, location_id)
+16:         );
+17:         CREATE INDEX ix_count_locations_location ON stock_count_locations (location_id);
+18:         SQL);
+19:     }
+20: 
+21:     public function down(): void
+22:     {
+23:         DB::unprepared('DROP TABLE IF EXISTS stock_count_locations;');
+24:     }
+25: };
+
+
+FILE database\migrations\2026_10_14_000007_create_replenishment_view.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: return new class extends Migration
+7: {
+8:     public function up(): void
+9:     {
+10:         DB::unprepared(<<<'SQL'
+11:         -- Estado de stock de cada producto contra su política (mínimo/máximo/reposición) por almacén.
+12:         -- Es la fuente de las alertas, de la reposición sugerida y del tablero: siempre al día, sin procesos intermedios.
+13:         CREATE VIEW v_replenishment AS
+14:         SELECT (pol.product_id * 1000 + pol.warehouse_id) AS row_key,
+15:                p.id AS product_id, p.sku, p.name AS product_name, p.cost_avg,
+16:                pol.warehouse_id, w.name AS warehouse_name,
+17:                COALESCE(st.qty, 0) AS stock,
+18:                pol.min_qty, pol.max_qty, pol.reorder_qty,
+19:                CASE
+20:                  WHEN COALESCE(st.qty, 0) <= 0 THEN 'OUT'
+21:                  WHEN COALESCE(st.qty, 0) <= pol.min_qty THEN 'LOW'
+22:                  WHEN COALESCE(st.qty, 0) <= pol.min_qty * 1.25 THEN 'NEAR'
+23:                  WHEN pol.max_qty IS NOT NULL AND COALESCE(st.qty, 0) > pol.max_qty THEN 'OVER'
+24:                  ELSE 'OK'
+25:                END AS status,
+26:                CASE
+27:                  WHEN COALESCE(st.qty, 0) <= pol.min_qty
+28:                    THEN GREATEST(COALESCE(pol.max_qty, pol.min_qty + COALESCE(pol.reorder_qty, 0)) - COALESCE(st.qty, 0), COALESCE(pol.reorder_qty, 0))
+29:                  ELSE 0
+30:                END AS suggested_qty,
+31:                (SELECT COALESCE(SUM(m.quantity), 0) FROM stock_movements m
+32:                  WHERE m.product_id = p.id AND m.type = 'SALIDA_VENTA' AND m.created_at >= now() - INTERVAL '30 days') AS sold_30d,
+33:                (SELECT s.business_name FROM product_suppliers ps JOIN suppliers s ON s.id = ps.supplier_id
+34:                  WHERE ps.product_id = p.id AND ps.is_preferred AND s.is_active LIMIT 1) AS supplier_name,
+35:                (SELECT s.lead_time_days FROM product_suppliers ps JOIN suppliers s ON s.id = ps.supplier_id
+36:                  WHERE ps.product_id = p.id AND ps.is_preferred AND s.is_active LIMIT 1) AS lead_time_days
+37:           FROM product_stock_policies pol
+38:           JOIN products p ON p.id = pol.product_id AND p.deleted_at IS NULL AND p.status = 'ACTIVE'
+39:           JOIN warehouses w ON w.id = pol.warehouse_id
+40:           LEFT JOIN (SELECT sb.product_id, l.warehouse_id, SUM(sb.quantity) AS qty
+41:                        FROM stock_balances sb JOIN locations l ON l.id = sb.location_id
+42:                       GROUP BY sb.product_id, l.warehouse_id) st
+43:             ON st.product_id = pol.product_id AND st.warehouse_id = pol.warehouse_id;
+44:         SQL);
+45:     }
+46: 
+47:     public function down(): void
+48:     {
+49:         DB::unprepared('DROP VIEW IF EXISTS v_replenishment;');
+50:     }
+51: };
+
+
+FILE database\migrations\2026_10_15_000008_create_report_views.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: return new class extends Migration
+7: {
+8:     public function up(): void
+9:     {
+10:         DB::unprepared(<<<'SQL'
+11:         -- Inventario valorizado: unidades y valor (al costo promedio) por producto y almacén.
+12:         CREATE VIEW v_report_valued_stock AS
+13:         SELECT (p.id * 1000 + w.id) AS row_key,
+14:                p.id AS product_id, p.sku, p.name AS product_name, c.name AS category_name,
+15:                w.id AS warehouse_id, w.name AS warehouse_name,
+16:                SUM(sb.quantity) AS qty, p.cost_avg, SUM(sb.quantity) * p.cost_avg AS value
+17:           FROM stock_balances sb
+18:           JOIN locations l ON l.id = sb.location_id
+19:           JOIN warehouses w ON w.id = l.warehouse_id
+20:           JOIN products p ON p.id = sb.product_id AND p.deleted_at IS NULL
+21:           LEFT JOIN categories c ON c.id = p.category_id
+22:          WHERE sb.quantity > 0
+23:          GROUP BY p.id, p.sku, p.name, p.cost_avg, c.name, w.id, w.name;
+24: 
+25:         -- Rotación y clasificación ABC (últimos 90 días, por valor vendido al costo):
+26:         -- A = los que suman el 80 % del valor, B = hasta el 95 %, C = el resto, SIN_VENTAS = no se vendió nada.
+27:         CREATE VIEW v_report_abc AS
+28:         WITH sales AS (
+29:             SELECT product_id, SUM(quantity) AS qty_90d, SUM(quantity * COALESCE(unit_cost, 0)) AS value_90d
+30:               FROM stock_movements
+31:              WHERE type = 'SALIDA_VENTA' AND created_at >= now() - INTERVAL '90 days'
+32:              GROUP BY product_id
+33:         ), stock AS (
+34:             SELECT product_id, SUM(quantity) AS qty FROM stock_balances GROUP BY product_id
+35:         ), ranked AS (
+36:             SELECT s.product_id, s.qty_90d, s.value_90d,
+37:                    SUM(s.value_90d) OVER (ORDER BY s.value_90d DESC, s.product_id) AS cum_value,
+38:                    SUM(s.value_90d) OVER () AS total_value
+39:               FROM sales s WHERE s.value_90d > 0
+40:         )
+41:         SELECT p.id AS product_id, p.sku, p.name AS product_name, c.name AS category_name,
+42:                COALESCE(r.qty_90d, 0) AS qty_90d, COALESCE(r.value_90d, 0) AS value_90d,
+43:                CASE WHEN r.product_id IS NULL THEN NULL ELSE ROUND(100 * r.value_90d / NULLIF(r.total_value, 0), 2) END AS share_pct,
+44:                CASE WHEN r.product_id IS NULL THEN 'SIN_VENTAS'
+45:                     WHEN (r.cum_value - r.value_90d) < 0.80 * r.total_value THEN 'A'
+46:                     WHEN (r.cum_value - r.value_90d) < 0.95 * r.total_value THEN 'B'
+47:                     ELSE 'C' END AS abc_class,
+48:                COALESCE(st.qty, 0) AS stock,
+49:                CASE WHEN COALESCE(r.qty_90d, 0) > 0 THEN ROUND(COALESCE(st.qty, 0) / (r.qty_90d / 90.0), 0) END AS cover_days,
+50:                p.cost_avg
+51:           FROM products p
+52:           LEFT JOIN ranked r ON r.product_id = p.id
+53:           LEFT JOIN stock st ON st.product_id = p.id
+54:           LEFT JOIN categories c ON c.id = p.category_id
+55:          WHERE p.deleted_at IS NULL AND p.status = 'ACTIVE';
+56: 
+57:         -- Mermas y ajustes negativos, con motivo, responsable y valor al costo.
+58:         CREATE VIEW v_report_waste AS
+59:         SELECT m.id, m.created_at, m.type, p.sku, p.name AS product_name, l.code AS location_code,
+60:                r.name AS reason_name, m.quantity, COALESCE(m.unit_cost, 0) AS unit_cost,
+61:                m.quantity * COALESCE(m.unit_cost, 0) AS value,
+62:                u.name AS user_name, a.name AS approver_name, m.document_ref, m.notes
+63:           FROM stock_movements m
+64:           JOIN products p ON p.id = m.product_id
+65:           JOIN locations l ON l.id = m.from_location_id
+66:           LEFT JOIN movement_reasons r ON r.id = m.reason_id
+67:           JOIN users u ON u.id = m.user_id
+68:           LEFT JOIN users a ON a.id = m.approved_by
+69:          WHERE m.type IN ('MERMA', 'AJUSTE_NEGATIVO');
+70:         SQL);
+71:     }
+72: 
+73:     public function down(): void
+74:     {
+75:         DB::unprepared('DROP VIEW IF EXISTS v_report_waste; DROP VIEW IF EXISTS v_report_abc; DROP VIEW IF EXISTS v_report_valued_stock;');
+76:     }
+77: };
+
+
+FILE database\migrations\2026_10_16_000009_add_app_authentication_to_users.php
+1: <?php
+2: 
+3: use Illuminate\Database\Migrations\Migration;
+4: use Illuminate\Support\Facades\DB;
+5: 
+6: return new class extends Migration
+7: {
+8:     public function up(): void
+9:     {
+10:         // Verificación en dos pasos con app (Google Authenticator, Microsoft Authenticator, Authy...). Se guardan cifrados.
+11:         DB::unprepared(<<<'SQL'
+12:         ALTER TABLE users ADD COLUMN app_authentication_secret TEXT;
+13:         ALTER TABLE users ADD COLUMN app_authentication_recovery_codes TEXT;
+14:         SQL);
+15:     }
+16: 
+17:     public function down(): void
+18:     {
+19:         DB::unprepared('ALTER TABLE users DROP COLUMN IF EXISTS app_authentication_recovery_codes; ALTER TABLE users DROP COLUMN IF EXISTS app_authentication_secret;');
+20:     }
+21: };
+
+
+FILE database\sql\wms_schema.sql
+1: -- =====================================================================
+2: -- CITY OFERTAS WMS · Modelo físico de referencia · PostgreSQL 15+
+3: -- Las migraciones de Laravel deben reproducir este modelo.
+4: -- Tablas de paquetes que NO se redefinen aquí: roles, permissions,
+5: -- model_has_roles, model_has_permissions, role_has_permissions
+6: -- (spatie/laravel-permission), activity_log (spatie/laravel-activitylog),
+7: -- notifications, jobs, failed_jobs, job_batches, sessions, cache.
+8: -- Convenciones: tablas en snake_case plural · TIMESTAMPTZ (UTC en BD,
+9: -- America/Lima en UI) · dinero en PEN sin IGV · cantidades en unidad base.
+10: -- =====================================================================
+11: 
+12: CREATE EXTENSION IF NOT EXISTS pg_trgm;
+13: 
+14: -- ---------------------------------------------------------------------
+15: -- 1. CATÁLOGOS BASE
+16: -- ---------------------------------------------------------------------
+17: CREATE TABLE units (
+18:   id SMALLSERIAL PRIMARY KEY,
+19:   code VARCHAR(6) NOT NULL UNIQUE,
+20:   name VARCHAR(40) NOT NULL,
+21:   allows_decimal BOOLEAN NOT NULL DEFAULT FALSE
+22: );
+23: 
+24: CREATE TABLE brands (
+25:   id BIGSERIAL PRIMARY KEY,
+26:   name VARCHAR(80) NOT NULL UNIQUE,
+27:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+28:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+29: );
+30: 
+31: CREATE TABLE categories (
+32:   id BIGSERIAL PRIMARY KEY,
+33:   parent_id BIGINT REFERENCES categories(id),
+34:   code VARCHAR(4) NOT NULL,                       -- prefijo de SKU (solo raíz): LIB, JUG, BAZ, MEN, HOG
+35:   name VARCHAR(80) NOT NULL,
+36:   depth SMALLINT NOT NULL CHECK (depth BETWEEN 1 AND 3),
+37:   sort_order INT NOT NULL DEFAULT 0,
+38:   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+39:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+40:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+41:   CONSTRAINT chk_root_has_code CHECK (parent_id IS NOT NULL OR code <> '')
+42: );
+43: CREATE UNIQUE INDEX uq_categories_name ON categories (COALESCE(parent_id, 0), lower(name));
+44: CREATE UNIQUE INDEX uq_categories_root_code ON categories (code) WHERE parent_id IS NULL;
+45: 
+46: CREATE TABLE warehouses (
+47:   id BIGSERIAL PRIMARY KEY,
+48:   code VARCHAR(3) NOT NULL UNIQUE,                -- BOD, PIS
+49:   name VARCHAR(60) NOT NULL,
+50:   type VARCHAR(12) NOT NULL CHECK (type IN ('BODEGA','PISO_VENTA')),
+51:   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+52:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+53:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+54: );
+55: 
+56: CREATE TABLE users (
+57:   id BIGSERIAL PRIMARY KEY,
+58:   name VARCHAR(120) NOT NULL,
+59:   username VARCHAR(40) NOT NULL UNIQUE,
+60:   email VARCHAR(160) NOT NULL UNIQUE,
+61:   password VARCHAR(255) NOT NULL,                 -- argon2id
+62:   two_factor_secret TEXT,
+63:   two_factor_recovery_codes TEXT,
+64:   two_factor_confirmed_at TIMESTAMPTZ,
+65:   default_warehouse_id BIGINT REFERENCES warehouses(id),
+66:   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+67:   failed_attempts SMALLINT NOT NULL DEFAULT 0,
+68:   locked_until TIMESTAMPTZ,
+69:   last_login_at TIMESTAMPTZ,
+70:   remember_token VARCHAR(100),
+71:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+72:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+73:   deleted_at TIMESTAMPTZ
+74: );
+75: 
+76: -- ---------------------------------------------------------------------
+77: -- 2. UBICACIONES
+78: -- Código: {ALM}-Z{zona}-P{pasillo}-A{anaquel}-N{nivel}  ej. BOD-Z1-P03-A02-N2
+79: -- Ubicaciones de paso: BOD-REC (recepción), PIS-REC (reposición en piso)
+80: -- ---------------------------------------------------------------------
+81: CREATE TABLE locations (
+82:   id BIGSERIAL PRIMARY KEY,
+83:   warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
+84:   code VARCHAR(24) NOT NULL,
+85:   zone VARCHAR(6),
+86:   aisle VARCHAR(6),
+87:   rack VARCHAR(6),
+88:   level SMALLINT CHECK (level BETWEEN 1 AND 9),
+89:   is_staging BOOLEAN NOT NULL DEFAULT FALSE,
+90:   is_frozen BOOLEAN NOT NULL DEFAULT FALSE,       -- congelada durante un conteo
+91:   max_capacity NUMERIC(14,3) CHECK (max_capacity > 0),
+92:   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+93:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+94:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+95:   UNIQUE (warehouse_id, code)
+96: );
+97: CREATE UNIQUE INDEX uq_locations_code ON locations (code);
+98: 
+99: -- ---------------------------------------------------------------------
+100: -- 3. CATÁLOGO DE PRODUCTOS
+101: -- ---------------------------------------------------------------------
+102: CREATE TABLE products (
+103:   id BIGSERIAL PRIMARY KEY,
+104:   sku VARCHAR(16) NOT NULL UNIQUE,                -- LIB-000231 (autogenerado, inmutable)
+105:   name VARCHAR(200) NOT NULL,
+106:   description TEXT,
+107:   category_id BIGINT NOT NULL REFERENCES categories(id),
+108:   brand_id BIGINT REFERENCES brands(id),
+109:   base_unit_id SMALLINT NOT NULL REFERENCES units(id),
+110:   cost_avg NUMERIC(14,4) NOT NULL DEFAULT 0 CHECK (cost_avg >= 0),   -- promedio ponderado, sin IGV
+111:   last_cost NUMERIC(14,4) CHECK (last_cost >= 0),
+112:   reference_price NUMERIC(12,2) CHECK (reference_price >= 0),
+113:   status VARCHAR(12) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','INACTIVE','DISCONTINUED')),
+114:   image_path VARCHAR(255),
+115:   version INT NOT NULL DEFAULT 1,                 -- bloqueo optimista en ediciones
+116:   created_by BIGINT REFERENCES users(id),
+117:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+118:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+119:   deleted_at TIMESTAMPTZ
+120: );
+121: CREATE INDEX ix_products_name_trgm ON products USING gin (name gin_trgm_ops);
+122: CREATE INDEX ix_products_category ON products (category_id) WHERE deleted_at IS NULL;
+123: CREATE INDEX ix_products_status ON products (status);
+124: 
+125: -- Presentaciones: UND (factor 1), DOC (12), CAJA (48)...
+126: CREATE TABLE product_units (
+127:   id BIGSERIAL PRIMARY KEY,
+128:   product_id BIGINT NOT NULL REFERENCES products(id),
+129:   unit_id SMALLINT NOT NULL REFERENCES units(id),
+130:   factor_to_base NUMERIC(12,3) NOT NULL CHECK (factor_to_base > 0),
+131:   is_purchase_default BOOLEAN NOT NULL DEFAULT FALSE,
+132:   UNIQUE (product_id, unit_id)
+133: );
+134: 
+135: CREATE TABLE product_barcodes (
+136:   id BIGSERIAL PRIMARY KEY,
+137:   product_id BIGINT NOT NULL REFERENCES products(id),
+138:   presentation_id BIGINT REFERENCES product_units(id),  -- el código de la caja trae su factor
+139:   barcode VARCHAR(40) NOT NULL UNIQUE,
+140:   symbology VARCHAR(10) NOT NULL CHECK (symbology IN ('EAN13','EAN8','UPCA','CODE128','QR','INTERNAL')),
+141:   is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+142:   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+143: );
+144: CREATE UNIQUE INDEX uq_one_primary_barcode ON product_barcodes (product_id) WHERE is_primary;
+145: 
+146: CREATE TABLE product_stock_policies (
+147:   product_id BIGINT NOT NULL REFERENCES products(id),
+148:   warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
+149:   min_qty NUMERIC(14,3) NOT NULL DEFAULT 0 CHECK (min_qty >= 0),
+150:   max_qty NUMERIC(14,3) CHECK (max_qty >= 0),
+151:   reorder_qty NUMERIC(14,3) CHECK (reorder_qty > 0),
+152:   PRIMARY KEY (product_id, warehouse_id),
+153:   CHECK (max_qty IS NULL OR max_qty >= min_qty)
+154: );
+155: 
+156: CREATE TABLE product_locations (                   -- ubicación sugerida (slotting)
+157:   product_id BIGINT NOT NULL REFERENCES products(id),
+158:   location_id BIGINT NOT NULL REFERENCES locations(id),
+159:   is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+160:   PRIMARY KEY (product_id, location_id)
+161: );
+162: CREATE UNIQUE INDEX uq_primary_location_per_product ON product_locations (product_id) WHERE is_primary;
+163: 
+164: -- ---------------------------------------------------------------------
+165: -- 4. PROVEEDORES
+166: -- ---------------------------------------------------------------------
+167: CREATE TABLE suppliers (
+168:   id BIGSERIAL PRIMARY KEY,
+169:   ruc CHAR(11) NOT NULL UNIQUE CHECK (ruc ~ '^[0-9]{11}$'),
+170:   business_name VARCHAR(160) NOT NULL,
+171:   contact_name VARCHAR(120),
+172:   phone VARCHAR(30),
+173:   email VARCHAR(160),
+174:   address VARCHAR(255),
+175:   lead_time_days SMALLINT CHECK (lead_time_days >= 0),
+176:   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+177:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+178:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+179: );
+180: 
+181: CREATE TABLE product_suppliers (
+182:   product_id BIGINT NOT NULL REFERENCES products(id),
+183:   supplier_id BIGINT NOT NULL REFERENCES suppliers(id),
+184:   supplier_sku VARCHAR(40),
+185:   last_cost NUMERIC(14,4) CHECK (last_cost >= 0),
+186:   is_preferred BOOLEAN NOT NULL DEFAULT FALSE,
+187:   PRIMARY KEY (product_id, supplier_id)
+188: );
+189: 
+190: -- ---------------------------------------------------------------------
+191: -- 5. LEDGER DE INVENTARIO (núcleo)
+192: -- ---------------------------------------------------------------------
+193: CREATE TABLE movement_reasons (
+194:   id SMALLSERIAL PRIMARY KEY,
+195:   code VARCHAR(24) NOT NULL UNIQUE,
+196:   name VARCHAR(80) NOT NULL,
+197:   movement_type VARCHAR(24) NOT NULL,
+198:   requires_approval BOOLEAN NOT NULL DEFAULT FALSE,
+199:   requires_notes BOOLEAN NOT NULL DEFAULT FALSE,
+200:   is_active BOOLEAN NOT NULL DEFAULT TRUE
+201: );
+202: 
+203: CREATE TABLE stock_movements (
+204:   id BIGSERIAL PRIMARY KEY,
+205:   uuid UUID NOT NULL UNIQUE,
+206:   type VARCHAR(24) NOT NULL CHECK (type IN (
+207:     'SALDO_INICIAL','ENTRADA_COMPRA','DEVOLUCION_CLIENTE','AJUSTE_POSITIVO',
+208:     'SALIDA_VENTA','MERMA','AJUSTE_NEGATIVO','DEVOLUCION_PROVEEDOR','TRANSFERENCIA')),
+209:   product_id BIGINT NOT NULL REFERENCES products(id),
+210:   from_location_id BIGINT REFERENCES locations(id),
+211:   to_location_id BIGINT REFERENCES locations(id),
+212:   quantity NUMERIC(14,3) NOT NULL CHECK (quantity > 0),       -- siempre en unidad base
+213:   presentation_id BIGINT REFERENCES product_units(id),        -- lo que digitó/escaneó el usuario
+214:   presentation_qty NUMERIC(14,3) CHECK (presentation_qty > 0),
+215:   unit_cost NUMERIC(14,4) CHECK (unit_cost >= 0),             -- entradas: costo de compra; salidas: costo promedio vigente
+216:   reason_id SMALLINT REFERENCES movement_reasons(id),
+217:   source_type VARCHAR(30),                                    -- RECEIPT | TRANSFER_ORDER | ADJUSTMENT | COUNT | POS_IMPORT | OPENING
+218:   source_id BIGINT,
+219:   document_ref VARCHAR(60),
+220:   notes VARCHAR(500),
+221:   user_id BIGINT NOT NULL REFERENCES users(id),
+222:   approved_by BIGINT REFERENCES users(id),
+223:   idempotency_key VARCHAR(80) NOT NULL UNIQUE,
+224:   client_created_at TIMESTAMPTZ,                              -- momento real del escaneo (modo offline)
+225:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+226:   CONSTRAINT chk_movement_shape CHECK (
+227:        (type IN ('SALDO_INICIAL','ENTRADA_COMPRA','DEVOLUCION_CLIENTE','AJUSTE_POSITIVO')
+228:           AND to_location_id IS NOT NULL AND from_location_id IS NULL)
+229:     OR (type IN ('SALIDA_VENTA','MERMA','AJUSTE_NEGATIVO','DEVOLUCION_PROVEEDOR')
+230:           AND from_location_id IS NOT NULL AND to_location_id IS NULL)
+231:     OR (type = 'TRANSFERENCIA'
+232:           AND from_location_id IS NOT NULL AND to_location_id IS NOT NULL
+233:           AND from_location_id <> to_location_id)),
+234:   CONSTRAINT chk_reason_required CHECK (
+235:     type NOT IN ('MERMA','AJUSTE_POSITIVO','AJUSTE_NEGATIVO') OR reason_id IS NOT NULL),
+236:   CONSTRAINT chk_cost_on_entry CHECK (
+237:     type NOT IN ('ENTRADA_COMPRA','SALDO_INICIAL') OR unit_cost IS NOT NULL)
+238: );
+239: CREATE INDEX ix_mov_product_date ON stock_movements (product_id, created_at DESC);
+240: CREATE INDEX ix_mov_from_loc ON stock_movements (from_location_id, created_at DESC) WHERE from_location_id IS NOT NULL;
+241: CREATE INDEX ix_mov_to_loc ON stock_movements (to_location_id, created_at DESC) WHERE to_location_id IS NOT NULL;
+242: CREATE INDEX ix_mov_type_date ON stock_movements (type, created_at DESC);
+243: CREATE INDEX ix_mov_source ON stock_movements (source_type, source_id);
+244: CREATE INDEX ix_mov_user_date ON stock_movements (user_id, created_at DESC);
+245: 
+246: -- Inmutabilidad: ni UPDATE, ni DELETE, ni TRUNCATE.
+247: CREATE OR REPLACE FUNCTION forbid_ledger_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
+248: BEGIN
+249:   RAISE EXCEPTION 'stock_movements es inmutable: registre un ajuste en lugar de modificar';
+250: END; $$;
+251: CREATE TRIGGER trg_ledger_no_update_delete
+252:   BEFORE UPDATE OR DELETE ON stock_movements
+253:   FOR EACH ROW EXECUTE FUNCTION forbid_ledger_mutation();
+254: CREATE TRIGGER trg_ledger_no_truncate
+255:   BEFORE TRUNCATE ON stock_movements
+256:   FOR EACH STATEMENT EXECUTE FUNCTION forbid_ledger_mutation();
+257: 
+258: CREATE TABLE stock_balances (
+259:   product_id BIGINT NOT NULL REFERENCES products(id),
+260:   location_id BIGINT NOT NULL REFERENCES locations(id),
+261:   quantity NUMERIC(14,3) NOT NULL DEFAULT 0 CHECK (quantity >= 0),   -- el stock negativo es imposible
+262:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+263:   PRIMARY KEY (product_id, location_id)
+264: );
+265: CREATE INDEX ix_balances_location ON stock_balances (location_id) WHERE quantity > 0;
+266: 
+267: -- ---------------------------------------------------------------------
+268: -- 6. OPERACIONES
+269: -- ---------------------------------------------------------------------
+270: CREATE TABLE purchase_receipts (
+271:   id BIGSERIAL PRIMARY KEY,
+272:   code VARCHAR(20) NOT NULL UNIQUE,               -- REC-2026-000123
+273:   supplier_id BIGINT NOT NULL REFERENCES suppliers(id),
+274:   warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
+275:   doc_type VARCHAR(16) NOT NULL CHECK (doc_type IN ('FACTURA','GUIA_REMISION','BOLETA','OTRO')),
+276:   doc_number VARCHAR(30) NOT NULL,
+277:   doc_date DATE NOT NULL,
+278:   status VARCHAR(10) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','CONFIRMED','CANCELLED')),
+279:   notes VARCHAR(500),
+280:   received_by BIGINT NOT NULL REFERENCES users(id),
+281:   confirmed_at TIMESTAMPTZ,
+282:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+283:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+284: );
+285: CREATE UNIQUE INDEX uq_receipt_document ON purchase_receipts (supplier_id, doc_type, doc_number)
+286:   WHERE status <> 'CANCELLED';                    -- evita registrar dos veces la misma factura
+287: 
+288: CREATE TABLE purchase_receipt_items (
+289:   id BIGSERIAL PRIMARY KEY,
+290:   receipt_id BIGINT NOT NULL REFERENCES purchase_receipts(id) ON DELETE CASCADE,
+291:   product_id BIGINT NOT NULL REFERENCES products(id),
+292:   presentation_id BIGINT REFERENCES product_units(id),
+293:   qty_expected NUMERIC(14,3) CHECK (qty_expected >= 0),
+294:   qty_received NUMERIC(14,3) NOT NULL CHECK (qty_received >= 0),
+295:   unit_cost NUMERIC(14,4) NOT NULL CHECK (unit_cost >= 0),     -- por unidad base, sin IGV
+296:   location_id BIGINT NOT NULL REFERENCES locations(id),
+297:   movement_id BIGINT UNIQUE REFERENCES stock_movements(id)
+298: );
+299: 
+300: CREATE TABLE transfer_orders (
+301:   id BIGSERIAL PRIMARY KEY,
+302:   code VARCHAR(20) NOT NULL UNIQUE,               -- TRF-2026-000045
+303:   status VARCHAR(10) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','COMPLETED','CANCELLED')),
+304:   notes VARCHAR(500),
+305:   requested_by BIGINT NOT NULL REFERENCES users(id),
+306:   completed_at TIMESTAMPTZ,
+307:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+308:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+309: );
+310: CREATE TABLE transfer_order_items (
+311:   id BIGSERIAL PRIMARY KEY,
+312:   order_id BIGINT NOT NULL REFERENCES transfer_orders(id) ON DELETE CASCADE,
+313:   product_id BIGINT NOT NULL REFERENCES products(id),
+314:   from_location_id BIGINT NOT NULL REFERENCES locations(id),
+315:   to_location_id BIGINT NOT NULL REFERENCES locations(id),
+316:   quantity NUMERIC(14,3) NOT NULL CHECK (quantity > 0),
+317:   movement_id BIGINT UNIQUE REFERENCES stock_movements(id),
+318:   CHECK (from_location_id <> to_location_id)
+319: );
+320: 
+321: CREATE TABLE stock_adjustment_requests (
+322:   id BIGSERIAL PRIMARY KEY,
+323:   code VARCHAR(20) NOT NULL UNIQUE,               -- AJU-2026-000012
+324:   kind VARCHAR(10) NOT NULL CHECK (kind IN ('POSITIVE','NEGATIVE','WRITE_OFF')),
+325:   product_id BIGINT NOT NULL REFERENCES products(id),
+326:   location_id BIGINT NOT NULL REFERENCES locations(id),
+327:   quantity NUMERIC(14,3) NOT NULL CHECK (quantity > 0),
+328:   reason_id SMALLINT NOT NULL REFERENCES movement_reasons(id),
+329:   notes VARCHAR(500) NOT NULL,
+330:   evidence_path VARCHAR(255),
+331:   status VARCHAR(10) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','APPROVED','REJECTED')),
+332:   requested_by BIGINT NOT NULL REFERENCES users(id),
+333:   reviewed_by BIGINT REFERENCES users(id),
+334:   reviewed_at TIMESTAMPTZ,
+335:   review_notes VARCHAR(500),
+336:   movement_id BIGINT UNIQUE REFERENCES stock_movements(id),
+337:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+338:   CONSTRAINT chk_separation_of_duties CHECK (reviewed_by IS NULL OR reviewed_by <> requested_by),
+339:   CONSTRAINT chk_review_complete CHECK (status = 'PENDING' OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL))
+340: );
+341: CREATE INDEX ix_adjust_pending ON stock_adjustment_requests (created_at) WHERE status = 'PENDING';
+342: 
+343: CREATE TABLE stock_counts (
+344:   id BIGSERIAL PRIMARY KEY,
+345:   code VARCHAR(20) NOT NULL UNIQUE,               -- CNT-2026-000007
+346:   warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
+347:   scope_type VARCHAR(10) NOT NULL CHECK (scope_type IN ('FULL','ZONE','LOCATION','CATEGORY','ABC_A')),
+348:   scope_value VARCHAR(40),
+349:   status VARCHAR(10) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN','COUNTING','REVIEW','CLOSED','CANCELLED')),
+350:   snapshot_at TIMESTAMPTZ,                        -- instante en que se congela el stock esperado
+351:   opened_by BIGINT NOT NULL REFERENCES users(id),
+352:   closed_by BIGINT REFERENCES users(id),
+353:   closed_at TIMESTAMPTZ,
+354:   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+355: );
+356: CREATE TABLE stock_count_lines (
+357:   id BIGSERIAL PRIMARY KEY,
+358:   count_id BIGINT NOT NULL REFERENCES stock_counts(id) ON DELETE CASCADE,
+359:   product_id BIGINT NOT NULL REFERENCES products(id),
+360:   location_id BIGINT NOT NULL REFERENCES locations(id),
+361:   expected_qty NUMERIC(14,3) NOT NULL CHECK (expected_qty >= 0),
+362:   counted_qty NUMERIC(14,3) CHECK (counted_qty >= 0),
+363:   difference NUMERIC(14,3) GENERATED ALWAYS AS (counted_qty - expected_qty) STORED,
+364:   recount_requested BOOLEAN NOT NULL DEFAULT FALSE,
+365:   counted_by BIGINT REFERENCES users(id),
+366:   counted_at TIMESTAMPTZ,
+367:   adjustment_request_id BIGINT REFERENCES stock_adjustment_requests(id),
+368:   UNIQUE (count_id, product_id, location_id)
+369: );
+370: 
+371: -- ---------------------------------------------------------------------
+372: -- 7. ALERTAS, SNAPSHOTS, IMPORTACIONES Y CONFIGURACIÓN
+373: -- ---------------------------------------------------------------------
+374: CREATE TABLE alerts (
+375:   id BIGSERIAL PRIMARY KEY,
+376:   type VARCHAR(24) NOT NULL CHECK (type IN (
+377:     'LOW_STOCK','OUT_OF_STOCK','OVERSTOCK','NO_MOVEMENT','RECONCILIATION_DIFF','LARGE_ADJUSTMENT')),
+378:   severity VARCHAR(8) NOT NULL CHECK (severity IN ('INFO','WARNING','CRITICAL')),
+379:   product_id BIGINT REFERENCES products(id),
+380:   warehouse_id BIGINT REFERENCES warehouses(id),
+381:   payload JSONB NOT NULL DEFAULT '{}',
+382:   status VARCHAR(12) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN','ACKNOWLEDGED','RESOLVED')),
+383:   opened_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+384:   acknowledged_by BIGINT REFERENCES users(id),
+385:   acknowledged_at TIMESTAMPTZ,
+386:   resolved_at TIMESTAMPTZ
+387: );
+388: -- Una sola alerta activa por (tipo, producto, almacén)
+389: CREATE UNIQUE INDEX uq_alert_active ON alerts (type, COALESCE(product_id,0), COALESCE(warehouse_id,0))
+390:   WHERE status <> 'RESOLVED';
+391: CREATE INDEX ix_alerts_open ON alerts (severity, opened_at DESC) WHERE status <> 'RESOLVED';
+392: 
+393: -- Foto diaria (valorizado histórico y reportes rápidos). Particionada por mes.
+394: CREATE TABLE stock_daily_snapshots (
+395:   snapshot_date DATE NOT NULL,
+396:   product_id BIGINT NOT NULL,
+397:   warehouse_id BIGINT NOT NULL,
+398:   quantity NUMERIC(14,3) NOT NULL,
+399:   cost_avg NUMERIC(14,4) NOT NULL,
+400:   PRIMARY KEY (snapshot_date, product_id, warehouse_id)
+401: ) PARTITION BY RANGE (snapshot_date);
+402: CREATE TABLE stock_daily_snapshots_default PARTITION OF stock_daily_snapshots DEFAULT;
+403: -- Un job mensual crea la partición siguiente:
+404: -- CREATE TABLE stock_daily_snapshots_2026_11 PARTITION OF stock_daily_snapshots
+405: --   FOR VALUES FROM ('2026-11-01') TO ('2026-12-01');
+406: 
+407: CREATE TABLE import_jobs (
+408:   id BIGSERIAL PRIMARY KEY,
+409:   kind VARCHAR(16) NOT NULL CHECK (kind IN ('PRODUCTS','OPENING_STOCK','POS_SALES')),
+410:   file_path VARCHAR(255) NOT NULL,
+411:   file_sha256 CHAR(64) NOT NULL,
+412:   mode VARCHAR(8) NOT NULL DEFAULT 'DRY_RUN' CHECK (mode IN ('DRY_RUN','COMMIT')),
+413:   status VARCHAR(10) NOT NULL DEFAULT 'QUEUED' CHECK (status IN ('QUEUED','RUNNING','DONE','FAILED')),
+414:   total_rows INT, ok_rows INT, error_rows INT,
+415:   error_report_path VARCHAR(255),
+416:   created_by BIGINT NOT NULL REFERENCES users(id),
+417:   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+418:   finished_at TIMESTAMPTZ
+419: );
+420: CREATE UNIQUE INDEX uq_import_commit_once ON import_jobs (kind, file_sha256) WHERE mode = 'COMMIT' AND status <> 'FAILED';
+421: 
+422: CREATE TABLE settings (
+423:   key VARCHAR(60) PRIMARY KEY,
+424:   value JSONB NOT NULL,
+425:   updated_by BIGINT REFERENCES users(id),
+426:   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+427: );
+428: 
+429: -- ---------------------------------------------------------------------
+430: -- 8. VISTAS, FUNCIONES Y REPORTES
+431: -- ---------------------------------------------------------------------
+432: -- Cada movimiento produce 1 o 2 "efectos" (delta) sobre ubicaciones.
+433: CREATE VIEW v_movement_effects AS
+434: SELECT id AS movement_id, product_id, to_location_id AS location_id, quantity AS delta, type, created_at
+435:   FROM stock_movements WHERE to_location_id IS NOT NULL
+436: UNION ALL
+437: SELECT id, product_id, from_location_id, -quantity, type, created_at
+438:   FROM stock_movements WHERE from_location_id IS NOT NULL;
+439: 
+440: CREATE VIEW v_kardex AS
+441: SELECT e.movement_id, e.product_id, e.location_id, l.warehouse_id, e.type, e.delta, e.created_at,
+442:        SUM(e.delta) OVER (PARTITION BY e.product_id, e.location_id
+443:                           ORDER BY e.created_at, e.movement_id) AS running_balance
+444:   FROM v_movement_effects e JOIN locations l ON l.id = e.location_id;
+445: 
+446: CREATE VIEW v_product_stock AS
+447: SELECT b.product_id, l.warehouse_id, SUM(b.quantity) AS quantity
+448:   FROM stock_balances b JOIN locations l ON l.id = b.location_id
+449:  GROUP BY b.product_id, l.warehouse_id;
+450: 
+451: -- Reconciliación: debe devolver 0 filas. Si devuelve filas, se abre alerta CRITICAL.
+452: CREATE OR REPLACE FUNCTION fn_reconcile_ledger()
+453: RETURNS TABLE (p_product_id BIGINT, p_location_id BIGINT, p_balance NUMERIC, p_ledger NUMERIC, p_diff NUMERIC)
+454: LANGUAGE sql STABLE AS $$
+455:   SELECT COALESCE(b.product_id, l.product_id), COALESCE(b.location_id, l.location_id),
+456:          COALESCE(b.quantity, 0), COALESCE(l.q, 0), COALESCE(b.quantity, 0) - COALESCE(l.q, 0)
+457:     FROM stock_balances b
+458:     FULL JOIN (SELECT product_id, location_id, SUM(delta) AS q
+459:                  FROM v_movement_effects GROUP BY product_id, location_id) l
+460:       ON l.product_id = b.product_id AND l.location_id = b.location_id
+461:    WHERE COALESCE(b.quantity, 0) <> COALESCE(l.q, 0);
+462: $$;
+463: 
+464: -- Rotación y cobertura (REFRESH MATERIALIZED VIEW CONCURRENTLY cada noche)
+465: CREATE MATERIALIZED VIEW mv_product_rotation_90d AS
+466: SELECT p.id AS product_id,
+467:        COALESCE(SUM(m.quantity) FILTER (WHERE m.type = 'SALIDA_VENTA'), 0) AS qty_sold_90d,
+468:        COALESCE(SUM(m.quantity * COALESCE(m.unit_cost, p.cost_avg)) FILTER (WHERE m.type = 'SALIDA_VENTA'), 0) AS value_sold_90d,
+469:        (SELECT MAX(created_at) FROM stock_movements x WHERE x.product_id = p.id) AS last_movement_at
+470:   FROM products p
+471:   LEFT JOIN stock_movements m ON m.product_id = p.id AND m.created_at >= now() - INTERVAL '90 days'
+472:  WHERE p.deleted_at IS NULL
+473:  GROUP BY p.id;
+474: CREATE UNIQUE INDEX uq_mv_rotation ON mv_product_rotation_90d (product_id);
+475: 
+476: -- ---------------------------------------------------------------------
+477: -- 9. PRIVILEGIOS (principio de mínimo privilegio)
+478: -- ---------------------------------------------------------------------
+479: -- La app NO conecta como dueño del esquema. Rol de ejecución:
+480: -- CREATE ROLE wms_app LOGIN PASSWORD '...';
+481: -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO wms_app;
+482: -- REVOKE UPDATE, DELETE, TRUNCATE ON stock_movements FROM wms_app;   -- defensa en profundidad
+483: -- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO wms_app;
+484: 
+485: -- ---------------------------------------------------------------------
+486: -- 10. DATOS SEMILLA
+487: -- ---------------------------------------------------------------------
+488: INSERT INTO units (code, name, allows_decimal) VALUES
+489:   ('UND','Unidad',FALSE), ('DOC','Docena',FALSE), ('PAQ','Paquete',FALSE),
+490:   ('CJA','Caja',FALSE), ('PAR','Par',FALSE), ('MTR','Metro',TRUE), ('KG','Kilogramo',TRUE);
+491: 
+492: INSERT INTO warehouses (code, name, type) VALUES
+493:   ('BOD','Bodega central','BODEGA'), ('PIS','Piso de venta','PISO_VENTA');
+494: 
+495: INSERT INTO locations (warehouse_id, code, zone, is_staging)
+496:   SELECT id, 'BOD-REC', 'REC', TRUE FROM warehouses WHERE code = 'BOD'
+497:   UNION ALL
+498:   SELECT id, 'PIS-REC', 'REC', TRUE FROM warehouses WHERE code = 'PIS';
+499: 
+500: INSERT INTO categories (parent_id, code, name, depth) VALUES
+501:   (NULL,'LIB','Librería',1), (NULL,'JUG','Juguetería',1), (NULL,'BAZ','Bazar',1),
+502:   (NULL,'MEN','Menaje',1), (NULL,'HOG','Hogar',1);
+503: 
+504: INSERT INTO movement_reasons (code, name, movement_type, requires_approval, requires_notes) VALUES
+505:   ('MERMA_DANIO','Producto dañado','MERMA',TRUE,TRUE),
+506:   ('MERMA_VENCIDO','Producto vencido/deteriorado','MERMA',TRUE,TRUE),
+507:   ('MERMA_EXTRAVIO','Extravío o faltante no explicado','MERMA',TRUE,TRUE),
+508:   ('MERMA_ROBO','Robo / hurto','MERMA',TRUE,TRUE),
+509:   ('MERMA_MUESTRA','Muestra o uso interno','MERMA',TRUE,TRUE),
+510:   ('AJU_ERROR_CONTEO','Diferencia de conteo físico','AJUSTE_NEGATIVO',TRUE,TRUE),
+511:   ('AJU_ERROR_REGISTRO','Error de registro anterior','AJUSTE_NEGATIVO',TRUE,TRUE),
+512:   ('AJU_HALLAZGO','Hallazgo de mercadería no registrada','AJUSTE_POSITIVO',TRUE,TRUE),
+513:   ('AJU_CONTEO_FAVOR','Sobrante de conteo físico','AJUSTE_POSITIVO',TRUE,TRUE);
+514: 
+515: INSERT INTO settings (key, value) VALUES
+516:   ('adjustment.auto_approve_limit_pen', '0'),
+517:   ('adjustment.large_alert_pen', '500'),
+518:   ('count.tolerance_pct', '0'),
+519:   ('alerts.low_stock_factor', '1.25'),
+520:   ('alerts.no_movement_days', '90'),
+521:   ('reports.abc_thresholds', '{"A":0.80,"B":0.95}'),
+522:   ('locale', '{"timezone":"America/Lima","currency":"PEN","language":"es"}');
+523: 
+524: -- ---------------------------------------------------------------------
+525: -- 11. FUNCIONES AUXILIARES
+526: -- ---------------------------------------------------------------------
+527: -- Permite al rol de la app refrescar la vista materializada sin ser su propietario.
+528: CREATE OR REPLACE FUNCTION fn_refresh_rotation() RETURNS void
+529: LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+530:   REFRESH MATERIALIZED VIEW CONCURRENTLY mv_product_rotation_90d;
+531: $$;
+532: REVOKE ALL ON FUNCTION fn_refresh_rotation() FROM PUBLIC;

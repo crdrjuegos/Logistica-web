@@ -1,0 +1,28 @@
+<?php
+declare(strict_types=1);
+require dirname(__DIR__).'/vendor/autoload.php';
+$app=require dirname(__DIR__).'/bootstrap/app.php';$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+use Illuminate\Support\Facades\DB;
+use Tests\Support\Fixtures;
+use Tests\Support\MovementFactory as M;
+use App\Modules\Inventory\Application\RegisterMovement;
+use App\Modules\Inventory\Domain\NewMovement;
+use App\Modules\Inventory\Domain\MovementType;
+use App\Modules\Inventory\Domain\Quantity;
+use App\Modules\Inventory\Domain\UnitCost;
+if(DB::connection()->getDatabaseName()!=='wms_test'){throw new RuntimeException('Solo se permite la base aislada wms_test');}
+$results=[];
+function sqlProbe(string $id,string $name,callable $f):void{global $results;try{$value=$f();$status='Conforme en integración';}catch(Throwable $e){$value=$e->getMessage();$status='No conforme';}$results[]=['id'=>$id,'scenario'=>$name,'status'=>$status,'observed'=>$value??'Aserciones verificadas contra PostgreSQL 17','scope'=>'PostgreSQL wms_test en transacción revertida al finalizar'];}
+function verify(bool $ok,string $message):void{if(!$ok)throw new RuntimeException($message);}
+function immutable(callable $f):void{try{DB::transaction($f);}catch(Illuminate\Database\QueryException $e){verify(str_contains($e->getMessage(),'inmutable'),'Rechazo por causa distinta a inmutabilidad');return;}throw new RuntimeException('La BD permitió alterar el historial');}
+DB::beginTransaction();
+try{
+ $actor=Fixtures::user();$product=Fixtures::product();$loc=Fixtures::location();$reg=app(RegisterMovement::class);$m=M::purchase($product,$loc,10,'2',$actor);$r=$reg($m);
+ sqlProbe('CA-017-2','UPDATE del ledger es rechazado',fn()=>immutable(fn()=>DB::table('stock_movements')->where('id',$r->movementId)->update(['quantity'=>99])));
+ sqlProbe('CA-017-3','DELETE y TRUNCATE CASCADE son rechazados',function()use($r){immutable(fn()=>DB::table('stock_movements')->where('id',$r->movementId)->delete());immutable(fn()=>DB::statement('TRUNCATE stock_movements CASCADE'));});
+ sqlProbe('CA-019-4','UUID y clave iguales con cantidad alterada',function()use($m,$reg,$product,$loc,$actor){$bad=M::purchase($product,$loc,99,'2',$actor,uuid:$m->uuid,key:$m->idempotencyKey);try{$reg($bad);}catch(App\Modules\Inventory\Domain\Exceptions\InventoryException $e){return 'Conflicto rechazado';}throw new RuntimeException('Se aceptó como duplicado pese a cambiar 10 por 99; saldo no se duplica, pero el conflicto queda oculto');});
+ sqlProbe('CA-053-2','Segunda apertura con clave distinta',function()use($actor,$loc,$reg){$p=Fixtures::product();$make=fn()=>new NewMovement(Tests\Support\Ids::uuid(),Tests\Support\Ids::key(),MovementType::from('SALDO_INICIAL'),$p,null,$loc,Quantity::of('10'),$actor,unitCost:UnitCost::of('2'));$reg($make());try{$reg($make());}catch(Throwable $e){return 'Segunda apertura rechazada: '.get_class($e);}throw new RuntimeException('Se permiten dos SALDO_INICIAL de 10 para el mismo producto y ubicación; saldo observado '.Fixtures::balance($p,$loc));});
+ sqlProbe('CA-045-4','Exportar pedido sugerido exige reports.export',function(){Tests\Support\PanelUsers::seedRoles();$u=Tests\Support\PanelUsers::withRole(App\Modules\Iam\Domain\RoleName::Lectura);auth()->setUser($u);verify(!$u->can('reports.export'),'Fixture sin permiso esperada');$page=new App\Filament\Resources\Replenishment\Pages\ListReplenishment;$method=new ReflectionMethod($page,'getHeaderActions');$actions=$method->invoke($page);foreach($actions as $action)if($action->getName()==='export')verify(!$action->isVisible(),'La acción export es visible para rol lectura sin reports.export');return 'Acción oculta al usuario sin permiso';});
+}finally{DB::rollBack();}
+file_put_contents(__DIR__.'/sql_acceptance_results.json',json_encode(['date'=>'2026-10-28','runtime'=>PHP_VERSION,'database'=>'wms_test','results'=>$results],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+foreach($results as $x)echo $x['id'].' '.$x['status'].' '.$x['observed'].PHP_EOL;

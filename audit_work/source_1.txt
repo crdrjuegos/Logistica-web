@@ -1,0 +1,128 @@
+P0 [normal] GUÍA DOCENTE DE TRABAJO
+P1 [normal] Elaboración y revisión del Plan de Prácticas Preprofesionales
+con enfoque PMI y metodología de desarrollo de software
+P2 [normal] Caso de aplicación: Metodología SCRUM
+P3 [normal] Documento de orientación para docentes supervisores de Prácticas Preprofesionales
+P4 [normal] Documento base revisado: Plan de Prácticas Preprofesionales - ejemplo SCRUM
+P6 [normal] 1. Finalidad de la guía
+P7 [normal] Esta guía establece un criterio uniforme para formular, revisar y aprobar los Planes de Prácticas Preprofesionales vinculados con proyectos de software. La propuesta utiliza los cinco grupos de procesos PMI como estructura de gestión del proyecto y ubica las actividades específicas de la metodología de desarrollo principalmente en Ejecución y en Monitoreo y Control.
+P8 [normal] Criterio rector: PMI organiza la gestión del proyecto; la metodología de software define cómo se construye, inspecciona y mejora el producto durante la práctica.
+P9 [normal] 2. Problema identificado en el formato anterior
+P10 [normal] El documento base presenta la visión y el alcance del proyecto, luego incorpora la implementación mediante SCRUM y finalmente el cierre. Dentro de la implementación se mezclan historias de usuario con eventos como Daily, Review y Retrospectiva. La mejora propuesta separa claramente las actividades de ejecución del trabajo de las actividades de seguimiento, inspección y adaptación.
+P11 [normal] • Evitar que los eventos de SCRUM aparezcan como tareas aisladas repetidas después de cada historia de usuario.
+P12 [normal] • Diferenciar la gestión del proyecto de la metodología utilizada para desarrollar el producto.
+P13 [normal] • Relacionar cada actividad con una evidencia verificable por el docente y por el jefe inmediato.
+P14 [normal] • Mantener una estructura común para todos los estudiantes, aun cuando utilicen metodologías diferentes.
+P15 [normal] 3. Estructura obligatoria del Plan
+P17 [normal] 4. Orientaciones por fase
+P18 [normal] 4.1 Fase 1 - Inicio
+P19 [normal] El docente debe verificar que el estudiante parte de una necesidad real de la empresa y que el proyecto es viable dentro del periodo de prácticas.
+P20 [normal] • Identificar la problemática o necesidad empresarial.
+P21 [normal] • Precisar el área beneficiaria y los principales interesados.
+P22 [normal] • Redactar la visión del proyecto y un objetivo general verificable.
+P23 [normal] • Definir de manera preliminar el producto o solución que será entregado.
+P24 [normal] • Acordar responsables: practicante, jefe inmediato, supervisor y usuarios clave.
+P25 [normal] Evidencias mínimas: ficha o acta de inicio, visión del proyecto, objetivo y relación de interesados.
+P26 [normal] 4.2 Fase 2 - Planificación
+P27 [normal] La planificación debe ser suficiente para orientar el trabajo, sin convertir el plan en un documento rígido que impida la adaptación propia de una metodología ágil.
+P28 [normal] • Definir el alcance y las exclusiones del proyecto.
+P29 [normal] • Identificar y priorizar los requerimientos.
+P30 [normal] • Definir el Product Goal.
+P31 [normal] • Elaborar épicas, historias de usuario y criterios de aceptación.
+P32 [normal] • Construir y priorizar el Product Backlog.
+P33 [normal] • Preparar el roadmap y la planificación general de Sprints.
+P34 [normal] • Identificar riesgos y medidas de respuesta.
+P35 [normal] • Definir criterios de calidad y Definition of Done.
+P36 [normal] Evidencias mínimas: Product Backlog inicial, historias de usuario, roadmap, matriz o lista de riesgos y Definition of Done.
+P37 [normal] 4.3 Fase 3 - Ejecución: actividades propias de SCRUM
+P38 [normal] En esta fase se registra el trabajo que produce valor. El docente debe buscar actividades concretas de construcción del producto y no solo nombres de ceremonias.
+P40 [normal] 4.4 Fase 4 - Monitoreo y Control: actividades de SCRUM
+P41 [normal] Aquí se ubican las prácticas de inspección, seguimiento y adaptación. No deben confundirse con el desarrollo mismo del producto.
+P43 [normal] 4.5 Fase 5 - Cierre
+P44 [normal] • Validar el producto completo frente al alcance acordado.
+P45 [normal] • Consolidar documentación técnica y funcional.
+P46 [normal] • Formalizar la entrega y aceptación por parte de la empresa.
+P47 [normal] • Registrar lecciones aprendidas y pendientes que deban transferirse.
+P48 [normal] • Presentar los resultados de la práctica y obtener la conformidad final.
+P49 [normal] Evidencias mínimas: versión final del producto, documentación, acta o constancia de aceptación, lecciones aprendidas e informe/presentación final.
+P50 [normal] 5. Distribución sugerida para 12 semanas / 6 Sprints
+P52 [normal] Importante: las cinco fases/grupos de procesos no deben interpretarse como bloques rígidamente secuenciales. En un proyecto ágil, planificación, ejecución y monitoreo pueden superponerse durante los Sprints.
+P53 [normal] 6. Matriz de evidencias para seguimiento docente
+P55 [normal] 7. Lista de verificación para aprobar el Plan
+P56 [normal] ☐  El proyecto responde a una necesidad concreta de la empresa.
+P57 [normal] ☐  El nombre del proyecto corresponde al producto o resultado que se desarrollará.
+P58 [normal] ☐  Se diferencia el enfoque de gestión PMI de la metodología de desarrollo.
+P59 [normal] ☐  Las cinco fases/grupos de procesos están representadas en el cronograma.
+P60 [normal] ☐  La fase de Ejecución contiene actividades productivas propias de la metodología.
+P61 [normal] ☐  La fase de Monitoreo y Control contiene seguimiento, inspección, validación y mejora.
+P62 [normal] ☐  Las historias o funcionalidades están distribuidas de manera viable en los Sprints.
+P63 [normal] ☐  Cada actividad relevante cuenta con evidencia o entregable verificable.
+P64 [normal] ☐  El cronograma es coherente con la duración real de las prácticas.
+P65 [normal] ☐  El cierre incluye aceptación, documentación y lecciones aprendidas.
+P66 [normal] 8. Errores que el docente debe corregir
+P67 [normal] • Colocar “Daily”, “Review” o “Retrospectiva” como si fueran funcionalidades del producto.
+P68 [normal] • Utilizar historias de usuario sin criterios de aceptación.
+P69 [normal] • Planificar todos los requerimientos como si tuvieran la misma prioridad.
+P70 [normal] • Presentar Sprints sin un incremento demostrable.
+P71 [normal] • Registrar actividades genéricas como “desarrollar sistema” durante varias semanas sin descomposición.
+P72 [normal] • Cerrar el proyecto únicamente con la presentación final, sin aceptación ni documentación.
+P73 [normal] • Confundir el cronograma académico con una secuencia rígida de fases; en Scrum hay superposición controlada.
+P74 [normal] 9. Regla para adaptar la plantilla a otras metodologías
+P75 [normal] La estructura PMI permanece estable. Lo que cambia es el contenido metodológico de Ejecución y Monitoreo y Control. El docente debe exigir coherencia entre la metodología declarada y las actividades registradas.
+P77 [normal] 10. Instrucción sugerida para el estudiante
+P78 [normal] “Elabore su Plan de Prácticas Preprofesionales estructurando las actividades en Inicio, Planificación, Ejecución, Monitoreo y Control y Cierre. En Ejecución describa las actividades productivas propias de la metodología de software elegida. En Monitoreo y Control registre las actividades de seguimiento, inspección, validación, métricas y mejora que correspondan a dicha metodología. Cada actividad debe asociarse a un periodo y, cuando corresponda, a una evidencia verificable.”
+P79 [normal] 11. Criterio final de evaluación docente
+P80 [normal] Un plan es consistente cuando existe trazabilidad entre la necesidad de la empresa, el objetivo del proyecto, los requerimientos, las actividades metodológicas, el cronograma y las evidencias. La plantilla no debe evaluarse por la cantidad de actividades, sino por la coherencia del proyecto y la capacidad de demostrar avance y resultados durante las prácticas.
+
+TABLE 0
+Fase / grupo de procesos | Propósito en la práctica | Resultado esperado
+1. Inicio | Definir por qué se realizará el proyecto, quiénes participan y qué resultado se busca. | Visión, objetivo, interesados y acta/ficha de inicio.
+2. Planificación | Precisar alcance, requerimientos, trabajo, riesgos, calidad y forma de ejecución. | Backlog, roadmap, historias, criterios de aceptación, riesgos y DoD.
+3. Ejecución | Construir el producto aplicando la metodología seleccionada. | Incrementos, código/configuración, pruebas y documentación.
+4. Monitoreo y Control | Inspeccionar avance, calidad, cambios, riesgos y adaptar el trabajo. | Registros de seguimiento, métricas, revisiones, retrospectivas y backlog actualizado.
+5. Cierre | Formalizar la aceptación, transferencia y lecciones aprendidas. | Producto validado, documentación final, conformidad y cierre.
+
+TABLE 1
+Actividad | Qué debe observar el docente | Evidencia sugerida
+Sprint Planning | Selección realista del trabajo del Sprint y definición del Sprint Goal. | Sprint Backlog y Sprint Goal.
+Desarrollo de historias | Construcción de funcionalidades asociadas a historias priorizadas. | Código, configuración, prototipo o componente funcional.
+Diseño e integración | Decisiones técnicas coherentes con la solución. | Diagramas, repositorio, integración o arquitectura actualizada.
+Pruebas | Verificación técnica antes de considerar terminado el trabajo. | Resultados de pruebas y registro de defectos.
+Documentación del incremento | Información suficiente para mantener y transferir la solución. | Documentación técnica/funcional actualizada.
+Generación del incremento | Resultado usable o demostrable al cierre de cada Sprint. | Incremento presentado en la revisión.
+
+TABLE 2
+Actividad de control | Propósito | Qué debe validar el docente
+Daily Scrum | Inspeccionar el avance hacia el Sprint Goal y ajustar el plan diario. | Que existan avances, impedimentos y decisiones, no solo asistencia a reuniones.
+Seguimiento del Sprint Backlog | Contrastar lo planificado con el trabajo realmente ejecutado. | Estado de historias, tareas y pendientes.
+Control de impedimentos y riesgos | Evitar bloqueos y anticipar impactos. | Registro de impedimentos, responsables y acciones.
+Verificación de calidad / DoD | Comprobar que el incremento cumple los criterios definidos. | Pruebas, aceptación y cumplimiento de DoD.
+Sprint Review | Inspeccionar el incremento con interesados. | Demostración, observaciones y decisiones sobre el producto.
+Refinamiento del Product Backlog | Actualizar y clarificar trabajo futuro. | Backlog priorizado y actualizado.
+Sprint Retrospective | Identificar mejoras en la forma de trabajar. | Acuerdos de mejora concretos para el siguiente Sprint.
+Métricas | Observar desempeño y tendencia. | Avance, cumplimiento, defectos, velocidad u otra métrica pertinente.
+
+TABLE 3
+Periodo | Ejecución | Monitoreo y Control
+Semanas 1-2 / Sprint 1 | Fuentes de información y primer incremento. | Daily, seguimiento, Review, validación, refinamiento y retrospectiva.
+Semanas 3-4 / Sprint 2 | Adaptación del lenguaje del asistente. | Daily, seguimiento, Review, validación, refinamiento y retrospectiva.
+Semanas 5-6 / Sprint 3 | Detección/corrección de información obsoleta. | Daily, seguimiento, Review, validación, refinamiento y retrospectiva.
+Semanas 7-8 / Sprint 4 | Precisión de respuestas. | Daily, seguimiento, Review, validación, refinamiento y retrospectiva.
+Semanas 9-10 / Sprint 5 | Optimización del tiempo de respuesta. | Daily, seguimiento, Review, validación, refinamiento y retrospectiva.
+Semanas 11-12 / Sprint 6 | Análisis de consultas, mejora y consolidación final. | Daily, Review final, retrospectiva, aceptación y cierre.
+
+TABLE 4
+Momento | Evidencia mínima | Criterio de revisión
+Inicio | Visión, objetivo, interesados. | Problema real, objetivo viable y responsables identificados.
+Planificación | Product Backlog, HU, criterios, riesgos, DoD. | Trazabilidad entre necesidad, requerimiento y trabajo planificado.
+Cada Sprint | Sprint Backlog + incremento. | Trabajo demostrable y asociado al objetivo del Sprint.
+Cada cierre de Sprint | Review + retroalimentación + retrospectiva. | Inspección, aceptación parcial y acción de mejora.
+Seguimiento periódico | Métricas, impedimentos y riesgos. | Evidencia de control, no solo relato del estudiante.
+Cierre | Producto, documentación y conformidad. | Cumplimiento del alcance y transferencia ordenada.
+
+TABLE 5
+Metodología | Ejecución - ejemplos | Monitoreo y Control - ejemplos
+SCRUM | Sprint Planning, desarrollo por historias, incremento, pruebas e integración. | Daily, Sprint Review, Retrospective, backlog, métricas, impedimentos.
+Kanban | Extracción de trabajo, gestión visual, políticas explícitas y entrega continua. | WIP, Cycle Time, Lead Time, bloqueos, revisión de flujo y políticas.
+XP | TDD, programación en pares, refactorización, integración continua, pequeñas entregas. | Pruebas automáticas, integración, defectos, velocidad y retrospectiva.
+Cascada / predictiva | Construcción conforme a la línea base y entregables por etapa. | Hitos, variaciones, cambios, calidad, riesgos y aceptación de entregables.

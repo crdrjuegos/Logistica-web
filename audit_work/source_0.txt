@@ -1,0 +1,104 @@
+P0 [normal] PLAN DE PRÁCTICAS PREPROFESIONALES
+P1 [normal] I.   DATOS PERSONALES DEL PRACTICANTE
+P3 [normal] II.   DATOS DE LA EMPRESA
+P5 [normal] III.   DEL PROYECTO ACADÉMICO
+P7 [normal] IV.   ACTIVIDADES PRINCIPALES A REALIZARSE EN LA EMPRESA
+P8 [normal] Las actividades se organizan con los cinco grupos de procesos PMI. Las prácticas de SCRUM se ubican en Ejecución y en Monitoreo y Control. “X” indica el periodo programado.
+P10 [normal] V.   CONFORMIDAD DEL PLAN DE PRÁCTICAS PREPROFESIONALES
+P11 [normal] Lima, 19 de Septiembre del 2024
+
+TABLE 0
+APELLIDOS Y NOMBRES | 
+Lopez Moran Diego Alejandro | Lopez Moran Diego Alejandro
+DIRECCIÓN | 
+Residencial Magisterial | Residencial Magisterial
+TELÉFONO FIJO / CELULAR | 
+970365169 | 970365169
+E-MAIL DE LA UNIVERSIDAD | 
+dlopezmo01@ucvvirtual.edu.pe | dlopezmo01@ucvvirtual.edu.pe
+
+TABLE 1
+RAZÓN SOCIAL | 
+UNIVERSIDAD CÉSAR VALLEJO S.A.C. | UNIVERSIDAD CÉSAR VALLEJO S.A.C.
+R.U.C. | 
+20164113532 | 20164113532
+DIRECCIÓN | 
+PROLONGACIÓN AV. CHULUCANAS S/N | PROLONGACIÓN AV. CHULUCANAS S/N
+REPRESENTANTE LEGAL | 
+Karina Cárdenas Ruiz | Karina Cárdenas Ruiz
+TELÉFONO | 
+(01) 202-4342 | (01) 202-4342
+E-MAIL | 
+gerencia_general@ucv.edu.pe | gerencia_general@ucv.edu.pe
+ÁREA EN DONDE PRACTICA | 
+UCV ALUMNI | UCV ALUMNI
+JEFE INMEDIATO | 
+JUANA ROSA SIANCAS ZAPATA | JUANA ROSA SIANCAS ZAPATA
+CARGO | 
+Coordinadora del área de UCV ALUMNI | Coordinadora del área de UCV ALUMNI
+TELÉFONO DEL JEFE INMEDIATO | 
++51 982 384 447 | +51 982 384 447
+E-MAIL DEL JEFE INMEDIATO | 
+JSIANCAS@UCV.EDU.PE | JSIANCAS@UCV.EDU.PE
+
+TABLE 2
+NOMBRE DEL PROYECTO | 
+Sistema Web de Seguimiento y Priorización de Contacto de Egresados mediante Machine Learning en la UCV – Piura | Sistema Web de Seguimiento y Priorización de Contacto de Egresados mediante Machine Learning en la UCV – Piura
+ENFOQUE DE GESTIÓN DEL PROYECTO | 
+PMI - 5 grupos de procesos: Inicio, Planificación, Ejecución, Monitoreo y Control, Cierre | PMI - 5 grupos de procesos: Inicio, Planificación, Ejecución, Monitoreo y Control, Cierre
+METODOLOGÍA DE DESARROLLO | 
+SCRUM | SCRUM
+ÁREA DE APLICACIÓN | 
+Área de seguimiento al EGRESADO y empleabilidad | Área de seguimiento al EGRESADO y empleabilidad
+
+TABLE 3
+DETALLAR LAS ACTIVIDADES | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO | TIEMPO
+FASE / ACTIVIDAD | Mes 1 | Mes 1 | Mes 1 | Mes 1 | Mes 2 | Mes 2 | Mes 2 | Mes 2 | Mes 3 | Mes 3 | Mes 3 | Mes 3
+SPRINT | Sprint 1 | Sprint 1 | Sprint 2 | Sprint 2 | Sprint 3 | Sprint 3 | Sprint 4 | Sprint 4 | Sprint 5 | Sprint 5 | Sprint 6 | Sprint 6
+SEMANA | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI) | FASE 1. INICIO (PMI)
+1. Identificación de la problemática y necesidad de la empresa | X |  |  |  |  |  |  |  |  |  |  | 
+2. Identificación de interesados y área beneficiaria | X |  |  |  |  |  |  |  |  |  |  | 
+3. Elaboración de la visión y objetivo general del proyecto | X |  |  |  |  |  |  |  |  |  |  | 
+4. Elaboración del acta / ficha de inicio del proyecto | X |  |  |  |  |  |  |  |  |  |  | 
+FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI) | FASE 2. PLANIFICACIÓN (PMI)
+5. Definición del alcance del proyecto | X |  |  |  |  |  |  |  |  |  |  | 
+6. Identificación y análisis de requerimientos | X | X |  |  |  |  |  |  |  |  |  | 
+7. Definición del Product Goal | X |  |  |  |  |  |  |  |  |  |  | 
+8. Elaboración de épicas, historias de usuario y criterios de aceptación | X | X |  |  |  |  |  |  |  |  |  | 
+9. Creación y priorización del Product Backlog | X | X |  |  |  |  |  |  |  |  |  | 
+10. Elaboración del roadmap y planificación general de Sprints |  | X |  |  |  |  |  |  |  |  |  | 
+11. Identificación de riesgos y acciones de respuesta | X | X |  |  |  |  |  |  |  |  |  | 
+12. Definición de criterios de calidad y Definition of Done (DoD) |  | X |  |  |  |  |  |  |  |  |  | 
+FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM | FASE 3. EJECUCIÓN - METODOLOGÍA SCRUM
+13. Sprint Planning (inicio de cada Sprint) | X |  | X |  | X |  | X |  | X |  | X | 
+14. Sprint 1 - H1: Selección e integración de fuentes de información específica | X | X |  |  |  |  |  |  |  |  |  | 
+15. Sprint 2 - H2: Adaptación del lenguaje del asistente |  |  | X | X |  |  |  |  |  |  |  | 
+16. Sprint 3 - H3: Detección y corrección de información obsoleta |  |  |  |  | X | X |  |  |  |  |  | 
+17. Sprint 4 - H4: Evaluación y mejora de la precisión de las respuestas |  |  |  |  |  |  | X | X |  |  |  | 
+18. Sprint 5 - H5: Optimización del tiempo de respuesta |  |  |  |  |  |  |  |  | X | X |  | 
+19. Sprint 6 - H6: Análisis de consultas para mejora continua |  |  |  |  |  |  |  |  |  |  | X | X
+20. Diseño, desarrollo, pruebas, integración y documentación del incremento | X | X | X | X | X | X | X | X | X | X | X | X
+FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM | FASE 4. MONITOREO Y CONTROL - SCRUM
+21. Daily Scrum y seguimiento del Sprint Goal | X | X | X | X | X | X | X | X | X | X | X | X
+22. Seguimiento y actualización del Sprint Backlog | X | X | X | X | X | X | X | X | X | X | X | X
+23. Gestión de impedimentos y seguimiento de riesgos | X | X | X | X | X | X | X | X | X | X | X | X
+24. Verificación de criterios de aceptación, calidad y Definition of Done | X | X | X | X | X | X | X | X | X | X | X | X
+25. Sprint Review e inspección del incremento |  | X |  | X |  | X |  | X |  | X |  | X
+26. Validación del incremento y retroalimentación de interesados |  | X |  | X |  | X |  | X |  | X |  | X
+27. Refinamiento / actualización del Product Backlog |  | X |  | X |  | X |  | X |  | X |  | X
+28. Seguimiento de métricas de avance, calidad y cumplimiento | X | X | X | X | X | X | X | X | X | X | X | X
+29. Sprint Retrospective e identificación de oportunidades de mejora |  | X |  | X |  | X |  | X |  | X |  | X
+30. Implementación de acciones de mejora del proceso |  |  | X |  | X |  | X |  | X |  | X | 
+FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI) | FASE 5. CIERRE (PMI)
+31. Validación final del producto / solución |  |  |  |  |  |  |  |  |  |  |  | X
+32. Elaboración y consolidación de documentación técnica y funcional |  |  |  |  |  |  |  |  |  |  | X | X
+33. Entrega, transferencia y aceptación del producto por la empresa |  |  |  |  |  |  |  |  |  |  |  | X
+34. Registro de lecciones aprendidas y cierre de pendientes |  |  |  |  |  |  |  |  |  |  |  | X
+35. Presentación final de resultados y conformidad del proyecto |  |  |  |  |  |  |  |  |  |  |  | X
+
+TABLE 4
+JEFE INMEDIATO: | SUPERVISOR: | ALUMNO:
+Kevin Eduardo Jorge Aldave | Linares Grijalva Karin Dessiré | Casapaico Rivera Angelo Paolo
+ |  | 
+Firma y Sello | Firma y Sello | Firma y Sello

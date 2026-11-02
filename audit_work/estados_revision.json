@@ -1,0 +1,2227 @@
+{
+  "stories": [
+    {
+      "row": 8,
+      "id": "HU-001",
+      "role": "Administrador",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC01",
+      "sprint": 1,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 9,
+      "id": "HU-002",
+      "role": "Usuario",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC01",
+      "sprint": 1,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 10,
+      "id": "HU-003",
+      "role": "Dueño",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC01",
+      "sprint": 1,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 11,
+      "id": "HU-004",
+      "role": "Administrador",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC01",
+      "sprint": 1,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 12,
+      "id": "HU-005",
+      "role": "Administrador",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC01",
+      "sprint": 4,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 13,
+      "id": "HU-006",
+      "role": "Administrador/supervisor",
+      "technical": "Parcial",
+      "notes": "Hay configuración TOTP y middleware; faltan escenarios completos de desafío y recuperación de un solo uso.",
+      "epic": "EPIC01",
+      "sprint": 4,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 14,
+      "id": "HU-007",
+      "role": "Administrador",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC01",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 16,
+      "id": "HU-008",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "Observación de la revisión: el permiso catalog.write lo tienen Supervisor y Administrador, no Almacenero. Rol propuesto: Supervisor o Administrador (rol original: Almacenero); pendiente de ratificación de la empresa.",
+      "epic": "EPIC02",
+      "sprint": 1,
+      "expected_verification": "Permisos por ratificar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 17,
+      "id": "HU-009",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "Observación de la revisión: el registro requiere catalog.write (Supervisor o Administrador); la consulta sí está disponible al Almacenero. Rol propuesto para el registro: Supervisor o Administrador (rol original: Almacenero); pendiente de ratificación de la empresa.",
+      "epic": "EPIC02",
+      "sprint": 1,
+      "expected_verification": "Permisos por ratificar",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 18,
+      "id": "HU-010",
+      "role": "Comprador",
+      "technical": "Implementado",
+      "notes": "Observación de la revisión: el rol Compras no tiene catalog.write. Rol propuesto: Supervisor o Administrador (rol original: Comprador); pendiente de ratificación de la empresa.",
+      "epic": "EPIC02",
+      "sprint": 1,
+      "expected_verification": "Permisos por ratificar",
+      "expected_fraction": 0.3333333333333333
+    },
+    {
+      "row": 19,
+      "id": "HU-011",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC02",
+      "sprint": 1,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 20,
+      "id": "HU-012",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC02",
+      "sprint": 1,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 21,
+      "id": "HU-013",
+      "role": "Almacenero",
+      "technical": "Parcial",
+      "notes": "Búsqueda similar implementada en backend; no hay aviso integrado en el formulario.",
+      "epic": "EPIC02",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 22,
+      "id": "HU-014",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC02",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 23,
+      "id": "HU-015",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC02",
+      "sprint": 1,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 24,
+      "id": "HU-016",
+      "role": "Comprador",
+      "technical": "Implementado",
+      "notes": "Observación de la revisión: rol propuesto Supervisor según la política actual (rol original: Comprador); pendiente de ratificación de la empresa.",
+      "epic": "EPIC02",
+      "sprint": 1,
+      "expected_verification": "Permisos por ratificar",
+      "expected_fraction": 0.3333333333333333
+    },
+    {
+      "row": 26,
+      "id": "HU-017",
+      "role": "Dueño",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC03",
+      "sprint": 1,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 27,
+      "id": "HU-018",
+      "role": "Dueño",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC03",
+      "sprint": 1,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 28,
+      "id": "HU-019",
+      "role": "Almacenero",
+      "technical": "Parcial",
+      "notes": "Defecto D01: con mismo UUID y clave, una cantidad alterada se acepta como reintento. CA-019-4 lo reproduce.",
+      "epic": "EPIC03",
+      "sprint": 1,
+      "expected_verification": "Con incidencias",
+      "expected_fraction": 0.75
+    },
+    {
+      "row": 29,
+      "id": "HU-020",
+      "role": "Contador",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC03",
+      "sprint": 1,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 30,
+      "id": "HU-021",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC03",
+      "sprint": 1,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 31,
+      "id": "HU-022",
+      "role": "Supervisor",
+      "technical": "Parcial",
+      "notes": "La consulta limita a 500 sin paginación ni indicador de truncamiento en la ventana del panel.",
+      "epic": "EPIC03",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 32,
+      "id": "HU-023",
+      "role": "Dueño",
+      "technical": "Pendiente",
+      "notes": "Existe función SQL y prueba de reconciliación; no tarea nocturna ni aviso en routes/console.php.",
+      "epic": "EPIC03",
+      "sprint": 3,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 34,
+      "id": "HU-024",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 35,
+      "id": "HU-025",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 36,
+      "id": "HU-026",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Verificación parcial",
+      "expected_fraction": 0.3333333333333333
+    },
+    {
+      "row": 37,
+      "id": "HU-027",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 38,
+      "id": "HU-028",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 39,
+      "id": "HU-029",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 40,
+      "id": "HU-030",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 41,
+      "id": "HU-031",
+      "role": "Supervisor",
+      "technical": "Parcial",
+      "notes": "Caso de uso disponible; falta acción específica de ajuste directo en panel y aceptación de política monetaria.",
+      "epic": "EPIC04",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 43,
+      "id": "HU-032",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC05",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 44,
+      "id": "HU-033",
+      "role": "Almacenero",
+      "technical": "Implementado",
+      "notes": "La vista oculta esperado al rol sin counts.close; falta validación visual y de exposición de datos en sesión.",
+      "epic": "EPIC05",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 45,
+      "id": "HU-034",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC05",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 46,
+      "id": "HU-035",
+      "role": "Dueño",
+      "technical": "Implementado",
+      "notes": "Exactitud por líneas iguales, no por unidades; el cálculo actual trunca 2/3 a 66.66 %.",
+      "epic": "EPIC05",
+      "sprint": 3,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 47,
+      "id": "HU-036",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC05",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 49,
+      "id": "HU-037",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC06",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 50,
+      "id": "HU-038",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC06",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 51,
+      "id": "HU-039",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC06",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 53,
+      "id": "HU-040",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC07",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 54,
+      "id": "HU-041",
+      "role": "Supervisor",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC07",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 55,
+      "id": "HU-042",
+      "role": "Comprador",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC07",
+      "sprint": 2,
+      "expected_verification": "Escenarios conformes",
+      "expected_fraction": 1.0
+    },
+    {
+      "row": 56,
+      "id": "HU-043",
+      "role": "Comprador",
+      "technical": "Parcial",
+      "notes": "Vínculo y preferido disponibles en backend; no se identificó pantalla para administrarlos.",
+      "epic": "EPIC07",
+      "sprint": 2,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 58,
+      "id": "HU-044",
+      "role": "Comprador",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC08",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 59,
+      "id": "HU-045",
+      "role": "Comprador",
+      "technical": "Parcial",
+      "notes": "La acción export es visible para lectura sin reports.export; revisar autorización de interfaz y servidor. CSV ordenado por proveedor; consulta global de sugeridos, no replica filtros; acción sin control reports.export explícito.",
+      "epic": "EPIC08",
+      "sprint": 3,
+      "expected_verification": "Con incidencias",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 60,
+      "id": "HU-046",
+      "role": "Dueño",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC08",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 61,
+      "id": "HU-047",
+      "role": "Comprador",
+      "technical": "Pendiente",
+      "notes": "Fuera del plazo de fase inicial; no hay integración correo/WhatsApp.",
+      "epic": "EPIC08",
+      "sprint": null,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 63,
+      "id": "HU-048",
+      "role": "Dueño",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC09",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 64,
+      "id": "HU-049",
+      "role": "Comprador",
+      "technical": "Implementado",
+      "notes": "Ventana de 90 días y valor vendido al costo. El producto que cruza el umbral se incluye en la clase anterior.",
+      "epic": "EPIC09",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 65,
+      "id": "HU-050",
+      "role": "Dueño",
+      "technical": "Implementado",
+      "notes": "",
+      "epic": "EPIC09",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 66,
+      "id": "HU-051",
+      "role": "Contador",
+      "technical": "Parcial",
+      "notes": "Inventario CSV se etiqueta todo el inventario; exportaciones no usan filtros de la tabla. PDF no implementado.",
+      "epic": "EPIC09",
+      "sprint": 3,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 68,
+      "id": "HU-052",
+      "role": "Supervisor",
+      "technical": "Pendiente",
+      "notes": "Importar ventas del POS no equivale a importar catálogo. Falta caso de uso, vista y pruebas de carga masiva.",
+      "epic": "EPIC10",
+      "sprint": 2,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 69,
+      "id": "HU-053",
+      "role": "Dueño",
+      "technical": "Parcial",
+      "notes": "Tipo SALDO_INICIAL existe; no hay importador ni unicidad de apertura por producto/ubicación con clave distinta.",
+      "epic": "EPIC10",
+      "sprint": 2,
+      "expected_verification": "Con incidencias",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 71,
+      "id": "HU-054",
+      "role": "Almacenero",
+      "technical": "Pendiente",
+      "notes": "Consulta por código existe; no se identificó captura con cámara, manifiesto o interfaz específica.",
+      "epic": "EPIC11",
+      "sprint": 4,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 72,
+      "id": "HU-055",
+      "role": "Almacenero",
+      "technical": "Pendiente",
+      "notes": "Fuera de fase inicial; no se identificaron service worker ni cola persistente offline.",
+      "epic": "EPIC11",
+      "sprint": null,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 73,
+      "id": "HU-056",
+      "role": "Almacenero",
+      "technical": "Pendiente",
+      "notes": "Fuera de fase inicial; formularios web no acreditan flujo móvil con escáner.",
+      "epic": "EPIC11",
+      "sprint": null,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 75,
+      "id": "HU-057",
+      "role": "Equipo de desarrollo",
+      "technical": "Parcial",
+      "notes": "Deptrac cubre Modules y Shared; app/Filament está fuera. Pruebas arquitectónicas específicas solo enumeran cuatro módulos.",
+      "epic": "EPIC12",
+      "sprint": 1,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 76,
+      "id": "HU-058",
+      "role": "Equipo de desarrollo",
+      "technical": "Parcial",
+      "notes": "Pint y PHPStan ejecutados. composer.lock no declara Filament/Livewire presentes en vendor: reproducción limpia pendiente.",
+      "epic": "EPIC12",
+      "sprint": 1,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 77,
+      "id": "HU-059",
+      "role": "Equipo de desarrollo",
+      "technical": "Parcial",
+      "notes": "Existe YAML; sin acceso a ejecución remota ni protección de rama comprobada. Comentario nocturno sin schedule.",
+      "epic": "EPIC12",
+      "sprint": 4,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 78,
+      "id": "HU-060",
+      "role": "Dueño",
+      "technical": "Pendiente",
+      "notes": "Volumen pgdata no equivale a backup. Falta copia cifrada y ensayo de restauración.",
+      "epic": "EPIC12",
+      "sprint": 4,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 79,
+      "id": "HU-061",
+      "role": "Dueño",
+      "technical": "Parcial",
+      "notes": "Servicios locales saludables; publicación HTTPS pública y configuración segura de producción pendientes.",
+      "epic": "EPIC12",
+      "sprint": 4,
+      "expected_verification": "Sin verificación específica",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 80,
+      "id": "HU-062",
+      "role": "Equipo de calidad",
+      "technical": "Pendiente",
+      "notes": "No se hallaron planes JMeter ni informes ZAP; no hay mediciones de carga para declarar meta.",
+      "epic": "EPIC12",
+      "sprint": 4,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    },
+    {
+      "row": 81,
+      "id": "HU-063",
+      "role": "Equipo de calidad",
+      "technical": "Pendiente",
+      "notes": "SUS se expresa en puntos 0 a 100. No hay respuestas ni aceptación empresarial formal.",
+      "epic": "EPIC12",
+      "sprint": 4,
+      "expected_verification": "Por implementar",
+      "expected_fraction": 0.0
+    }
+  ],
+  "criteria": [
+    {
+      "row": 6,
+      "id": "CA-001-1",
+      "story": "HU-001",
+      "role": "Administrador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 7,
+      "id": "CA-001-2",
+      "story": "HU-001",
+      "role": "Administrador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 8,
+      "id": "CA-001-3",
+      "story": "HU-001",
+      "role": "Administrador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 9,
+      "id": "CA-002-1",
+      "story": "HU-002",
+      "role": "Usuario",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 10,
+      "id": "CA-002-2",
+      "story": "HU-002",
+      "role": "Usuario",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 11,
+      "id": "CA-002-3",
+      "story": "HU-002",
+      "role": "Usuario",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 12,
+      "id": "CA-003-1",
+      "story": "HU-003",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 13,
+      "id": "CA-003-2",
+      "story": "HU-003",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 14,
+      "id": "CA-003-3",
+      "story": "HU-003",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 15,
+      "id": "CA-004-1",
+      "story": "HU-004",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 16,
+      "id": "CA-004-2",
+      "story": "HU-004",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 17,
+      "id": "CA-004-3",
+      "story": "HU-004",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 18,
+      "id": "CA-005-1",
+      "story": "HU-005",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 19,
+      "id": "CA-005-2",
+      "story": "HU-005",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 20,
+      "id": "CA-005-3",
+      "story": "HU-005",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 21,
+      "id": "CA-006-1",
+      "story": "HU-006",
+      "role": "Administrador/supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Hay configuración TOTP y middleware; faltan escenarios completos de desafío y recuperación de un solo uso."
+    },
+    {
+      "row": 22,
+      "id": "CA-006-2",
+      "story": "HU-006",
+      "role": "Administrador/supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Hay configuración TOTP y middleware; faltan escenarios completos de desafío y recuperación de un solo uso."
+    },
+    {
+      "row": 23,
+      "id": "CA-006-3",
+      "story": "HU-006",
+      "role": "Administrador/supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Hay configuración TOTP y middleware; faltan escenarios completos de desafío y recuperación de un solo uso."
+    },
+    {
+      "row": 24,
+      "id": "CA-007-1",
+      "story": "HU-007",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 25,
+      "id": "CA-007-2",
+      "story": "HU-007",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 26,
+      "id": "CA-007-3",
+      "story": "HU-007",
+      "role": "Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 27,
+      "id": "CA-008-1",
+      "story": "HU-008",
+      "role": "Supervisor o Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Actor corregido a Supervisor o Administrador: Almacenero no tiene catalog.write."
+    },
+    {
+      "row": 28,
+      "id": "CA-008-2",
+      "story": "HU-008",
+      "role": "Supervisor o Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Actor corregido a Supervisor o Administrador: Almacenero no tiene catalog.write."
+    },
+    {
+      "row": 29,
+      "id": "CA-008-3",
+      "story": "HU-008",
+      "role": "Supervisor o Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Actor corregido a Supervisor o Administrador: Almacenero no tiene catalog.write."
+    },
+    {
+      "row": 30,
+      "id": "CA-009-1",
+      "story": "HU-009",
+      "role": "Supervisor o Administrador",
+      "status": "Conforme en dominio",
+      "notes": "Actor de registro corregido a Supervisor o Administrador; consulta sí disponible al Almacenero."
+    },
+    {
+      "row": 31,
+      "id": "CA-009-2",
+      "story": "HU-009",
+      "role": "Supervisor o Administrador",
+      "status": "Conforme en dominio",
+      "notes": "Actor de registro corregido a Supervisor o Administrador; consulta sí disponible al Almacenero."
+    },
+    {
+      "row": 32,
+      "id": "CA-009-3",
+      "story": "HU-009",
+      "role": "Supervisor o Administrador",
+      "status": "Conforme en dominio",
+      "notes": "Actor de registro corregido a Supervisor o Administrador; consulta sí disponible al Almacenero."
+    },
+    {
+      "row": 33,
+      "id": "CA-010-1",
+      "story": "HU-010",
+      "role": "Supervisor o Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Se usa rol con catalog.write para administrar presentaciones; Compras no tiene ese permiso."
+    },
+    {
+      "row": 34,
+      "id": "CA-010-2",
+      "story": "HU-010",
+      "role": "Supervisor o Administrador",
+      "status": "Conforme en dominio",
+      "notes": "Se usa rol con catalog.write para administrar presentaciones; Compras no tiene ese permiso."
+    },
+    {
+      "row": 35,
+      "id": "CA-010-3",
+      "story": "HU-010",
+      "role": "Supervisor o Administrador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Se usa rol con catalog.write para administrar presentaciones; Compras no tiene ese permiso."
+    },
+    {
+      "row": 36,
+      "id": "CA-011-1",
+      "story": "HU-011",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 37,
+      "id": "CA-011-2",
+      "story": "HU-011",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 38,
+      "id": "CA-011-3",
+      "story": "HU-011",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 39,
+      "id": "CA-012-1",
+      "story": "HU-012",
+      "role": "Supervisor",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 40,
+      "id": "CA-012-2",
+      "story": "HU-012",
+      "role": "Supervisor",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 41,
+      "id": "CA-012-3",
+      "story": "HU-012",
+      "role": "Supervisor",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 42,
+      "id": "CA-013-1",
+      "story": "HU-013",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Búsqueda similar implementada en backend; no hay aviso integrado en el formulario."
+    },
+    {
+      "row": 43,
+      "id": "CA-013-2",
+      "story": "HU-013",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Búsqueda similar implementada en backend; no hay aviso integrado en el formulario."
+    },
+    {
+      "row": 44,
+      "id": "CA-013-3",
+      "story": "HU-013",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Búsqueda similar implementada en backend; no hay aviso integrado en el formulario."
+    },
+    {
+      "row": 45,
+      "id": "CA-014-1",
+      "story": "HU-014",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 46,
+      "id": "CA-014-2",
+      "story": "HU-014",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 47,
+      "id": "CA-014-3",
+      "story": "HU-014",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 48,
+      "id": "CA-015-1",
+      "story": "HU-015",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 49,
+      "id": "CA-015-2",
+      "story": "HU-015",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 50,
+      "id": "CA-015-3",
+      "story": "HU-015",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 51,
+      "id": "CA-016-1",
+      "story": "HU-016",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 52,
+      "id": "CA-016-2",
+      "story": "HU-016",
+      "role": "Supervisor",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 53,
+      "id": "CA-016-3",
+      "story": "HU-016",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 54,
+      "id": "CA-017-1",
+      "story": "HU-017",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 55,
+      "id": "CA-017-2",
+      "story": "HU-017",
+      "role": "Dueño",
+      "status": "Conforme en integración",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 56,
+      "id": "CA-017-3",
+      "story": "HU-017",
+      "role": "Dueño",
+      "status": "Conforme en integración",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 57,
+      "id": "CA-018-1",
+      "story": "HU-018",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 58,
+      "id": "CA-018-2",
+      "story": "HU-018",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 59,
+      "id": "CA-018-3",
+      "story": "HU-018",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 60,
+      "id": "CA-019-1",
+      "story": "HU-019",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Defecto D01: con mismo UUID y clave, una cantidad alterada se acepta como reintento. CA-019-4 lo reproduce."
+    },
+    {
+      "row": 61,
+      "id": "CA-019-2",
+      "story": "HU-019",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Defecto D01: con mismo UUID y clave, una cantidad alterada se acepta como reintento. CA-019-4 lo reproduce."
+    },
+    {
+      "row": 62,
+      "id": "CA-019-3",
+      "story": "HU-019",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Defecto D01: con mismo UUID y clave, una cantidad alterada se acepta como reintento. CA-019-4 lo reproduce."
+    },
+    {
+      "row": 63,
+      "id": "CA-019-4",
+      "story": "HU-019",
+      "role": "Almacenero",
+      "status": "No conforme",
+      "notes": "Defecto D01: con mismo UUID y clave, una cantidad alterada se acepta como reintento. CA-019-4 lo reproduce."
+    },
+    {
+      "row": 64,
+      "id": "CA-020-1",
+      "story": "HU-020",
+      "role": "Contador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 65,
+      "id": "CA-020-2",
+      "story": "HU-020",
+      "role": "Contador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 66,
+      "id": "CA-020-3",
+      "story": "HU-020",
+      "role": "Contador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 67,
+      "id": "CA-021-1",
+      "story": "HU-021",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 68,
+      "id": "CA-021-2",
+      "story": "HU-021",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 69,
+      "id": "CA-021-3",
+      "story": "HU-021",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 70,
+      "id": "CA-022-1",
+      "story": "HU-022",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "La consulta limita a 500 sin paginación ni indicador de truncamiento en la ventana del panel."
+    },
+    {
+      "row": 71,
+      "id": "CA-022-2",
+      "story": "HU-022",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "La consulta limita a 500 sin paginación ni indicador de truncamiento en la ventana del panel."
+    },
+    {
+      "row": 72,
+      "id": "CA-022-3",
+      "story": "HU-022",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "La consulta limita a 500 sin paginación ni indicador de truncamiento en la ventana del panel."
+    },
+    {
+      "row": 73,
+      "id": "CA-023-1",
+      "story": "HU-023",
+      "role": "Dueño",
+      "status": "Pendiente de implementar",
+      "notes": "Existe función SQL y prueba de reconciliación; no tarea nocturna ni aviso en routes/console.php."
+    },
+    {
+      "row": 74,
+      "id": "CA-023-2",
+      "story": "HU-023",
+      "role": "Dueño",
+      "status": "Pendiente de implementar",
+      "notes": "Existe función SQL y prueba de reconciliación; no tarea nocturna ni aviso en routes/console.php."
+    },
+    {
+      "row": 75,
+      "id": "CA-023-3",
+      "story": "HU-023",
+      "role": "Dueño",
+      "status": "Pendiente de implementar",
+      "notes": "Existe función SQL y prueba de reconciliación; no tarea nocturna ni aviso en routes/console.php."
+    },
+    {
+      "row": 76,
+      "id": "CA-024-1",
+      "story": "HU-024",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 77,
+      "id": "CA-024-2",
+      "story": "HU-024",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 78,
+      "id": "CA-024-3",
+      "story": "HU-024",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 79,
+      "id": "CA-025-1",
+      "story": "HU-025",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 80,
+      "id": "CA-025-2",
+      "story": "HU-025",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 81,
+      "id": "CA-025-3",
+      "story": "HU-025",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 82,
+      "id": "CA-026-1",
+      "story": "HU-026",
+      "role": "Almacenero",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 83,
+      "id": "CA-026-2",
+      "story": "HU-026",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 84,
+      "id": "CA-026-3",
+      "story": "HU-026",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 85,
+      "id": "CA-027-1",
+      "story": "HU-027",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 86,
+      "id": "CA-027-2",
+      "story": "HU-027",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 87,
+      "id": "CA-027-3",
+      "story": "HU-027",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 88,
+      "id": "CA-028-1",
+      "story": "HU-028",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 89,
+      "id": "CA-028-2",
+      "story": "HU-028",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 90,
+      "id": "CA-028-3",
+      "story": "HU-028",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 91,
+      "id": "CA-029-1",
+      "story": "HU-029",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 92,
+      "id": "CA-029-2",
+      "story": "HU-029",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 93,
+      "id": "CA-029-3",
+      "story": "HU-029",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 94,
+      "id": "CA-030-1",
+      "story": "HU-030",
+      "role": "Supervisor",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 95,
+      "id": "CA-030-2",
+      "story": "HU-030",
+      "role": "Supervisor",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 96,
+      "id": "CA-030-3",
+      "story": "HU-030",
+      "role": "Supervisor",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 97,
+      "id": "CA-031-1",
+      "story": "HU-031",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Caso de uso disponible; falta acción específica de ajuste directo en panel y aceptación de política monetaria."
+    },
+    {
+      "row": 98,
+      "id": "CA-031-2",
+      "story": "HU-031",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Caso de uso disponible; falta acción específica de ajuste directo en panel y aceptación de política monetaria."
+    },
+    {
+      "row": 99,
+      "id": "CA-031-3",
+      "story": "HU-031",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Caso de uso disponible; falta acción específica de ajuste directo en panel y aceptación de política monetaria."
+    },
+    {
+      "row": 100,
+      "id": "CA-032-1",
+      "story": "HU-032",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 101,
+      "id": "CA-032-2",
+      "story": "HU-032",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 102,
+      "id": "CA-032-3",
+      "story": "HU-032",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 103,
+      "id": "CA-033-1",
+      "story": "HU-033",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "La vista oculta esperado al rol sin counts.close; falta validación visual y de exposición de datos en sesión."
+    },
+    {
+      "row": 104,
+      "id": "CA-033-2",
+      "story": "HU-033",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "La vista oculta esperado al rol sin counts.close; falta validación visual y de exposición de datos en sesión."
+    },
+    {
+      "row": 105,
+      "id": "CA-033-3",
+      "story": "HU-033",
+      "role": "Almacenero",
+      "status": "Caso específico no ejecutado",
+      "notes": "La vista oculta esperado al rol sin counts.close; falta validación visual y de exposición de datos en sesión."
+    },
+    {
+      "row": 106,
+      "id": "CA-034-1",
+      "story": "HU-034",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 107,
+      "id": "CA-034-2",
+      "story": "HU-034",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 108,
+      "id": "CA-034-3",
+      "story": "HU-034",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 109,
+      "id": "CA-035-1",
+      "story": "HU-035",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Exactitud por líneas iguales, no por unidades; el cálculo actual trunca 2/3 a 66.66 %."
+    },
+    {
+      "row": 110,
+      "id": "CA-035-2",
+      "story": "HU-035",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Exactitud por líneas iguales, no por unidades; el cálculo actual trunca 2/3 a 66.66 %."
+    },
+    {
+      "row": 111,
+      "id": "CA-035-3",
+      "story": "HU-035",
+      "role": "Dueño",
+      "status": "Conforme en dominio",
+      "notes": "Exactitud por líneas iguales, no por unidades; el cálculo actual trunca 2/3 a 66.66 %."
+    },
+    {
+      "row": 112,
+      "id": "CA-036-1",
+      "story": "HU-036",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 113,
+      "id": "CA-036-2",
+      "story": "HU-036",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 114,
+      "id": "CA-036-3",
+      "story": "HU-036",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 115,
+      "id": "CA-037-1",
+      "story": "HU-037",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 116,
+      "id": "CA-037-2",
+      "story": "HU-037",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 117,
+      "id": "CA-037-3",
+      "story": "HU-037",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 118,
+      "id": "CA-038-1",
+      "story": "HU-038",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 119,
+      "id": "CA-038-2",
+      "story": "HU-038",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 120,
+      "id": "CA-038-3",
+      "story": "HU-038",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 121,
+      "id": "CA-039-1",
+      "story": "HU-039",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 122,
+      "id": "CA-039-2",
+      "story": "HU-039",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 123,
+      "id": "CA-039-3",
+      "story": "HU-039",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 124,
+      "id": "CA-040-1",
+      "story": "HU-040",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 125,
+      "id": "CA-040-2",
+      "story": "HU-040",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 126,
+      "id": "CA-040-3",
+      "story": "HU-040",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 127,
+      "id": "CA-041-1",
+      "story": "HU-041",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 128,
+      "id": "CA-041-2",
+      "story": "HU-041",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 129,
+      "id": "CA-041-3",
+      "story": "HU-041",
+      "role": "Supervisor",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 130,
+      "id": "CA-042-1",
+      "story": "HU-042",
+      "role": "Comprador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 131,
+      "id": "CA-042-2",
+      "story": "HU-042",
+      "role": "Comprador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 132,
+      "id": "CA-042-3",
+      "story": "HU-042",
+      "role": "Comprador",
+      "status": "Conforme en dominio",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 133,
+      "id": "CA-043-1",
+      "story": "HU-043",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Vínculo y preferido disponibles en backend; no se identificó pantalla para administrarlos."
+    },
+    {
+      "row": 134,
+      "id": "CA-043-2",
+      "story": "HU-043",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Vínculo y preferido disponibles en backend; no se identificó pantalla para administrarlos."
+    },
+    {
+      "row": 135,
+      "id": "CA-043-3",
+      "story": "HU-043",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Vínculo y preferido disponibles en backend; no se identificó pantalla para administrarlos."
+    },
+    {
+      "row": 136,
+      "id": "CA-044-1",
+      "story": "HU-044",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 137,
+      "id": "CA-044-2",
+      "story": "HU-044",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 138,
+      "id": "CA-044-3",
+      "story": "HU-044",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 139,
+      "id": "CA-045-1",
+      "story": "HU-045",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "CSV ordenado por proveedor; consulta global de sugeridos, no replica filtros; acción sin control reports.export explícito."
+    },
+    {
+      "row": 140,
+      "id": "CA-045-2",
+      "story": "HU-045",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "CSV ordenado por proveedor; consulta global de sugeridos, no replica filtros; acción sin control reports.export explícito."
+    },
+    {
+      "row": 141,
+      "id": "CA-045-3",
+      "story": "HU-045",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "CSV ordenado por proveedor; consulta global de sugeridos, no replica filtros; acción sin control reports.export explícito."
+    },
+    {
+      "row": 142,
+      "id": "CA-045-4",
+      "story": "HU-045",
+      "role": "Comprador",
+      "status": "No conforme",
+      "notes": "CSV ordenado por proveedor; consulta global de sugeridos, no replica filtros; acción sin control reports.export explícito."
+    },
+    {
+      "row": 143,
+      "id": "CA-046-1",
+      "story": "HU-046",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 144,
+      "id": "CA-046-2",
+      "story": "HU-046",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 145,
+      "id": "CA-046-3",
+      "story": "HU-046",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 146,
+      "id": "CA-047-1",
+      "story": "HU-047",
+      "role": "Comprador",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera del plazo de fase inicial; no hay integración correo/WhatsApp."
+    },
+    {
+      "row": 147,
+      "id": "CA-047-2",
+      "story": "HU-047",
+      "role": "Comprador",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera del plazo de fase inicial; no hay integración correo/WhatsApp."
+    },
+    {
+      "row": 148,
+      "id": "CA-047-3",
+      "story": "HU-047",
+      "role": "Comprador",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera del plazo de fase inicial; no hay integración correo/WhatsApp."
+    },
+    {
+      "row": 149,
+      "id": "CA-048-1",
+      "story": "HU-048",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 150,
+      "id": "CA-048-2",
+      "story": "HU-048",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 151,
+      "id": "CA-048-3",
+      "story": "HU-048",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 152,
+      "id": "CA-049-1",
+      "story": "HU-049",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Ventana de 90 días y valor vendido al costo. El producto que cruza el umbral se incluye en la clase anterior."
+    },
+    {
+      "row": 153,
+      "id": "CA-049-2",
+      "story": "HU-049",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Ventana de 90 días y valor vendido al costo. El producto que cruza el umbral se incluye en la clase anterior."
+    },
+    {
+      "row": 154,
+      "id": "CA-049-3",
+      "story": "HU-049",
+      "role": "Comprador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Ventana de 90 días y valor vendido al costo. El producto que cruza el umbral se incluye en la clase anterior."
+    },
+    {
+      "row": 155,
+      "id": "CA-050-1",
+      "story": "HU-050",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 156,
+      "id": "CA-050-2",
+      "story": "HU-050",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 157,
+      "id": "CA-050-3",
+      "story": "HU-050",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Implementación y pruebas relacionadas identificadas; aceptación integral del escenario debe verificarse por separado."
+    },
+    {
+      "row": 158,
+      "id": "CA-051-1",
+      "story": "HU-051",
+      "role": "Contador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Inventario CSV se etiqueta todo el inventario; exportaciones no usan filtros de la tabla. PDF no implementado."
+    },
+    {
+      "row": 159,
+      "id": "CA-051-2",
+      "story": "HU-051",
+      "role": "Contador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Inventario CSV se etiqueta todo el inventario; exportaciones no usan filtros de la tabla. PDF no implementado."
+    },
+    {
+      "row": 160,
+      "id": "CA-051-3",
+      "story": "HU-051",
+      "role": "Contador",
+      "status": "Caso específico no ejecutado",
+      "notes": "Inventario CSV se etiqueta todo el inventario; exportaciones no usan filtros de la tabla. PDF no implementado."
+    },
+    {
+      "row": 161,
+      "id": "CA-052-1",
+      "story": "HU-052",
+      "role": "Supervisor",
+      "status": "Pendiente de implementar",
+      "notes": "Importar ventas del POS no equivale a importar catálogo. Falta caso de uso, vista y pruebas de carga masiva."
+    },
+    {
+      "row": 162,
+      "id": "CA-052-2",
+      "story": "HU-052",
+      "role": "Supervisor",
+      "status": "Pendiente de implementar",
+      "notes": "Importar ventas del POS no equivale a importar catálogo. Falta caso de uso, vista y pruebas de carga masiva."
+    },
+    {
+      "row": 163,
+      "id": "CA-052-3",
+      "story": "HU-052",
+      "role": "Supervisor",
+      "status": "Pendiente de implementar",
+      "notes": "Importar ventas del POS no equivale a importar catálogo. Falta caso de uso, vista y pruebas de carga masiva."
+    },
+    {
+      "row": 164,
+      "id": "CA-053-1",
+      "story": "HU-053",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Tipo SALDO_INICIAL existe; no hay importador ni unicidad de apertura por producto/ubicación con clave distinta."
+    },
+    {
+      "row": 165,
+      "id": "CA-053-2",
+      "story": "HU-053",
+      "role": "Dueño",
+      "status": "No conforme",
+      "notes": "Tipo SALDO_INICIAL existe; no hay importador ni unicidad de apertura por producto/ubicación con clave distinta."
+    },
+    {
+      "row": 166,
+      "id": "CA-053-3",
+      "story": "HU-053",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Tipo SALDO_INICIAL existe; no hay importador ni unicidad de apertura por producto/ubicación con clave distinta."
+    },
+    {
+      "row": 167,
+      "id": "CA-054-1",
+      "story": "HU-054",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Consulta por código existe; no se identificó captura con cámara, manifiesto o interfaz específica."
+    },
+    {
+      "row": 168,
+      "id": "CA-054-2",
+      "story": "HU-054",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Consulta por código existe; no se identificó captura con cámara, manifiesto o interfaz específica."
+    },
+    {
+      "row": 169,
+      "id": "CA-054-3",
+      "story": "HU-054",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Consulta por código existe; no se identificó captura con cámara, manifiesto o interfaz específica."
+    },
+    {
+      "row": 170,
+      "id": "CA-055-1",
+      "story": "HU-055",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera de fase inicial; no se identificaron service worker ni cola persistente offline."
+    },
+    {
+      "row": 171,
+      "id": "CA-055-2",
+      "story": "HU-055",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera de fase inicial; no se identificaron service worker ni cola persistente offline."
+    },
+    {
+      "row": 172,
+      "id": "CA-055-3",
+      "story": "HU-055",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera de fase inicial; no se identificaron service worker ni cola persistente offline."
+    },
+    {
+      "row": 173,
+      "id": "CA-056-1",
+      "story": "HU-056",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera de fase inicial; formularios web no acreditan flujo móvil con escáner."
+    },
+    {
+      "row": 174,
+      "id": "CA-056-2",
+      "story": "HU-056",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera de fase inicial; formularios web no acreditan flujo móvil con escáner."
+    },
+    {
+      "row": 175,
+      "id": "CA-056-3",
+      "story": "HU-056",
+      "role": "Almacenero",
+      "status": "Pendiente de implementar",
+      "notes": "Fuera de fase inicial; formularios web no acreditan flujo móvil con escáner."
+    },
+    {
+      "row": 176,
+      "id": "CA-057-1",
+      "story": "HU-057",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Deptrac cubre Modules y Shared; app/Filament está fuera. Pruebas arquitectónicas específicas solo enumeran cuatro módulos."
+    },
+    {
+      "row": 177,
+      "id": "CA-057-2",
+      "story": "HU-057",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Deptrac cubre Modules y Shared; app/Filament está fuera. Pruebas arquitectónicas específicas solo enumeran cuatro módulos."
+    },
+    {
+      "row": 178,
+      "id": "CA-057-3",
+      "story": "HU-057",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Deptrac cubre Modules y Shared; app/Filament está fuera. Pruebas arquitectónicas específicas solo enumeran cuatro módulos."
+    },
+    {
+      "row": 179,
+      "id": "CA-058-1",
+      "story": "HU-058",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Pint y PHPStan ejecutados. composer.lock no declara Filament/Livewire presentes en vendor: reproducción limpia pendiente."
+    },
+    {
+      "row": 180,
+      "id": "CA-058-2",
+      "story": "HU-058",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Pint y PHPStan ejecutados. composer.lock no declara Filament/Livewire presentes en vendor: reproducción limpia pendiente."
+    },
+    {
+      "row": 181,
+      "id": "CA-058-3",
+      "story": "HU-058",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Pint y PHPStan ejecutados. composer.lock no declara Filament/Livewire presentes en vendor: reproducción limpia pendiente."
+    },
+    {
+      "row": 182,
+      "id": "CA-059-1",
+      "story": "HU-059",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Existe YAML; sin acceso a ejecución remota ni protección de rama comprobada. Comentario nocturno sin schedule."
+    },
+    {
+      "row": 183,
+      "id": "CA-059-2",
+      "story": "HU-059",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Existe YAML; sin acceso a ejecución remota ni protección de rama comprobada. Comentario nocturno sin schedule."
+    },
+    {
+      "row": 184,
+      "id": "CA-059-3",
+      "story": "HU-059",
+      "role": "Equipo de desarrollo",
+      "status": "Caso específico no ejecutado",
+      "notes": "Existe YAML; sin acceso a ejecución remota ni protección de rama comprobada. Comentario nocturno sin schedule."
+    },
+    {
+      "row": 185,
+      "id": "CA-060-1",
+      "story": "HU-060",
+      "role": "Dueño",
+      "status": "Pendiente de implementar",
+      "notes": "Volumen pgdata no equivale a backup. Falta copia cifrada y ensayo de restauración."
+    },
+    {
+      "row": 186,
+      "id": "CA-060-2",
+      "story": "HU-060",
+      "role": "Dueño",
+      "status": "Pendiente de implementar",
+      "notes": "Volumen pgdata no equivale a backup. Falta copia cifrada y ensayo de restauración."
+    },
+    {
+      "row": 187,
+      "id": "CA-060-3",
+      "story": "HU-060",
+      "role": "Dueño",
+      "status": "Pendiente de implementar",
+      "notes": "Volumen pgdata no equivale a backup. Falta copia cifrada y ensayo de restauración."
+    },
+    {
+      "row": 188,
+      "id": "CA-061-1",
+      "story": "HU-061",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Servicios locales saludables; publicación HTTPS pública y configuración segura de producción pendientes."
+    },
+    {
+      "row": 189,
+      "id": "CA-061-2",
+      "story": "HU-061",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Servicios locales saludables; publicación HTTPS pública y configuración segura de producción pendientes."
+    },
+    {
+      "row": 190,
+      "id": "CA-061-3",
+      "story": "HU-061",
+      "role": "Dueño",
+      "status": "Caso específico no ejecutado",
+      "notes": "Servicios locales saludables; publicación HTTPS pública y configuración segura de producción pendientes."
+    },
+    {
+      "row": 191,
+      "id": "CA-062-1",
+      "story": "HU-062",
+      "role": "Equipo de calidad",
+      "status": "Pendiente de implementar",
+      "notes": "No se hallaron planes JMeter ni informes ZAP; no hay mediciones de carga para declarar meta."
+    },
+    {
+      "row": 192,
+      "id": "CA-062-2",
+      "story": "HU-062",
+      "role": "Equipo de calidad",
+      "status": "Pendiente de implementar",
+      "notes": "No se hallaron planes JMeter ni informes ZAP; no hay mediciones de carga para declarar meta."
+    },
+    {
+      "row": 193,
+      "id": "CA-062-3",
+      "story": "HU-062",
+      "role": "Equipo de calidad",
+      "status": "Pendiente de implementar",
+      "notes": "No se hallaron planes JMeter ni informes ZAP; no hay mediciones de carga para declarar meta."
+    },
+    {
+      "row": 194,
+      "id": "CA-063-1",
+      "story": "HU-063",
+      "role": "Equipo de calidad",
+      "status": "Pendiente de implementar",
+      "notes": "SUS se expresa en puntos 0 a 100. No hay respuestas ni aceptación empresarial formal."
+    },
+    {
+      "row": 195,
+      "id": "CA-063-2",
+      "story": "HU-063",
+      "role": "Equipo de calidad",
+      "status": "Pendiente de implementar",
+      "notes": "SUS se expresa en puntos 0 a 100. No hay respuestas ni aceptación empresarial formal."
+    },
+    {
+      "row": 196,
+      "id": "CA-063-3",
+      "story": "HU-063",
+      "role": "Equipo de calidad",
+      "status": "Pendiente de implementar",
+      "notes": "SUS se expresa en puntos 0 a 100. No hay respuestas ni aceptación empresarial formal."
+    }
+  ]
+}

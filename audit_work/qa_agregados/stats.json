@@ -1,0 +1,29 @@
+[
+  {
+    "page": 1,
+    "chars": 2576,
+    "text": "Contenido añadido al informe del WMS  \nSe separan únicamente las tres tablas incorporadas en la versión corregida respecto de la versión anterior del segundo avance . Se conserva su contenido para identificar con precisión lo añadido.  \n1  Programación de sprints épicas entregables e hitos  \nElemento Tipo Sprint Inicio Fin Verificación 1 \n19/10 \n2 \n26/10 \n3 \n02/11 \n4 \n09/11 \n5 \n16/11 \n6 \n23/11 \n7 \n30/11 \n8 \n07/12 \nInicio del proyecto Hito — 19/10 19/10  ◆        \nSprint 1: Cimientos Sprint 1 19/10 01/11 52,3 % X X       \nSprint 2: Operación de almacén Sprint 2 02/11 15/11 18,5 %   X X     \nSprint 3: Control y análisis Sprint 3 16/11 29/11 6,2 %     X X   \nSprint 4: Seguridad, calidad y entrega Sprint 4 30/11 10/12 0,0 %       X X \nE1 · Accesos y seguridad Épica S1, S2, S4 19/10 10/12 28,6 % X X X X X X X X \nE2 · Catálogo de productos Épica S1, S2 19/10 15/11 29,6 % X X X X     \nE3 · Inventario (libro mayor de movimientos) Épica S1, S2, S3 19/10 29/11 67,9 % X X X X X X   \nE4 · Operaciones de almacén Épica S2 02/11 15/11 29,2 %   X X     \nE5 · Conteos de inventario Épica S3 16/11 29/11 20,0 %     X X   \nE6 · Ventas del POS Épica S3 16/11 29/11 0,0 %     X X   \nE7 · Ubicaciones y proveedores Épica S2 02/11 15/11 25,0 %   X X     \nE8 · Alertas, reposición y tablero Épica S3 16/11 29/11 0,0 %     X X   \nE9 · Reportes Épica S3 16/11 29/11 0,0 %     X X   \nE10 · Carga inicial de datos Épica S2 02/11 15/11 0,0 %   X X     \nE11 · App móvil (PWA) Épica S4 30/11 10/12 0,0 %       X X \nE12 · Calidad, despliegue y operación Épica S1, S4 19/10 10/12 0,0 % X X X X X X X X \nInforme técnico (análisis, diseño, pruebas y conclusiones) Entregable 2–4 02/11 08/12    X X X X X X \nPruebas de carga (JMeter) y escaneo de seguridad (ZAP) Entregable 4 30/11 04/12        X  \nEvaluación ISO/IEC 25010 y encuesta SUS Entregable 4 01/12 07/12        X X \nManual de usuario y de instalación Entregable 3–4 23/11 08/12       X X X \nEnsayo de sustentación Entregable 4 08/12 09/12         X \nRevisión y retrospectiva del Sprint 1 Hito 1 30/10 30/10   ◆       \nRevisión y retrospectiva del Sprint 2 Hito 2 13/11 13/11     ◆     \nRevisión y retrospectiva del Sprint 3 Hito 3 27/11 27/11       ◆   \nRevisión y retrospectiva del Sprint 4 Hito 4 10/12 10/12         ◆ \nEntrega final y sustentación Hito 4 10/12 10/12         ◆ \nVerificación representa la proporción de criterios conformes por historia promediada por grupo. No equivale al avance físico ni a la aceptación empresarial. Las fechas y marcas corresponden a la programación prevista.  \nFuente: Elaboración propia (2026). ",
+    "size": [
+      1190.4000244140625,
+      841.7999877929688
+    ]
+  },
+  {
+    "page": 2,
+    "chars": 702,
+    "text": "2  Correspondencia entre actores y roles de la aplicación  \nAñadido en el apartado 5.1.2. Relaciona los actores del backlog con los cinco roles existentes en \nla aplicación. \nActor en el backlog Historias Rol en la aplicación \nAdministrador 4 admin \nAdministrador / Supervisor 1 (HU-006) admin y supervisor \nSupervisor 15 supervisor \nAlmacenero 16 almacenero \nComprador 8 compras \nDueño 11 Sin rol equivalente directo; por definir con la empresa \nContador 2 Sin rol equivalente directo; por definir con la empresa \nUsuario 1 (HU-002) Cualquier cuenta activa con un rol asignado \nEquipo de desarrollo y de \ncalidad 5 Roles del proyecto; no son roles de la aplicación \nFuente: Elaboración propia (2026). ",
+    "size": [
+      595.2000122070312,
+      841.7999877929688
+    ]
+  },
+  {
+    "page": 3,
+    "chars": 1219,
+    "text": "3  Diferencias entre actores del backlog y los diagramas  \nAñadido en el apartado 5.1.4. Identifica diferencias de autorización o representación que requieren \nratificación de la empresa o corrección del modelo.  \nHistoria Rol en el backlog Actor en el \ndiagrama Figura Situación \nHU-008 Almacenero Supervisor 3 Propuesta registrada en el Excel; \npendiente de ratificación \nHU-009 Almacenero Supervisor 3 \nPropuesta registrada en el Excel; \nla consulta sigue disponible al \nAlmacenero \nHU-010 Comprador Supervisor 3 Propuesta registrada en el Excel; \npendiente de ratificación \nHU-016 Comprador Supervisor 3 Propuesta registrada en el Excel; \npendiente de ratificación \nHU-023 Dueño Supervisor 4 Sin propuesta registrada; por \nratificar \nHU-035 Dueño Supervisor 6 Sin propuesta registrada; por \nratificar \nHU-053 Dueño Administrador 8 Sin propuesta registrada; por \nratificar \nHU-046, HU-\n048, HU-050 Dueño Gerencia y \nContabilidad 7 Denominación de interesado; \nGerencia equivale a Dueño \nHU-051 Contador Gerencia y \nContabilidad 7 Denominación de interesado \nHU-042, HU-\n043, HU-044, \nHU-045, HU-\n047, HU-049 \nComprador Compras 4 y 7 Compras es el rol de aplicación \ndel Comprador \nFuente: Elaboración propia (2026). ",
+    "size": [
+      595.2000122070312,
+      841.7999877929688
+    ]
+  }
+]

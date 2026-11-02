@@ -1,0 +1,1033 @@
+PAGE 560
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Certificate Permissions  
+tag_Is_Physical true  
+tag_Release_Added 7.2.9  
+SQLServer_Certificate_Ref (Short Id property) 
+Specifies a reference to a SQL Server 2005 certificate for which a user is being created. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202da6  
+Referenced_Model   
+Referenced_Type_Ref 1075839201  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_DBMS_Is_Represented 1075859016, 9000, 999000  
+tag_Display_Name_Resource Certificate  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.2.0  
+SQLServer_Class_Name (String property) 
+Specifies the name of a SQL Server class within the assembly used as the source for a SQL Server 
+function, stored procedure, trigger, or user-defined data type. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202da7  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Class Name  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+SQLServer_Code_Type (Integer property) 
+Specifies the code type for a SQL Server domain, stored procedure, function, or trigger. The object 
+can be based on SQL code or an assembly. 
+Valid values: 
+Value Description 
+560 – ERwin Metamodel Reference 
+PAGE 578
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202db5  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Function Events  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+SQLServer_Function_Permissions (Integer List property) 
+Valid values: 
+Value Description 
+0 All 
+1 Alter 
+2 Control 
+3 Execute 
+4 References 
+5 Select 
+6 Take Ownership 
+7 View Definition 
+Tagged Values 
+Name Value 
+Data_Type 65  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202fa8  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Function Permissions  
+tag_Is_Physical true  
+tag_Release_Added 7.2.9  
+SQLServer_Function_Type (Integer property) 
+Specifies the definition type of the SQL Server function. 
+Valid values: 
+Value Description 
+0 Specifies a Scalar function. 
+1 Specifies an Inline Table function. 
+2 Specifies a Multistatement Table function. 
+3 Specifies a Scalar Return Assembly function. 
+4 Specifies a Table Return Assembly function. 
+578 – ERwin Metamodel Reference 
+PAGE 585
+4 View Definition 
+Tagged Values 
+Name Value 
+Data_Type 65  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202fa9  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Login Permissions  
+tag_Is_Physical true  
+tag_Release_Added 7.2.9  
+SQLServer_Login_Ref (Short Id property) 
+Specifies the login associated with a SQL Server user. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202dbf  
+Referenced_Model   
+Referenced_Type_Ref 1075839208  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_DBMS_Is_Represented 1075859016, 9000, 999000  
+tag_Display_Name_Resource Login  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.2.0  
+SQLServer_Login_Type (Integer property) 
+Specifies the source used by a SQL Server user to log in to the database. If it is not specified the user 
+is mapped to a SQL Server login with the same name. 
+Valid values: 
+Value Description 
+0 Specifies to use a Windows Login. 
+1 Specifies to use a Certificate. 
+2 Specifies to use an Asymmetric Key. 
+3 Specifies No Login. The user is not mapped to a login. 
+Tagged Values 
+Name Value 
+Page 585 
+PAGE 592
+Referenced_Type_Ref 1075839210  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_DBMS_Is_Represented 1075859016, 9000, 999000  
+tag_Display_Name_Resource Partition Scheme  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.2.0  
+SQLServer_Partition_Type (Integer property) 
+Specifies the type of partitioning for a SQL Server partition function. 
+Valid values: 
+Value Description 
+0 Specifies Range partitioning. 
+Note: Currently this is the only supported partitioning type. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202dcb  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Partition Type  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+SQLServer_Permissions (Integer List property) 
+Value Descriptions 
+0 Specifies to provide all permissions. 
+1 Specifies to provide Administer Bulk Operations permission. 
+2 Specifies to provide Alter permission. 
+3 Specifies to provide Alter Any Application Role permission. 
+4 Specifies to provide Alter Any Connection permission. 
+5 Specifies to provide Alter Any Credential permission. 
+6 Specifies to provide Alter Any Database permission. 
+7 Specifies to provide Alter Any Endpoint permission. 
+8 Specifies to provide Alter Any Event Notification permission. 
+9 Specifies to provide Alter Any Linked Server permission. 
+10 Specifies to provide Alter Any Login permission. 
+11 Specifies to provide Alter Assembly permission. 
+12 Specifies to provide Alter Asymmetric Key permission. 
+13 Specifies to provide Alter Certificate permission. 
+14 Specifies to provide Alter Contract permission. 
+15 Specifies to provide Alter Database DDL Trigger permission. 
+592 – ERwin Metamodel Reference 
+PAGE 611
+Valid values: 
+Value Description 
+0 Specifies All Server. The trigger is valid across the entire server. 
+1 Specifies Database. The trigger is only valid for the current database. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202dda  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Scope  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+SQLServer_Type (Integer property) 
+Specifies the SQL Server type for either an entity or a file.   
+Valid values. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202de8  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Type  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+SQLServer_Type_Events (Integer property) 
+Specifies the events on a user-defined type that will fire the SQL Server database level DDL trigger. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202de9  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource Type Events  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Page 611 
+PAGE 614
+SQLServer_View_Events (Integer property) 
+Specifies the events on a view that will fire the SQL Server database level DDL trigger. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202dec  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource View Events  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+SQLServer_View_Permissions (Integer List property) 
+For SQL Server 2005 specifies the permissions to be granted on a View. 
+Valid values: 
+Value Description 
+0 All 
+1 Alter 
+2 Control 
+3 Delete 
+4 Insert 
+5 References 
+6 Select 
+7 Take Ownership 
+8 Update 
+9 View Definition 
+Tagged Values 
+Name Value 
+Data_Type 65  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202fb2  
+tag_DBMS_Brands_And_Versions 1075859016, 9000, 999000  
+tag_Display_Name_Resource View Permissions  
+tag_Is_Physical true  
+tag_Release_Added 7.2.9  
+SQLServer_XML_Document_Type (Integer property) 
+Specifies the SQL Server XML document type for SQL Server columns with the XML data type. 
+Valid values: 
+614 – ERwin Metamodel Reference 
+PAGE 619
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202df9  
+tag_Display_Name_Resource Start Date  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Start_With_Condition (String property) 
+Applies to Oracle views. Specifies a condition that identifies the rows to use as the roots of a 
+hierarchical query. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202c46  
+tag_Display_Name_Resource Start With Condition  
+tag_Is_Physical true  
+Starting_Value (String property) 
+Used for Attributes in Teradata, DB2/zOS, DB2/UDB and iSeries.  Used for Sequences in Oracle, 
+DB2/zOS and DB2/UDB.  Specifies the starting value for an identity column or sequence. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202b21  
+tag_DBMS_Brands_And_Versions 1075858978, 6000, 999000  
+tag_Display_Name_Resource Generated Start With  
+tag_Is_Physical true  
+State_Type (Integer property) 
+Specifies the state of a SQL Server database or physical file.  See the definitions of this property on 
+those object types for the value values. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202dfa  
+Page 619 
+PAGE 620
+tag_Display_Name_Resource State  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Storage_File_Type (Integer property) 
+Specifies the type of storage file to use for an Oracle tablespace. For an Oracle database, it specifies 
+the default tablespace storage file type. 
+Valid values: 
+Value Description 
+0 Specifies Bigfile. Only one data file is used for the tablespace, which can contain up to four 
+billion data blocks. 
+1 Specifies Smallfile. Up to 1022 data files are used for the tablespace, which can contain up 
+to four million data blocks. This is the traditional Oracle tablespace. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202bdb  
+tag_Display_Name_Resource Storage File Type  
+tag_Is_Physical true  
+Storage_Group (object) 
+Represents a storage group in a DB2 database. 
+Valid Owning Object Types 
+Name DBMS Brands/Versions 
+Model DB2 6+  
+Valid Owned Object Types 
+None  
+Tagged Values 
+Name Value 
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40200015  
+tag_DBMS_Brands_And_Versions 1075858978, 2000, 999000  
+tag_Display_Bitmap_Resource 1768 04434B50  
+tag_Display_Name_Resource Storage Group  
+tag_Display_Name_Resource_Plural Storage Groups  
+620 – ERwin Metamodel Reference 
+PAGE 628
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402027dd  
+Referenced_Model   
+Referenced_Type_Ref 1075838981  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Discriminator  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Reference true  
+Subtype_Identity_Transform (object) 
+Records the information defining a transformation of a subtype relationship into an identifying 
+relationship.  
+Note: Transform objects should not be manipulated except through the user interface. 
+Valid Owning Object Types 
+Name DBMS Brands/Versions 
+Model All  
+Valid Owned Object Types 
+Name DBMS Brands/Versions 
+Association All  
+Supertype_Subtype_Identity_Subtransform All  
+Tagged Values 
+Name Value 
+Long_Id {E7AB3CC0-47AD-4A10-8972-
+C0FB869EE7CB}+40200039  
+tag_DBMS_Is_Represented null  
+tag_Display_Bitmap_Resource Lavender Blush  
+tag_Display_Name_Resource Supertype/Subtype Identity Transform  
+tag_Display_Name_Resource_Plural Supertype/Subtype Identity Transforms  
+tag_Hide_in_Explorer true  
+tag_Is_Collected_In_Parent_In_Explorer true  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Legacy_Ownership_Depth 256  
+628 – ERwin Metamodel Reference 
+PAGE 639
+SybaseIQ_Index_Type (Integer property) 
+Applies to Sybase IQ indexes. It specifies the type of index. 
+Valid values: 
+Value Description 
+1605 Specifies CMP (Compare). Stores the binary comparison of any two distinct columns with the 
+same data type, precision, and scale. 
+1606 Specifies HG (High Group). This is an enhanced b-tree index on high cardinality data. 
+1607 Specifies HNG (High Non Group). This is a non-value based bitmap index for high cardinality 
+data. 
+1608 Specifies LF (Low Fast). This is a value based index for low cardinality data. 
+1609 Specifies WD. Used to index keywords by treating the contents of a CHAR or VARCHAR 
+column as a delimited list. 
+1610 Specifies DATE. This is an index of columns of data type DATE. 
+1611 Specifies TIME. This is an index of columns of data type TIME. 
+1612 Specifies DTTM (DateTime). This is an index of columns of data type DATETIME or 
+TIMESTAMP. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202b36  
+tag_Display_Name_Reso
+urce 
+Index Type  
+tag_Enum_Values {1605|CMP|Compare}{1606|HG|High Group}{1607|HNG|High Non-
+Group}{1608|LF|Low 
+Fast}{1609|WD|Word}{1610|DATE|Date}{1611|TIME|Time}{1612|DTT
+M|Datetime}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+SybaseIQ_Word_Delimiter (String property) 
+Applies to Sybase IQ indexes. Specifies the delimiter to use when parsing a column string into the 
+words to be stored in the WD index. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202b37  
+tag_Display_Name_Resource Word Delimiter  
+tag_Is_Physical true  
+Page 639 
+PAGE 643
+tag_Display_Name_Resource_Plural Entity Denormalization Roll Down Transforms  
+tag_Hide_in_Explorer true  
+tag_Is_Collected_In_Parent_In_Explorer true  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Legacy_Ownership_Depth 256  
+tag_Physical_Name_Text Table Denormalization Roll Down Transform  
+tag_Physical_Name_Text_Plural Table Denormalization Roll Down Transforms  
+Valid Properties 
+Name L/P DBMS Brands/Versions Notes 
+Built_In_Id   All    
+Definition   None    
+Dependent_Objects_Ref   All    
+Has_Identifying_Relationship   All    
+Internal_State   All    
+Long_Id   All    
+Mode   All    
+Name   All    
+Object_GUID   All    
+Other_Foreign_Key_Attributes_Ref   All    
+Owner_Path   All    
+Parent_Table_Ref   All    
+Reflect_Changes_Back_To_Source   All    
+Resolve_Order_Transforms_Ref   All    
+Reverse_Order_Transforms_Ref   All    
+Scratch_Other_Foreign_Key_Attributes_Ref   All    
+Scratch_Parent_Table_Ref   All    
+Source_View_Objects_Ref   All    
+Subtransform_Count   All    
+Target_View_Objects_Ref   All    
+Transform_Source_Objects_Ref   All    
+Transform_Target_Objects_Ref   All    
+User_Formatted_Name   None    
+User_Formatted_Physical_Name   All    
+Table_Denormalization_Roll_Up_Transform (object) 
+The Two Table Roll Up main transform object. 
+Valid Owning Object Types 
+Name DBMS Brands/Versions 
+Model All  
+Page 643 
+PAGE 647
+tag_Deep_Copy_In_Complete_Compare true  
+tag_Display_Name_Resource Tablespace Group  
+tag_Is_Physical true  
+tag_Is_Reference true  
+Tablespace_System_Type (Integer property) 
+Applies to an Oracle tablespace that is to be used as a system level tablespace. Specifies what type of 
+tablespace it is. 
+Valid values: 
+Value Description 
+0 Specifies a System tablespace. The system tablespace is always online and contains the 
+data dictionary tables for the database. 
+1 Specifies a System Auxiliary tablespace. This tablespace is used by many database 
+components as a default location to store data. It also provides a central location for 
+database metadata not stored in the system tablespace. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202c68  
+tag_Display_Name_Resource Tablespace System Type  
+tag_Enum_Values {0|System|System}{1|S ystemAuxiliary|System Auxiliary}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+Tablespace_Type (Integer property) 
+Identifies the type of the tablespace. 
+Valid values: 
+Value Description 
+0 Specifies an Undo tablespace. This is used for storing undo information. 
+1 Specifies a Temporary tablespace. This is used to store temporary data. 
+2 Specifies a Permanent tablespace. This is a normal use tablespace. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202bdd  
+tag_Display_Name_Resourc
+e 
+Tablespace Type  
+Page 647 
+PAGE 659
+Value Description 
+0 Specifies to use none (no before journal image). 
+1 Specifies to use a single image. 
+2 Specifies to use a dual image. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e03  
+tag_DBMS_Brands_And_Versions 1075859018, 2005, 999000  
+tag_Display_Name_Resource Before Journal Image  
+tag_Enum_Values {0|None|None}{1|Single|Single}{2|Dual|Dual}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Teradata_Character_Set_Type (Integer property) 
+Specifies the type of character set to use for a column in a Teradata model. 
+Valid values: 
+Value Description 
+0 Specifies to use none (no character set). 
+1 Specifies to use the latin character set. 
+2 Specifies to use the unicode character set. 
+3 Specifies to use the kanjiSJIS character set. 
+4 Specifies to use the graphic character set. 
+5 Specifies to use the kanji1 character set. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e7a  
+tag_DBMS_Brands_And_Versions 1075859018, 2006, 999000  
+tag_Display_Name_Resource Character Set Type  
+tag_Enum_Values {1|Latin|Latin}{2|Unico de|Unicode}{3|KanjiSJIS|Kanji-Shift 
+JIS}{4|Graphic|Graphic}{5|Kanji1|Kanji1}  
+tag_Has_Enum_Values true  
+tag_Is_Logical false  
+tag_Is_Physical true  
+Teradata_Checksum (Integer property) 
+Defines the level of integrity checking for disk I/O in a Teradata model. 
+Page 659 
+PAGE 661
+Teradata_Collation (Integer property) 
+For Teradata Users, specifies the collation sequence to be used. 
+Valid values: 
+Value Description 
+0 ASCII 
+1 EBCDIC 
+2 Multinational 
+3 Host 
+4 Charset Collation 
+5 JIS Collation 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202f71  
+tag_Display_Name_Resource Collation  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+Teradata_Commit_Type (Integer property) 
+Specifies what happens to the data in a temporary or volatile table when the transaction completes in 
+a Teradata model. 
+Valid values: 
+Value Description 
+0 Specifies to delete data. 
+1 Specifies to preserve data. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e06  
+tag_DBMS_Brands_And_Versions 1075859018, 2005, 999000  
+tag_Display_Name_Resource Commit Type  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Page 661 
+PAGE 662
+Teradata_Compile (Integer property) 
+Specifies the mode in which the function, method, or stored procedure should be compiled in a 
+Teradata model. 
+Valid values: 
+Value Description 
+0 Specifies to use the compile and build mode. 
+1 Specifies to use the compile only mode. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e83  
+tag_Display_Name_Resource Compile  
+tag_Enum_Values {0|CompileAndBuild|Compile and Build}{1|CompileOnly|Compile 
+Only}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+Teradata_Data_Block_Size (String property) 
+For Teradata Entities, specifies the maximum data block size to use for the table. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402028dd  
+tag_DBMS_Brands_And_Versions 1075859018, 2000, 999000  
+tag_Display_Name_Resource Data Block Size  
+tag_Is_Physical true  
+tag_Legacy_Property_Is_Physical true  
+tag_Legacy_Property_Visualizer_Type EDIT  
+Teradata_Data_Block_Size_Type (Integer property) 
+Specifies the Data Block Size for a table. This property can be found on the General tab of the Table 
+editor (Teradata models only). Forward Engineering: This property is used in composing CREATE 
+TABLE and ALTER TABLE statements. It appears in the DATABLOCKSIZE clause. 
+Valid values: 
+Value Description 
+662 – ERwin Metamodel Reference 
+PAGE 667
+Teradata_Debug (Boolean property) 
+Specifies whether debug symbols are to be produced for a stored procedure, function, or method in a 
+Teradata model. 
+Tagged Values 
+Name Value 
+Data_Type 6  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e0a  
+tag_DBMS_Brands_And_Versions 1075859018, 2006, 999000  
+tag_Display_Name_Resource Debug  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Teradata_Default_Role_Ref (Short Id property) 
+Identifies the default Teradata roles assigned to a user ID in a Teradata model. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e0c  
+Referenced_Model   
+Referenced_Type_Ref 1075839223  
+tag_DBMS_Brands_And_Versions 1075859018, 2005, 999000  
+tag_Display_Name_Resource Default Role  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.2.0  
+Teradata_Default_Role_Type (Integer property) 
+Specifies the default role type for a user ID in a Teradata model. 
+Valid values: 
+Value Description 
+0 Specifies to use the specified role. 
+1 Specifies to use None (no role is associated to the user ID). 
+2 Specifies to use All roles that are directly and indirectly granted to the user ID. 
+Tagged Values 
+Name Value 
+Page 667 
+PAGE 672
+Referenced_Model   
+Referenced_Type_Ref 1075839216  
+tag_DBMS_Brands_And_Versions 1075859018, 2006, 999000  
+tag_Display_Name_Resource External Security Authorization  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.2.0  
+Teradata_External_Security_Type (Integer property) 
+Specifies the type of external security to use for a function, method, or stored procedure in a Teradata 
+model. 
+Valid values: 
+Value Description 
+0 Specifies to use Definer. This runs in the client user context of the authorization. 
+1 Specifies to use Invoker. This runs using the invoker authorization associated with the 
+logged in user. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e14  
+tag_DBMS_Brands_And_Versions 1075859018, 2006, 999000  
+tag_Display_Name_Resource External Security Type  
+tag_Enum_Values {0|Definer|D efiner}{1|Invoker|Invoker}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Teradata_Fallback (String property) 
+Indicates that the hash index uses fallback protection in a Teradata model. PROTECTION is an optional 
+noise keyword that has no effect on the hash index definition. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+402028d9  
+tag_DBMS_Brands_And_Versions 1075859018, 2000, 2000  
+tag_Display_Name_Resource Fallback  
+tag_Is_Physical true  
+tag_Legacy_Property_Is_Physical true  
+tag_Legacy_Property_Visualizer_Type EDIT  
+672 – ERwin Metamodel Reference 
+PAGE 674
+2 Drop Function 
+3 Execute Function 
+Tagged Values 
+Name Value 
+Data_Type 65  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202fb7  
+tag_DBMS_Brands_And_Versions 1075859018, 2006, 999000  
+tag_Display_Name_Resource Function Permissions  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+Teradata_Function_Type (Integer property) 
+Specifies the type of function in a Teradata model. 
+Valid values: 
+Value Description 
+0 Specifies a scalar function. 
+1 Specifies a table function. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e85  
+tag_Display_Name_Resource Function Type  
+tag_Enum_Values {0|Scalar|Scalar}{1|Table|Table}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+tag_Is_Required true  
+tag_Release_Added 7.3.0  
+Teradata_Generate_Error_Table (Boolean property) 
+Indicates whether forward engineer will generate a Teradata error table for the given data table. 
+Tagged Values 
+Name Value 
+Data_Type 6  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202edf  
+tag_Display_Name_Resource Generate Error Table  
+tag_Is_Physical true  
+674 – ERwin Metamodel Reference 
+PAGE 694
+Teradata_Structure_Attributes (String property) 
+This is unused and will be deprecated. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e40  
+tag_DBMS_Brands_And_Versions 1075859018, 2006, 999000  
+tag_Display_Name_Resource Structure Attributes  
+tag_Is_Physical true  
+tag_Release_Added 7.2.0  
+Teradata_Table_Permissions (Integer List property) 
+For Teradata specifies the permissions to be granted on a Table. 
+Valid values: 
+Value Description 
+0 All 
+1 Create Trigger 
+2 Drop Trigger 
+3 Drop Table 
+4 Trigger 
+5 Delete 
+6 Insert 
+7 Select 
+8 Update 
+9 Dump 
+Tagged Values 
+Name Value 
+Data_Type 65  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202fbe  
+tag_DBMS_Brands_And_Versions 1075859018, 2006, 999000  
+tag_Display_Name_Resource Table Permissions  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+Teradata_Type (Integer property) 
+Specifies the type for either a Teradata entity, file, or stored procedure.   
+Valid values. 
+694 – ERwin Metamodel Reference 
+PAGE 704
+tag_Display_Name_Resource Column Order List Snapshot  
+tag_Ignore_In_Complete_Compare true  
+tag_Is_Deprecated false  
+tag_Is_Logical false  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Is_System_Maintained true  
+Trans_Do_Not_Auto_Add_Nodes_To_Current_Subject_Area (Boolean property) 
+Refers to a transient property used by CA ERwin DM during certain bulk processes.  
+Note: Do not use this property. 
+Tagged Values 
+Name Value 
+Data_Type 6  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202d02  
+tag_Display_Name_Resource Do Not Auto Add Nodes To Current Subject Area  
+tag_Is_Deprecated false  
+tag_Is_Internal true  
+tag_Is_Logical true  
+tag_Is_Physical true  
+Trans_History_Process_Executing_Type (Integer property) 
+A transient enumerated property used internally by ERwin to track which modeling process is currently 
+running.  Do not use this property. 
+ 
+Valid values: 
+Value Description 
+0x0001 Created 
+0x0002 From Model Source 
+0x0004 Linked to Model Source 
+0x0008 Transformed 
+0x0010 Migrated FK 
+0x0020 Reverse Engineered 
+0x0040 Imported 
+0x0080 Split 
+0x0100 Transform Reversed 
+0x0200 Transform Resolved 
+0x0400 Imported from Database 
+0x0800 Imported from Model 
+0x1000 Imported from XML 
+0x2000 Imported from Script 
+704 – ERwin Metamodel Reference 
+PAGE 708
+tag_Is_Logical true  
+tag_Is_Physical true  
+Trans_Unification_Suppression_Count (Integer property) 
+Specifies a maximum value for how many duplicate alerts can be suppressed for a particular alert 
+regarding the merging of two or more identically named foreign keys into a single foreign key based 
+on the assumption that the foreign keys must be identical. 
+This property is used internally by ERwin. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202d03  
+tag_Display_Name_Resource Unification Suppression Count  
+tag_Ignore_In_Complete_Compare true  
+tag_Is_Logical true  
+tag_Is_Physical true  
+Transform_From_Procedure_Object_Type (Integer property) 
+Applies to a Teradata user-defined type. Specifies the type of procedure being used for the From 
+transform. 
+Valid values: 
+Value Description 
+0 Specifies to use a Specific Method. 
+1 Specifies to use an Instance Method. 
+2 Specifies to use a Specific Function. 
+3 Specifies to use a Function. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e9b  
+tag_Display_Name_Resource Transform From Mapping Type  
+tag_Enum_Values {0|SpecificMethod|Specif ic Method}{1|InstanceMethod|Instance 
+Method}{2|SpecificFunction|Specific 
+Function}{3|Function|Function}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+708 – ERwin Metamodel Reference 
+PAGE 727
+Transform_To_Procedure_Object_Type (Integer property) 
+Applies to a Teradata user-defined type. Specifies the type of procedure being used for the To 
+transform. 
+Valid values: 
+Value Description 
+0 Specifies to use a Specific Method. 
+1 Specifies to use a Instance Method. 
+2 Specifies to use a Specific Function. 
+3 Specifies to use a Function. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e9d  
+tag_Display_Name_Resource Transform To Mapping Type  
+tag_Enum_Values {0|SpecificFunction|Specific Function}{1|Function|Function}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+Transform_To_Procedure_Ref (Short Id property) 
+Applies to a Teradata user-defined type. Specifies the procedure to use when transforming the value 
+from a client application to the database. 
+Tagged Values 
+Name Value 
+Data_Type 11  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e9e  
+Referenced_Model   
+Referenced_Type_Ref 1075839189  
+tag_Display_Name_Resource Transform To Procedure Ref  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.3.0  
+Trigger (object) 
+Refers to a named set of precompiled SQL statements stored on the server that is automatically 
+executed when a specified event occurs. 
+Page 727 
+PAGE 731
+tag_Is_Prefetch true  
+Trigger_Delimiter (String property) 
+Specifies the delimiter used for the trigger. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202968  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Trigger Delimiter  
+tag_Is_Physical true  
+Trigger_Fire_Order (Integer property) 
+Specifies the firing order for a trigger within the event. Associated with the ORDER clause of the DDL 
+statements CREATE TRIGGER and ALTER TRIGGER. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202f7a  
+tag_Display_Name_Resource Trigger Fire Order  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+Trigger_Fire_Type (Integer property) 
+Specifies when to fire a trigger. 
+Valid values: 
+Value Description 
+0 Specifies to fire After. 
+1 Specifies to fire Before. 
+2 Specifies to fire For Each Row. 
+3 Specifies to fire For. 
+4 Specifies to fire Instead Of. 
+Tagged Values 
+Name Value 
+Page 731 
+PAGE 736
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202725  
+Referenced_Model   
+Referenced_Type_Ref 1075838981  
+tag_DBMS_Brands_And_Versions 1075858977, 8001, 999000, 1075858978, 6000, 999000, 
+1075859006, 9000, 999000, 1075858979, 8000, 999000, 
+1075859018, 9000, 999000  
+tag_Display_Name_Resource Update Columns  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Legacy_Property_Is_Vector true  
+Triggers_Order_Ref (Short Id List property) 
+Specifies the order to fire the triggers. 
+Tagged Values 
+Name Value 
+Data_Type 75  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202e4d  
+Referenced_Model   
+Referenced_Type_Ref 1075839021  
+tag_DBMS_Brands_And_Versions 1075859018, 2005, 999000  
+tag_Display_Name_Resource Trigger Order List  
+tag_Is_Logical false  
+tag_Is_Physical true  
+tag_Is_Reference true  
+tag_Release_Added 7.2.0  
+Type (Integer property) 
+Valid values will vary by the type of object holding this property. See the descriptions found in the 
+object/property associations for more information. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202712  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Type  
+tag_Is_Logical true  
+tag_Is_Physical true  
+736 – ERwin Metamodel Reference 
+PAGE 749
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202827  
+tag_DBMS_Brands_And_Versions 1075858977, 2000, 999000  
+tag_Display_Name_Resource Prefetch Size  
+tag_Is_Physical true  
+tag_Legacy_Property_Is_Physical true  
+tag_Legacy_Property_Visualizer_Type EDIT  
+UDB_Query_Optimization_Type (Integer property) 
+Defines whether a materialized query table can be used for optimization. 
+Valid values: 
+Value Description 
+318 Specifies to enable query optimization. The materialized query table can be used for query 
+optimization; this is the default setting. An error occurs if the FULLSELECT specified does not 
+satisfy the restrictions for query optimization. 
+319 Specifies to disable query optimization. The materialized query table cannot be used for 
+query optimization. It is still possible for the table to be queried directly. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a6f  
+tag_DBMS_Brands_And_Versions 1075858977, 7001, 999000  
+tag_Display_Name_Resource Query Optimization  
+tag_Enum_Values {318|Enable|Enable}{319|Disable|Disable}  
+tag_Has_Enum_Values true  
+tag_Is_Physical true  
+tag_Legacy_Property_Is_Physical true  
+tag_Legacy_Property_Visualizer_Type GROUPCHECKBOX  
+UDB_Recover_Dropped_Table (Boolean property) 
+Identifies that dropped tables in the specified tablespace can be recovered using the RECOVER 
+DROPPED TABLE ON option of the ROLLFORWARD command. 
+Tagged Values 
+Name Value 
+Data_Type 6  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a3a  
+Page 749 
+PAGE 769
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+4020271d  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Display  
+tag_Is_Logical true  
+tag_Is_Physical true  
+Vertical_Alignment (Integer property) 
+This property appears on a Rendering Style object. It is controlled through the Fonts and Colors Style Sheet editor, or the local 
+Font and Color editor for a drawing object. The property determines whether the font for a drawing object will be justified to the 
+top of the object, vertically centered, or justified to the bottom of the object. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202f94  
+tag_Display_Name_Resource Vertical Alignment  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Release_Added 7.3.0  
+Vertical_Alignment_Type (Integer property) 
+Specifies the vertical alignment style of the text in a drawing object. 
+Valid values: 
+Value Description 
+128 Align Middle. 
+256 Align Top. 
+512 Align Bottom. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a0a  
+tag_Display_Name_Resource Text Vertical Align  
+tag_Is_Logical true  
+tag_Is_Physical true  
+tag_Is_Prefetch true  
+Page 769 
+PAGE 777
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a2f  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource VOLGEN INDEX  
+tag_Is_Physical true  
+Volumetrics_Log_Percent (String property) 
+Defines a user-specified factor of inflation for the entire database based upon logfile storage when 
+doing volumetrics calculations. This is a percentage of the database size to duplicate. For example, a 
+value of 100 would double the size of the final calculation. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202b2e  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Volumetrics Log Percent  
+tag_Is_Physical true  
+Volumetrics_Report_Time_Projection_Value (Integer property) 
+This is unused and will be deprecated. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a77  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Volumetrics Report Time Projection Value  
+tag_Is_Logical true  
+tag_Is_Physical true  
+Volumetrics_Report_Time_Type (Integer property) 
+Defines whether the report is based upon 'Initial' values or 'Projection' values. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Page 777 
+PAGE 778
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a76  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Volumetrics Report Time Type  
+tag_Is_Logical true  
+tag_Is_Physical true  
+Volumetrics_Report_Type (Integer property) 
+Specifies what types of objects were used for the calculation. 
+Value Description 
+0 Specifies that physical objects were used. 
+1 Specifies that tables were used. 
+2 Specifies that database objects were used. 
+Tagged Values 
+Name Value 
+Data_Type 1  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202a75  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Volumetrics Report Type  
+tag_Is_Logical true  
+tag_Is_Physical true  
+Volumetrics_Row_Overhead (String property) 
+Defines the number of additional overhead bytes to add to each table row when doing volumetric 
+calculations. For example, if a row is calculated to require 100 bytes, and the value is 8, each table 
+row will be calculated to be 108 bytes. 
+Tagged Values 
+Name Value 
+Data_Type 2  
+Long_Id {E7AB3CC0-47AD-4A10-8972-C0FB869EE7CB}+40202b2a  
+tag_DBMS_Is_Represented null  
+tag_Display_Name_Resource Volumetrics Row Overhead  
+tag_Is_Physical true  
+Volumetrics_Table_Factor (String property) 
+Defines a user-specified factor of inflation for the overhead of table storage when doing volumetric 
+calculations. This value will be multiplied by the calculated size of the table. 
+778 – ERwin Metamodel Reference 

@@ -1,0 +1,118 @@
+[
+  {
+    "file": "01-login.png",
+    "caption": "Pantalla de inicio de sesión (HU-002)."
+  },
+  {
+    "file": "02-login-fallido.png",
+    "caption": "Credenciales incorrectas: mensaje genérico, el intento se contabiliza (CA-002-3)."
+  },
+  {
+    "file": "03-tablero.png",
+    "caption": "Tablero: valor del inventario, agotados, bajo mínimo, ajustes por aprobar, conteos y mermas (HU-046)."
+  },
+  {
+    "file": "04-productos.png",
+    "caption": "Catálogo de productos con SKU correlativo por categoría (HU-008)."
+  },
+  {
+    "file": "05-kardex.png",
+    "caption": "Kardex del producto: stock por ubicación, movimientos y saldo corrido (HU-022)."
+  },
+  {
+    "file": "06-aviso-duplicado.png",
+    "caption": "Aviso de posible duplicado antes de guardar (CA-013-3)."
+  },
+  {
+    "file": "07-categorias.png",
+    "caption": "Categorías en tres niveles con código de prefijo (HU-015)."
+  },
+  {
+    "file": "08-ubicaciones.png",
+    "caption": "Ubicaciones generadas en lote, con estado congelada/activa (HU-040, HU-041)."
+  },
+  {
+    "file": "09-proveedores.png",
+    "caption": "Proveedores con RUC validado (HU-042, HU-043)."
+  },
+  {
+    "file": "10-recepciones.png",
+    "caption": "Recepciones: una confirmada y un borrador (HU-024 a HU-027)."
+  },
+  {
+    "file": "11-transferencias.png",
+    "caption": "Transferencia completada de BOD a PIS (HU-028)."
+  },
+  {
+    "file": "12-ajustes.png",
+    "caption": "Merma pendiente de aprobación por otra persona (HU-029, HU-030)."
+  },
+  {
+    "file": "13-conteos.png",
+    "caption": "Conteo en revisión con diferencias marcadas (HU-032 a HU-034)."
+  },
+  {
+    "file": "14-conteo-supervisor.png",
+    "caption": "Líneas del conteo vistas por quien tiene counts.close: esperado y diferencia visibles."
+  },
+  {
+    "file": "15-importaciones-pos.png",
+    "caption": "Importación de ventas del POS con filas en error y descarga del reporte (HU-037 a HU-039)."
+  },
+  {
+    "file": "16-reposicion.png",
+    "caption": "Reposición y alertas con pedido sugerido y botón de descarga (HU-044, HU-045)."
+  },
+  {
+    "file": "17-valorizado.png",
+    "caption": "Inventario valorizado por almacén (HU-048)."
+  },
+  {
+    "file": "18-abc.png",
+    "caption": "Rotación y clasificación ABC (HU-049)."
+  },
+  {
+    "file": "19-mermas.png",
+    "caption": "Reporte de mermas y ajustes negativos (HU-050)."
+  },
+  {
+    "file": "20-auditoria.png",
+    "caption": "Auditoría inmutable de acciones (HU-007)."
+  },
+  {
+    "file": "21-auditoria-detalle.png",
+    "caption": "Detalle de auditoría con valores antes y después (CA-007-1)."
+  },
+  {
+    "file": "22-usuarios.png",
+    "caption": "Usuarios y roles (HU-001, HU-003, HU-004)."
+  },
+  {
+    "file": "23-perfil-2fa.png",
+    "caption": "Mi perfil: configuración de la verificación en dos pasos (HU-006)."
+  },
+  {
+    "file": "24-conteo-ciego.png",
+    "caption": "Conteo ciego: el almacenero no ve el esperado ni la diferencia (CA-033-1)."
+  },
+  {
+    "file": "25-almacenero-sin-permiso.png",
+    "caption": "El almacenero no puede crear productos: respuesta HTTP 403 (CA-008-3)."
+  },
+  {
+    "file": "26-lectura-reposicion.png",
+    "caption": "Rol lectura: ve la reposición pero no tiene el botón de descarga (CA-045-4, defecto D03 corregido)."
+  },
+  {
+    "file": "27-lectura-reporte.png",
+    "caption": "Rol lectura: ve el reporte valorizado sin exportación (CA-051-2)."
+  },
+  {
+    "file": "28-lectura-auditoria.png",
+    "caption": "Rol lectura sin audit.view: respuesta HTTP 403 (CA-007-2)."
+  },
+  {
+    "file": "29-compras-reposicion.png",
+    "caption": "Rol compras: pedido sugerido con descarga habilitada (CA-045-1)."
+  }
+]

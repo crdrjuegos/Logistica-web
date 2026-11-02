@@ -1,0 +1,25 @@
+{
+  "ratio": 0.9985530837402785,
+  "differences": [
+    {
+      "tipo": "delete",
+      "antes": "tabla 7",
+      "ahora": ""
+    },
+    {
+      "tipo": "insert",
+      "antes": "",
+      "ahora": "detallar las actividades tiempo fase actividad mes 1 mes 2 sprint sprint 1 sprint 2 sprint 3 sprint 4 semana 1 2 3 4 5 6 7 8"
+    },
+    {
+      "tipo": "insert",
+      "antes": "",
+      "ahora": "detallar las actividades tiempo fase actividad mes 1 mes 2 sprint sprint 1 sprint 2 sprint 3 sprint 4 semana 1 2 3 4 5 6 7 8"
+    },
+    {
+      "tipo": "insert",
+      "antes": "",
+      "ahora": "control resultado observado alcance y límite"
+    }
+  ]
+}

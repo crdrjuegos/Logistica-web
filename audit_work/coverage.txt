@@ -1,0 +1,284 @@
+
+
+Code Coverage Report:
+  2026-10-28 23:12:57
+
+ Summary:
+  Classes: 71.74% (99/138)
+  Methods: 86.49% (320/370)
+  Lines:   95.79% (1913/1997)
+
+App\Modules\Audit\Domain\AuditEntry
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Audit\Infrastructure\AuditServiceProvider
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Audit\Infrastructure\DatabaseAuditTrail
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% ( 11/ 11)
+App\Modules\Catalog\Application\CreateProduct
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 31/ 31)
+App\Modules\Catalog\Application\DeactivateProduct
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 14/ 14)
+App\Modules\Catalog\Application\FindSimilarProducts
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  2/  2)
+App\Modules\Catalog\Application\LookupProduct
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  3/  3)
+App\Modules\Catalog\Application\UpdateProduct
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 26/ 26)
+App\Modules\Catalog\Domain\Barcode
+  Methods: 100.00% ( 3/ 3)   Lines: 100.00% ( 23/ 23)
+App\Modules\Catalog\Domain\BarcodeInput
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  2/  2)
+App\Modules\Catalog\Domain\CatalogException
+  Methods: 100.00% (10/10)   Lines: 100.00% ( 14/ 14)
+App\Modules\Catalog\Domain\CategoryInfo
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Catalog\Domain\Factor
+  Methods: 100.00% ( 3/ 3)   Lines: 100.00% (  6/  6)
+App\Modules\Catalog\Domain\NewProduct
+  Methods:  66.67% ( 4/ 6)   Lines:  91.07% ( 51/ 56)
+App\Modules\Catalog\Domain\PresentationInput
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Catalog\Domain\ProductChanges
+  Methods:  50.00% ( 1/ 2)   Lines:  90.91% ( 10/ 11)
+App\Modules\Catalog\Domain\ProductLookup
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Catalog\Domain\ProductRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Catalog\Domain\SimilarProduct
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Catalog\Domain\StockPolicy
+  Methods:  50.00% ( 1/ 2)   Lines:  90.91% ( 10/ 11)
+App\Modules\Catalog\Infrastructure\CatalogServiceProvider
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  2/  2)
+App\Modules\Catalog\Infrastructure\DatabaseCatalogRepository
+  Methods:  75.00% ( 9/12)   Lines:  96.49% (110/114)
+App\Modules\Catalog\Infrastructure\DatabaseSkuSequence
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  6/  6)
+App\Modules\Iam\Application\CreateUser
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 13/ 13)
+App\Modules\Iam\Application\DeactivateUser
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 15/ 15)
+App\Modules\Iam\Application\RecordLoginFailure
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  4/  4)
+App\Modules\Iam\Application\RecordLoginSuccess
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  3/  3)
+App\Modules\Iam\Application\ResetUserPassword
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 10/ 10)
+App\Modules\Iam\Domain\IamException
+  Methods: 100.00% ( 7/ 7)   Lines: 100.00% (  7/  7)
+App\Modules\Iam\Domain\LockoutPolicy
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  5/  5)
+App\Modules\Iam\Domain\LockoutState
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Iam\Domain\NewUser
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% ( 12/ 12)
+App\Modules\Iam\Domain\PasswordPolicy
+  Methods:   0.00% ( 0/ 1)   Lines:  92.86% ( 13/ 14)
+App\Modules\Iam\Domain\Permissions
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 22/ 22)
+App\Modules\Iam\Domain\UserRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Iam\Infrastructure\DatabaseUserRepository
+  Methods:  90.00% ( 9/10)   Lines:  97.62% ( 41/ 42)
+App\Modules\Iam\Infrastructure\IamServiceProvider
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 13/ 13)
+App\Modules\Iam\Infrastructure\LaravelPasswordHasher
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Application\GetKardex
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  2/  2)
+App\Modules\Inventory\Application\MovementRecorded
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Application\RegisterMovement
+  Methods:  83.33% ( 5/ 6)   Lines:  95.74% ( 45/ 47)
+App\Modules\Inventory\Domain\Events\StockChanged
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Domain\Exceptions\InventoryException
+  Methods: 100.00% ( 8/ 8)   Lines: 100.00% ( 16/ 16)
+App\Modules\Inventory\Domain\KardexPage
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Domain\KardexQuery
+  Methods:   0.00% ( 0/ 1)   Lines:  50.00% (  2/  4)
+App\Modules\Inventory\Domain\KardexRow
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Domain\LocationState
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Domain\MovementType
+  Methods: 100.00% ( 6/ 6)   Lines: 100.00% ( 21/ 21)
+App\Modules\Inventory\Domain\NewMovement
+  Methods:  80.00% ( 4/ 5)   Lines:  91.43% ( 32/ 35)
+App\Modules\Inventory\Domain\ProductSnapshot
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Domain\Quantity
+  Methods: 100.00% (10/10)   Lines: 100.00% ( 15/ 15)
+App\Modules\Inventory\Domain\RecordedMovement
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Domain\UnitCost
+  Methods:  60.00% ( 3/ 5)   Lines:  75.00% (  6/  8)
+App\Modules\Inventory\Domain\WeightedAverageCost
+  Methods:   0.00% ( 0/ 1)   Lines:  90.00% (  9/ 10)
+App\Modules\Inventory\Infrastructure\DatabaseKardexReader
+  Methods:  66.67% ( 2/ 3)   Lines:  95.56% ( 43/ 45)
+App\Modules\Inventory\Infrastructure\InventoryServiceProvider
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  4/  4)
+App\Modules\Inventory\Infrastructure\LaravelEventBus
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  3/  3)
+App\Modules\Inventory\Infrastructure\LaravelTransaction
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Inventory\Infrastructure\PostgresStockLedger
+  Methods:  77.78% ( 7/ 9)   Lines:  97.26% ( 71/ 73)
+App\Modules\Locations\Application\ChangeLocationState
+  Methods:  62.50% ( 5/ 8)   Lines:  95.24% ( 60/ 63)
+App\Modules\Locations\Application\GenerateLocations
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 15/ 15)
+App\Modules\Locations\Domain\LocationBatch
+  Methods: 100.00% ( 3/ 3)   Lines: 100.00% ( 18/ 18)
+App\Modules\Locations\Domain\LocationCode
+  Methods: 100.00% ( 4/ 4)   Lines: 100.00% ( 10/ 10)
+App\Modules\Locations\Domain\LocationException
+  Methods: 100.00% ( 7/ 7)   Lines: 100.00% (  7/  7)
+App\Modules\Locations\Domain\LocationRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Locations\Domain\NewLocation
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Locations\Domain\WarehouseInfo
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Locations\Infrastructure\DatabaseLocationRepository
+  Methods:  88.89% ( 8/ 9)   Lines:  97.67% ( 42/ 43)
+App\Modules\Locations\Infrastructure\LocationsServiceProvider
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Application\ApproveAdjustment
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 31/ 31)
+App\Modules\Operations\Application\CancelCount
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 11/ 11)
+App\Modules\Operations\Application\CancelReceipt
+  Methods:  50.00% ( 1/ 2)   Lines:  90.00% (  9/ 10)
+App\Modules\Operations\Application\CancelTransfer
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 10/ 10)
+App\Modules\Operations\Application\CloseCount
+  Methods:  75.00% ( 3/ 4)   Lines:  96.72% ( 59/ 61)
+App\Modules\Operations\Application\CompleteTransfer
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 30/ 30)
+App\Modules\Operations\Application\ConfirmReceipt
+  Methods:  50.00% ( 1/ 2)   Lines:  97.37% ( 37/ 38)
+App\Modules\Operations\Application\CreateReceiptDraft
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 21/ 21)
+App\Modules\Operations\Application\CreateTransferDraft
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 11/ 11)
+App\Modules\Operations\Application\ImportPosSales
+  Methods:  66.67% ( 2/ 3)   Lines:  93.44% ( 57/ 61)
+App\Modules\Operations\Application\RecordCount
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 18/ 18)
+App\Modules\Operations\Application\RecordDirectAdjustment
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 28/ 28)
+App\Modules\Operations\Application\RejectAdjustment
+  Methods:  50.00% ( 1/ 2)   Lines:  94.12% ( 16/ 17)
+App\Modules\Operations\Application\ReplaceReceiptItems
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 12/ 12)
+App\Modules\Operations\Application\RequestAdjustment
+  Methods: 100.00% ( 3/ 3)   Lines: 100.00% ( 20/ 20)
+App\Modules\Operations\Application\StartCount
+  Methods:  50.00% ( 1/ 2)   Lines:  93.75% ( 15/ 16)
+App\Modules\Operations\Application\SubmitCountForReview
+  Methods:  50.00% ( 1/ 2)   Lines:  94.12% ( 16/ 17)
+App\Modules\Operations\Domain\AdjustmentKind
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 10/ 10)
+App\Modules\Operations\Domain\AdjustmentRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\CountBalance
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\CountLineRecord
+  Methods: 100.00% ( 3/ 3)   Lines: 100.00% (  4/  4)
+App\Modules\Operations\Domain\CountRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\CountScope
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\CountScopeType
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  4/  4)
+App\Modules\Operations\Domain\DeterministicUuid
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  4/  4)
+App\Modules\Operations\Domain\ImportError
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\ImportResult
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  5/  5)
+App\Modules\Operations\Domain\MovementRequest
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\NewAdjustment
+  Methods:   0.00% ( 0/ 1)   Lines:  85.71% (  6/  7)
+App\Modules\Operations\Domain\NewCount
+  Methods:   0.00% ( 0/ 1)   Lines:  87.50% (  7/  8)
+App\Modules\Operations\Domain\NewReceipt
+  Methods:   0.00% ( 0/ 1)   Lines:  90.91% ( 10/ 11)
+App\Modules\Operations\Domain\NewTransfer
+  Methods:   0.00% ( 0/ 1)   Lines:  80.00% (  4/  5)
+App\Modules\Operations\Domain\OperationsException
+  Methods: 100.00% (11/11)   Lines: 100.00% ( 11/ 11)
+App\Modules\Operations\Domain\PosParseResult
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\PosSaleRow
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\PosSalesParser
+  Methods:  75.00% ( 3/ 4)   Lines:  97.87% ( 46/ 47)
+App\Modules\Operations\Domain\ReasonInfo
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\ReceiptItemRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\ReceiptLine
+  Methods: 100.00% ( 3/ 3)   Lines: 100.00% ( 15/ 15)
+App\Modules\Operations\Domain\ReceiptRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\SalesTarget
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\TransferLine
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  4/  4)
+App\Modules\Operations\Domain\TransferLineRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Domain\TransferRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Operations\Infrastructure\DatabaseAdjustmentRepository
+  Methods:  75.00% ( 3/ 4)   Lines:  82.86% ( 29/ 35)
+App\Modules\Operations\Infrastructure\DatabaseCountRepository
+  Methods:  88.89% ( 8/ 9)   Lines:  97.78% ( 44/ 45)
+App\Modules\Operations\Infrastructure\DatabaseCountScopeResolver
+  Methods:  75.00% ( 6/ 8)   Lines:  95.65% ( 44/ 46)
+App\Modules\Operations\Infrastructure\DatabaseDocumentNumbers
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  7/  7)
+App\Modules\Operations\Infrastructure\DatabaseImportJobs
+  Methods:  50.00% ( 1/ 2)   Lines:  87.50% ( 14/ 16)
+App\Modules\Operations\Infrastructure\DatabaseOperationsLookup
+  Methods: 100.00% ( 7/ 7)   Lines: 100.00% ( 16/ 16)
+App\Modules\Operations\Infrastructure\DatabaseReceiptRepository
+  Methods:  57.14% ( 4/ 7)   Lines:  91.38% ( 53/ 58)
+App\Modules\Operations\Infrastructure\DatabaseSalesTargets
+  Methods:   0.00% ( 0/ 1)   Lines:  90.91% ( 20/ 22)
+App\Modules\Operations\Infrastructure\DatabaseTransferRepository
+  Methods:  75.00% ( 3/ 4)   Lines:  96.77% ( 30/ 31)
+App\Modules\Operations\Infrastructure\InventoryStockMovements
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 30/ 30)
+App\Modules\Operations\Infrastructure\LocationsCountLocations
+  Methods:  66.67% ( 2/ 3)   Lines:  71.43% (  5/  7)
+App\Modules\Operations\Infrastructure\OperationsServiceProvider
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% ( 11/ 11)
+App\Modules\Suppliers\Application\ChangeSupplierState
+  Methods: 100.00% ( 4/ 4)   Lines: 100.00% ( 10/ 10)
+App\Modules\Suppliers\Application\CreateSupplier
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 10/ 10)
+App\Modules\Suppliers\Application\LinkProductToSupplier
+  Methods:  50.00% ( 1/ 2)   Lines:  94.74% ( 18/ 19)
+App\Modules\Suppliers\Application\UpdateSupplier
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 13/ 13)
+App\Modules\Suppliers\Domain\NewSupplier
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  6/  6)
+App\Modules\Suppliers\Domain\Ruc
+  Methods:  66.67% ( 2/ 3)   Lines:  93.33% ( 14/ 15)
+App\Modules\Suppliers\Domain\SupplierChanges
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 14/ 14)
+App\Modules\Suppliers\Domain\SupplierException
+  Methods: 100.00% ( 6/ 6)   Lines: 100.00% (  6/  6)
+App\Modules\Suppliers\Domain\SupplierFields
+  Methods:  50.00% ( 1/ 2)   Lines:  86.96% ( 20/ 23)
+App\Modules\Suppliers\Domain\SupplierRecord
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+App\Modules\Suppliers\Infrastructure\DatabaseSupplierRepository
+  Methods: 100.00% ( 8/ 8)   Lines: 100.00% ( 30/ 30)
+App\Modules\Suppliers\Infrastructure\SuppliersServiceProvider
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)

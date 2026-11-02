@@ -1,0 +1,2860 @@
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   3 
+Presentación del segundo avance  
+Este informe documenta el diseño integral y el avance verificable del Sistema Web de 
+Control de Inventario y Gestión de Almacén de CITY OFERTAS IMPORTADORA E.I.R.L. El 
+corte técnico corresponde al 28 de octubre de 2026. El diseño comprende las 63 historias 
+del Product Backlog, incluidas las funciones futuras; los resultados de prueba corresponden 
+exclusivamente a la versión y al entorno revisados.  
+La revisión confirmó una base funcional de catálogo, inventario, operaciones, seguridad y 
+reportes. La suite automatizada existente finalizó satisfactoriamente, pero la validación 
+adicional encontró tres criterios no conformes. Por ello, este documento presenta un 
+segundo avance con evidencia técnica, sin declarar aceptación empresarial, puesta en 
+producción ni cierre del proyecto.  
+El archivo Product_Backlog_WMS_Formato_Docente.xlsx complementa el informe. 
+Mantiene las historias, estimaciones y planificación del archivo de origen, amplía la 
+aceptación a 191 escenarios y relaciona cada escenario con entradas, pasos, componentes 
+y pruebas. El plan de prácticas y la guía docente orientan la organización de las actividades 
+y sus evidencias mediante los grupos de procesos PMI y el marco Scrum.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   4 
+CAPÍTULO 1 INFORMACIÓN GENERAL  
+1.1 Razón social 
+CITY OFERTAS IMPORTADORA E.I.R.L., con RUC 20611519886, es la empresa 
+beneficiaria del proyecto. Su actividad comercial comprende la comercialización de artículos 
+de bazar, librería, juguetería, menaje y productos del hogar. La información empresarial 
+corresponde a los datos registrados en el expediente del proyecto.  
+1.2 Dirección y ubicación geográfica  
+La referencia proporcionada sitúa el establecimiento en la avenida Grau, cuadra 5, zona del 
+Óvalo Grau, Piura. El documento de origen menciona comercios cercanos como referencias 
+de ubicación. No se dispone de una ficha de domicilio legal ni de coordenadas verificadas; 
+por tanto, no se presenta un mapa georreferenciado con una precisión que la evidencia 
+disponible no permite sostener.  
+ 
+Figura 1  Frontis proporcionado en el informe de origen. Ubicación de referencia pendiente de verificación 
+documental. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   5 
+1.3 Interesados y área beneficiaria  
+Interesado Necesidad o responsabilidad 
+Gerencia Autorizar alcance y prioridades y revisar información de gestión  
+Almacén Registrar recepciones, traslados, conteos y disponibilidad por ubicación  
+Compras Consultar alertas y reposición y gestionar información de proveedores  
+Supervisión y contabilidad  Revisar ajustes, trazabilidad y valoración de inventario  
+Equipo académico  Diseñar, desarrollar, probar y documentar el sistema 
+ 
+La asignación de roles de aplicación debe ser aprobada por la empresa. Las 
+responsabilidades académicas de Product Owner y Scrum Master no equivalen 
+automáticamente a la representación legal ni a la autorización operativa del negocio. Los 
+actores del backlog y su correspondencia con los roles de la aplicación se detallan en el 
+apartado 5.1.2. 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   6 
+CAPÍTULO 2 ASPECTOS GENERALES  
+2.1 Definición del problema  
+2.1.1 Descripción del problema  
+El diagnóstico preliminar identifica registros semimanuales y hojas de cálculo no integradas, 
+diferencias entre existencias físicas y digitales, dificultades para localizar productos y 
+ausencia de avisos oportunos de reposición. Estas situaciones justifican la centralización del 
+inventario y el registro trazable de sus movimientos. La línea base de pérdidas, frecuencia 
+de incidencias y tiempos de búsqueda aún debe cuantificarse para evaluar posteriormente la 
+mejora operativa. 
+Un registro de inventario confiable requiere controlar tanto el movimiento como su contexto: 
+producto, cantidad, costo, motivo, documento, usuario y ubicación. También debe evitar 
+descuentos incompatibles con el saldo disponible y reintentos que dupliquen una operación. 
+El sistema aborda estas necesidades mediante un ledger de movimientos, saldos por 
+ubicación, transacciones y controles de acceso.  
+2.1.2 Formulación del problema general  
+¿De qué manera el desarrollo y la evaluación de un sistema web de inventario y almacén, 
+mediante criterios de calidad seleccionados de ISO/IEC 25010, puede mejorar la gestión y 
+trazabilidad de la mercadería de CITY OFERTAS IMPORTADORA E.I.R.L.?  
+2.1.3 Problemas específicos  
+Se requiere determinar cómo representar las reglas del negocio en historias y escenarios 
+verificables; cómo preservar la integridad de movimientos, costos y saldos; y cómo 
+comprobar la calidad funcional, mantenibilidad, rendimiento e interacción con usuarios 
+mediante evidencia reproducible. La mejora operativa deberá comprobarse posteriormente 
+comparando una línea base con resultados de uso en la empresa.  
+2.2 Definición de los objetivos  
+2.2.1 Objetivo general 
+Desarrollar un sistema web de control de inventario y gestión de almacén para CITY 
+OFERTAS IMPORTADORA E.I.R.L. y evaluar sus atributos de calidad mediante criterios y 
+métricas definidos a partir de ISO/IEC 25010.  
+2.2.2 Objetivos específicos  
+Implementar la gestión de productos, ubicaciones, proveedores y políticas de stock. 
+Registrar recepciones, transferencias, ajustes, ventas importadas y conteos con integridad 
+transaccional y trazabilidad. Diseñar y ejecutar pruebas unitarias, de integración y de 
+aceptación con datos normales, negativos y de frontera. Evaluar mantenibilidad e integridad 
+con herramientas automáticas y planificar mediciones de rendimiento e interacción con 
+usuarios antes de la entrega final.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   7 
+2.3 Product Goal y delimitación  
+El Product Goal propuesto es disponer de un inventario centralizado y trazable que permita 
+conocer las existencias por ubicación, registrar operaciones sin duplicidad y apoyar la 
+reposición mediante alertas y reportes. El backlog contiene 63 historias; 60 pertenecen a la 
+fase inicial y tres están registradas como evolución futura: notificaciones externas HU -047, 
+operación sin conexión HU -055 y captura móvil optimizada HU -056. 
+El diseño objetivo incluye las 63 historias. El compromiso temporal de la fase inicial se 
+mantiene entre el 19 de octubre y el 10 de diciembre de 2026, sujeto a la revisión del equipo 
+y la empresa. La integración de ventas consiste en importar operaciones del POS; no se 
+acredita un sistema de facturación electrónica, contabilidad completa, tienda virtual ni 
+procesamiento de pagos.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   8 
+CAPÍTULO 3 METODOLOGÍA DE DESARROLLO  
+3.1 Selección de metodología 
+La gestión del proyecto se organiza con los grupos de procesos de Inicio, Planificación, 
+Ejecución, Monitoreo y Control y Cierre utilizados en el plan de prácticas. Scrum orienta la 
+construcción e inspección de los incrementos. Esta combinación permite relacionar el 
+problema, el alcance, los riesgos y el cierre con la ejecución iterativa del software, conforme 
+a la orientación de la guía docente suministrada.  
+3.2 Justificación de la metodología  
+Las reglas de stock, permisos y operaciones requieren revisión frecuente con quienes 
+utilizarán el sistema. Los incrementos permiten presentar comportamientos observables y 
+ajustar criterios antes de ampliar el alcance. La priorización debe atender el valor para la 
+empresa y el riesgo de integridad: primero se verifica que el inventario no se corrompa; 
+luego se amplían canales, automatizaciones e interfaces.  
+3.3 Descripción de la metodología  
+3.3.1 Artefactos y eventos Scrum  
+El Product Backlog reúne historias y prioridades y se vincula con el Product Goal. El Sprint 
+Backlog reúne el objetivo y el trabajo seleccionado por los Developers. Un incremento solo 
+puede considerarse terminado cuando satisface la Definition of Done acordada. El estado 
+técnico del código no reemplaza la aceptación del escenario ni demuestra que se haya 
+celebrado una ceremonia. 
+Se planifican Sprint Planning al inicio de cada iteración, Daily Scrum de 15 minutos para los 
+Developers, Sprint Review con los interesados y Sprint Retrospective para mejorar el 
+trabajo. Al corte, los registros de ejecución de estos eventos se mantienen pendientes de 
+consolidación. El Excel distingue las fechas previstas de la evidencia disponible y conserva 
+vacía la serie real del burndown, porque no existen registros diarios de esfuerzo restante.  
+3.3.2 Alcance y calendario por sprints  
+Sprint Ventana prevista Revisión prevista Control del compromiso 
+1 19 octubre a 1 noviembre 30 octubre Selección y tareas identificadas 
+por sprint en el Excel 
+2 2 a 15 noviembre 13 noviembre Refinamiento de aceptación y 
+dependencias antes del inicio  
+3 16 a 29 noviembre 27 noviembre Integración y verificación del 
+incremento seleccionado  
+4 30 noviembre a 10 
+diciembre 10 diciembre Consolidación, validación y 
+entrega prevista 
+ 
+La distribución funcional por sprint se consulta en las columnas de planificación del backlog 
+y en la hoja Sprints, evitando duplicar una asignación distinta en el informe. Los tres 
+primeros intervalos duran 14 días; el último dura 11. Esta diferencia del archivo de origen 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   9 
+requiere ratificar la cadencia o tratar el último periodo como ventana de cierre. No se afirma 
+una duración uniforme de dos semanas para los cuatro periodos.  
+3.4 Roles y responsabilidades  
+Integrante Responsabilidad académica consignada 
+Aquino Salcedo Maria 
+Fernanda  Product Owner y coordinación de prioridades  
+Carrasco Chavez Yerry 
+Ericson Scrum Master y facilitación del proceso 
+Cortez Quito Abraham 
+David Desarrollo del backend y arquitectura  
+Zelada Chinga Eliana 
+Jazmin Desarrollo de interfaz de usuario  
+Torres Cavero Luis 
+Augusto Modelamiento y gestión de base de datos 
+Juarez Gabino Sandro 
+David Pruebas y evaluación de calidad  
+ 
+Esta distribución define las responsabilidades académicas del equipo. La aprobación del 
+alcance y de los resultados operativos exige la participación de un representante de la 
+empresa. Las tareas del Excel que aún figuran por asignar deben recibir un responsable 
+nominal; no se deduce esa asignación a partir de los autores de este informe.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   10 
+CAPÍTULO 4 PLAN DE CALIDAD  
+4.1 Estrategia de calidad  
+4.1.1 Modelo de calidad  
+Se adopta ISO/IEC 25010:2023 como referencia para seleccionar atributos y organizar su 
+evaluación. La edición 2023 presenta un modelo de nueve características; este proyecto 
+evalúa un subconjunto pertinente y no declara certificación ni conformidad integral con la 
+norma. La interacción con usuarios se trata bajo capacidad de interacción, conservando el 
+término usabilidad cuando se describe el instrumento SUS.  
+La adecuación funcional se relaciona con las historias y escenarios; la fiabilidad con 
+atomicidad, recuperación e integridad; la seguridad con autorización y auditoría; la 
+mantenibilidad con pruebas, análisis estático y dependencias; y la eficiencia de rendimiento 
+con mediciones controladas de operaciones críticas. La adaptación a dispositivos y entornos 
+se verificará al completar las funciones móviles y la instalación reproducible.  
+4.1.2 Objetivos de calidad  
+Indicador Meta del plan Situación al corte 
+Cobertura de líneas 
+ejecutables 
+Al menos 80 por ciento en el 
+ámbito definido  95,79 por ciento en app/Modules 
+Éxito de pruebas 
+antes del despliegue  
+Al menos 95 por ciento sobre 
+el conjunto acordado  
+Suite existente 100 por ciento; aceptación 
+específica 93,33 por ciento de 45 casos 
+ejecutados 
+Tiempo medio de 
+respuesta Como máximo 1,5 segundos No medido bajo un protocolo de carga 
+Puntuación SUS  Al menos 85 puntos sobre 100 No aplicada a usuarios de la empresa  
+ 
+El resultado SUS se expresa en puntos, no como porcentaje de usuarios satisfechos. Cada 
+indicador exige identificar su población y denominador; la cobertura del dominio no mide la 
+cobertura de interfaz y el éxito de una suite no equivale a la aceptación de todo el backlog.  
+4.1.3 Aseguramiento de la calidad  
+Cada historia debe tener criterios verificables, entradas y resultados esperados. Las 
+revisiones de código deben atender reglas de negocio, límites transaccionales, autorización, 
+precisión decimal y trazabilidad. Se mantienen pruebas automáticas y controles de formato, 
+tipos y dependencias como controles preventivos. La revisión por pares y su registro se 
+establecen como práctica requerida; no se presentan como revisiones históricas ya 
+acreditadas. 
+4.1.4 Calidad durante el ciclo de vida y Definition of Done  
+La Definition of Done propuesta requiere criterios aplicables conformes; pruebas de 
+regresión satisfactorias; ausencia de defectos de integridad o autorización sin resolver; 
+aprobación de Pint, PHPStan y Deptrac; migraciones y dependencias reproducibles; 
+documentación actualizada y demostración del flujo en el entorno acordado. Las métricas de 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   11 
+rendimiento, SUS y recuperación se incorporan cuando correspondan al incremento. Su 
+aprobación debe ser registrada por los responsables del proyecto.  
+4.2 Herramientas y técnicas 
+4.2.1 Herramientas de desarrollo  
+El entorno revisado utiliza PHP 8.4.26 en Docker, Laravel 13.34.0, Filament 5.9.0, Livewire 
+4.4.7 y PostgreSQL 17. Vite y Tailwind participan en los recursos del panel. Las versiones 
+instaladas se obtuvieron del entorno y de vendor; Filament y Livewire no aparecen 
+declarados en composer.json ni composer.lock, lo que exige corregir la reproducibilidad de 
+una instalación limpia. El panel se ejecuta dentro de la aplicación Laravel y utiliza las rutas 
+web y los recursos existentes del proyecto.  
+4.2.2 Herramientas de prueba  
+Pest ejecuta pruebas unitarias y de integración. PCOV permite medir cobertura de líneas del 
+ámbito configurado. Laravel Pint verifica estilo; PHPStan, tipos y errores estáticos; Deptrac, 
+reglas de dependencias. JMeter, OWASP ZAP e Infection se contemplan para rendimiento, 
+seguridad dinámica y mutación, pero no se registran resultados de esas herramientas en 
+este corte. 
+4.2.3 Herramientas de gestión y modelamiento  
+El libro Excel concentra la planificación y la trazabilidad del proyecto. Enterprise Architect 
+contiene los modelos editables de requisitos, clases, datos y arquitectura. ERwin se utiliza 
+para el inventario lógico de entidades y atributos; la integridad del modelo relacional se 
+documenta además en Enterprise Architect y en el diccionario de datos. La ejecución remota 
+de integración continua se mantiene pendiente de verificación; la evidencia disponible 
+corresponde a los controles locales en Docker.  
+4.2.4 Técnicas de calidad  
+Se combinan particiones de equivalencia, valores de frontera, escenarios negativos y 
+comprobación de reglas de dominio. La integración prueba transacciones, restricciones, 
+persistencia e idempotencia. Las pruebas de panel con Livewire o Filament no sustituyen 
+una sesión completa en navegador ni una prueba de aceptación por personal de la empresa. 
+La cobertura de ramas y caminos requiere instrumentación adicional y no se deduce de la 
+cobertura de líneas. 
+4.3 Recursos necesarios 
+Participan los seis integrantes, los usuarios por rol y un representante de la empresa. Se 
+requiere un equipo compatible con Docker y virtualización, memoria suficiente para la 
+aplicación y PostgreSQL, un navegador y espacio para modelos y evidencias. La 
+configuración de hardware del entorno de medición deberá registrarse antes de las pruebas 
+de carga; no se declara como requisito validado una capacidad mínima de hardware sin 
+mediciones. 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   12 
+4.4 Riesgos y mitigaciones  
+Riesgo Impacto Mitigación y responsable por rol 
+Reintentos con 
+contenido distinto o 
+doble apertura 
+Alto Validar identidad completa y unicidad de 
+apertura; desarrollo y QA 
+Permisos de 
+exportación 
+inconsistentes  
+Alto Autorizar acción y servidor; desarrollo y QA 
+Instalación no 
+reproducible Alto Declarar dependencias y verificar instalación 
+limpia; desarrollo 
+Cambios de alcance 
+o roles de negocio Alto Registrar decisiones y ratificar backlog; Product 
+Owner y empresa 
+Pérdida de 
+información  Alto Copia externa y restauración comprobada; 
+base de datos y operación 
+Rendimiento o 
+interacción 
+insuficientes  
+Medio Medir carga y aplicar SUS antes de liberar; QA 
+y usuarios 
+Cierre sin evidencia 
+de aceptación Alto Revisar DoD, escenarios y acta; Product 
+Owner y empresa 
+ 
+4.5 Criterios de éxito 
+El proyecto concluirá con las funciones comprometidas aceptadas por los responsables, las 
+incidencias críticas resueltas, las metas de calidad comprobadas y la transferencia 
+documentada. La exactitud del inventario se evaluará mediante conciliación física y digital en 
+un periodo definido. No se promete eliminar todos los descuadres ni se atribuye una mejora 
+porcentual sin medición antes y después.  
+4.6 Plan de comunicación 
+Actividad Participantes Frecuencia prevista Registro requerido 
+Sprint 
+Planning  Scrum Team Inicio de sprint Objetivo y selección de trabajo 
+Daily Scrum Developers Días de trabajo Impedimentos y ajustes del plan 
+según necesidad  
+Sprint 
+Review Equipo e interesados  Cierre de sprint Feedback y decisiones del 
+backlog 
+Retrospectiv
+a Scrum Team Cierre de sprint Acciones de mejora y 
+seguimiento  
+Reporte de 
+defecto Desarrollo y QA Al detectarse Entrada, resultado, evidencia y 
+revalidación  
+Validación y 
+entrega Empresa y equipo Hitos acordados Conformidad, manuales y 
+pendientes  
+ 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   13 
+4.7 Cronograma del proyecto  
+El cronograma conserva la planificación del 19 de octubre al 10 de diciembre de 2026 y se organiza en cinco grupos de proceso s PMI. Scrum se aplica durante la ejecución y el monitoreo y control. Las marcas X indican 
+periodos programados; no constituyen evidencia de reuniones, aceptación o entregas realizadas.  
+Tabla 7: Actividades principales a realizarse en la empresa  
+Mes 1 y Mes 2 representan bloques de cuatro semanas. Sprint 1: 19/10 –01/11; Sprint 2: 02/11–15/11; Sprint 3: 16/11–29/11; Sprint 4: 30/11–10/12. El último periodo termina el jueves 10/12. Las HU -047, HU-055 y HU-056 
+permanecen como evolución futura del producto.  
+DETALLAR LAS ACTIVIDADES TIEMPO 
+FASE / ACTIVIDAD Mes 1 Mes 2 
+SPRINT Sprint 1 Sprint 2 Sprint 3 Sprint 4 
+SEMANA 1 2 3 4 5 6 7 8 
+FASE 1. INICIO (PMI) 
+1. Identificación de la problemática y necesidad de CITY OFERTAS  X        
+2. Identificación de interesados y área beneficiaria  X        
+3. Elaboración de la visión y objetivo general del WMS  X        
+4. Elaboración del acta o ficha de inicio del proyecto  X        
+FASE 2. PLANIFICACIÓN (PMI) 
+5. Definición del alcance del WMS  X        
+6. Identificación y análisis de requerimientos  X X       
+7. Definición del Product Goal  X        
+8. Elaboración de épicas, historias de usuario y criterios de aceptación  X X       
+9. Creación y priorización del Product Backlog  X X       
+10. Elaboración del roadmap y planificación general de sprints   X       
+11. Identificación de riesgos y acciones de respuesta  X X       
+12. Definición de criterios de calidad y Definition of Done (DoD)   X       
+FASE 3. EJECUCIÓN — METODOLOGÍA SCRUM 
+13. Sprint Planning al inicio de cada sprint  X  X  X  X  
+14. Sprint 1 — Cimientos: accesos, catálogo, ledger, arquitectura y herramientas de calidad  X X       
+15. Sprint 2 — Almacén: ubicaciones, proveedores, recepción, transferencias, ajustes, kardex y carga inicial    X X     
+16. Sprint 3 — Control y análisis: conteos, ventas POS, alertas, tablero y reportes     X X   
+17. Sprint 4 — Seguridad, cámara, calidad, respaldos, despliegue, informe y sustentación        X X 
+18. Diseño, desarrollo, pruebas, integración y documentación del incremento  X X X X X X X X 
+FASE 4. MONITOREO Y CONTROL — SCRUM 
+19. Daily Scrum y seguimiento del Sprint Goal  X X X X X X X X 
+20. Seguimiento y actualización del Sprint Backlog  X X X X X X X X 
+21. Gestión de impedimentos y seguimiento de riesgos  X X X X X X X X 
+22. Verificación de criterios de aceptación, calidad y Definition of Done  X X X X X X X X 
+23. Sprint Review e inspección del incremento   X  X  X  X 
+24. Validación del incremento y retroalimentación de interesados   X  X  X  X 
+25. Refinamiento y actualización del Product Backlog  X X X X X X X X 
+26. Seguimiento de métricas de avance, calidad y cumplimiento  X X X X X X X X 
+27. Sprint Retrospective e identificación de oportunidades de mejora   X  X  X  X 
+28. Implementación de acciones de mejora del proceso  X X X X X X X 
+FASE 5. CIERRE (PMI) 
+29. Validación final del WMS y consolidación de pruebas de carga, seguridad y calidad        X X 
+30. Consolidación de documentación técnica y funcional; prueba de restauración de respaldo        X X 
+31. Entrega, transferencia y aceptación del producto por la empresa        X 
+32. Registro de lecciones aprendidas y cierre de pendientes         X 
+33. Presentación final de resultados y conformidad del proyecto         X 
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   14 
+CAPÍTULO 5 REQUISITOS Y ARQUITECTURA DEL SISTEMA  
+5.1 Especificación de requisitos 
+5.1.1 Descripción del sistema  
+5.1.1.1 Propósito del sistema  
+El WMS centraliza el catálogo y las existencias de la empresa y registra los hechos que 
+modifican el inventario. Las personas acceden por roles; los movimientos conservan su 
+documento y ubicación; las consultas permiten revisar kardex, disponibilidad, alertas y 
+valoración. La arquitectura objetivo añade los importadores pendientes, la conciliación 
+programada, los canales externos y el cliente móvil definidos en el backlog.  
+5.1.1.2 Alcance del sistema  
+El alcance completo se distribuye en accesos y seguridad, catálogo, inventario, operaciones 
+de almacén, conteos, ventas del POS, ubicaciones, proveedores, alertas y reportes, carga 
+inicial, operación móvil y calidad de entrega. Los diagramas representan ese producto 
+completo. La etiqueta propuesto identifica contratos y componentes aún no construidos; una 
+figura de diseño no acredita su implementación.  
+Las 63 historias mantienen sus identificadores del archivo original. La matriz de aceptación 
+conserva los 36 escenarios iniciales y amplía la especificación a 191. Cada fila permite 
+seguir la cadena historia, escenario, entrada, pasos, clase o componente, prueba 
+relacionada y resultado observado. Los casos sin ejecución específica no se marcan como 
+aprobados por la sola existencia de código o de una prueba similar.  
+5.1.2 Requerimientos funcionales  
+Las 63 historias se presentan en fichas individuales para describir su alcance y sus 
+validaciones. Sus validaciones conservan los 191 identificadores y escenarios de la matriz 
+del Excel. La prioridad procede del backlog aprobado; el riesgo y la asignación individual del 
+responsable quedan por evaluar y confirmar. Los resultados ejecutados, entradas, clases y 
+pruebas se consultan en la matriz de aceptación.  
+ 
+Las HU-057 y HU-058 y las reglas de HU -017 a HU-021 incluyen restricciones o requisitos 
+de ingeniería. Se representan como requisitos cuando no corresponden a una interacción 
+independiente de un usuario. No se fuerza una equivalencia entre cada historia y un caso de 
+uso de interfaz. 
+Existen diferencias de rol entre el backlog inicial y las políticas localizadas en el código: el 
+alta y la edición del catálogo se restringen a Supervisor o Administrador, mientras que las 
+historias HU-008, HU-009, HU-010 y HU-016 mencionaban Almacenero o Comprador. El 
+Excel conserva el rol original de cada historia y registra en la columna Comentarios el rol 
+propuesto, que necesita ratificación de la empresa. No se considera una aprobación 
+automática de esa modificación del requisito. Las diferencias que a fectan a los diagramas se 
+resumen en el apartado 5.1.4.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   15 
+La aplicación define cinco roles: admin, almacenero, compras, lectura y supervisor. La tabla 
+relaciona los actores que figuran en la columna Rol del backlog con esos roles y muestra 
+cuántas historias corresponden a cada actor.  
+Actor en el backlog Historias Rol en la aplicación 
+Administrador 4 admin 
+Administrador / Supervisor 1 (HU-006) admin y supervisor 
+Supervisor 15 supervisor 
+Almacenero 16 almacenero 
+Comprador 8 compras 
+Dueño  11 Sin rol equivalente directo; por definir con la empresa  
+Contador 2 Sin rol equivalente directo; por definir con la empresa  
+Usuario 1 (HU-002) Cualquier cuenta activa con un rol asignado  
+Equipo de desarrollo y de 
+calidad 5 Roles del proyecto; no son roles de la aplicación  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   16 
+Tabla 9: Historia de Crear usuarios por rol  
+Historia de Usuario  
+ID: HU-001 Usuario: Administrador 
+Nombre de historia: Crear usuarios por rol  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Administrador, quiero crear usuarios con un rol, para que cada 
+persona tenga solo los permisos de su puesto.  
+Validaciones:  
+•  Validación CA-001-1 
+Alta correcta. Dado: que el administrador indica usuario, correo únicos y una 
+contraseña de 12 o más caracteres. Cuando: guarda el usuario con el rol 
+Almacenero. Entonces: el sistema crea la cuenta activa con ese rol, guarda la 
+contraseña como hash y registra el alta en la auditoría sin la contraseña.  
+•  Validación CA-001-2 
+Usuario o correo repetido. Dado: que ya existe una cuenta con ese usuario o 
+correo (sin distinguir mayúsculas). Cuando: intenta guardar el usuario. Entonces: 
+el sistema rechaza el alta e indica que el usuario o correo ya existe.  
+•  Validación CA-001-3 
+Contraseña débil. Dado: que la contraseña tiene menos de 12 caracteres, 
+contiene el usuario o el correo, o es una clave común. Cuando: intenta guardar el 
+usuario. Entonces: el sistema rechaza el alta indicando la regla que incumple.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   17 
+Tabla 10: Historia de Iniciar sesión  
+Historia de Usuario  
+ID: HU-002 Usuario: Usuario 
+Nombre de historia: Iniciar sesión  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Usuario, quiero entrar con mi correo y contraseña, para operar el 
+sistema. 
+Validaciones:  
+•  Validación CA-002-1 
+Acceso autorizado. Dado: un entorno de pruebas aislado y un actor Usuario, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -002 con los valores 
+indicados. Entonces: Permite entrar al panel y actualiza last_login_at.  
+•  Validación CA-002-2 
+Cuenta restringida. Dado: un entorno de pruebas aislado y un actor Usuario, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -002 con los valores 
+indicados. Entonces: Deniega el panel sin conceder permisos ni levantar el 
+bloqueo.  
+•  Validación CA-002-3 
+Credenciales incorrectas. Dado: un entorno de pruebas aislado y un actor 
+Usuario, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -002 con 
+los valores indicados. Entonces: Deniega el acceso con mensaje genérico y 
+contabiliza el fallo.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   18 
+Tabla 11: Historia de Bloquear cuenta tras intentos fallidos  
+Historia de Usuario  
+ID: HU-003 Usuario: Dueño 
+Nombre de historia: Bloquear cuenta tras intentos fallidos  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero que la cuenta se bloquee tras intentos fallidos, 
+para evitar adivinanzas de contraseña.  
+Validaciones:  
+•  Validación CA-003-1 
+Quinto intento fallido. Dado: que una cuenta activa acumula 4 intentos fallidos. 
+Cuando: falla el quinto intento. Entonces: el sistema bloquea la cuenta durante 15 
+minutos.  
+•  Validación CA-003-2 
+Contraseña correcta durante el bloqueo. Dado: que la cuenta está bloqueada. 
+Cuando: ingresa la contraseña correcta. Entonces: el sistema no permite el 
+acceso y no levanta el bloqueo.  
+•  Validación CA-003-3 
+Fin del bloqueo. Dado: que pasaron 15 minutos desde el bloqueo. Cuando: 
+ingresa con credenciales correctas. Entonces: el sistema permite el acceso y 
+reinicia el contador de intentos.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   19 
+Tabla 12: Historia de Desactivar y reactivar usuarios  
+Historia de Usuario  
+ID: HU-004 Usuario: Administrador 
+Nombre de historia: Desactivar y reactivar usuarios  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Administrador, quiero desactivar y reactivar usuarios sin 
+borrarlos, para conservar el historial.  
+Validaciones:  
+•  Validación CA-004-1 
+Desactivar otra cuenta. Dado: un entorno de pruebas aislado y un actor 
+Administrador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -004 
+con los valores indicados. Entonces: is_active=false; conserva usuario e historial y 
+registra una auditoría.  
+•  Validación CA-004-2 
+Protección del administrador. Dado: un entorno de pruebas aislado y un actor 
+Administrador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -004 
+con los valores indicados. Entonces: Rechaza la desactivación y mantiene una 
+cuenta administradora operativa.  
+•  Validación CA-004-3 
+Reactivar y repetir. Dado: un entorno de pruebas aislado y un actor 
+Administrador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -004 
+con los valores indicados. Entonces: Queda activo; la segunda operación no 
+duplica la auditoría.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   20 
+Tabla 13: Historia de Restablecer contraseña  
+Historia de Usuario  
+ID: HU-005 Usuario: Administrador 
+Nombre de historia: Restablecer contraseña  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Administrador, quiero restablecer la contraseña de quien la 
+olvidó, para que pueda volver a entrar.  
+Validaciones:  
+•  Validación CA-005-1 
+Restablecimiento correcto. Dado: un entorno de pruebas aislado y un actor 
+Administrador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -005 
+con los valores indicados. Entonces: Guarda hash, limpia bloqueo e intentos y 
+audita sin secretos.  
+•  Validación CA-005-2 
+Clave débil o usuario inexistente. Dado: un entorno de pruebas aislado y un 
+actor Administrador, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-005 con los valores indicados. Entonces: Rechaza sin modificar credenciales 
+ni auditoría de éxito.  
+•  Validación CA-005-3 
+Actor sin permiso. Dado: un entorno de pruebas aislado y un actor 
+Administrador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -005 
+con los valores indicados. Entonces: No muestra o deniega la acción por 
+users.manage.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   21 
+Tabla 14: Historia de Verificar acceso en dos pasos  
+Historia de Usuario  
+ID: HU-006 Usuario: Administrador/supervisor  
+Nombre de historia: Verificar acceso en dos pasos  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Administrador/supervisor, quiero verificación en dos pasos, para 
+proteger cuentas con más poder.  
+Validaciones:  
+•  Validación CA-006-1 
+Segundo factor configurado. Dado: un entorno de pruebas aislado y un actor 
+Administrador/supervisor, con los permisos indicados en el escenario y las 
+referencias válidas salvo las entradas negativas. Cuando: ejecuta la operación de 
+la historia HU-006 con los valores indicados. Entonces: Exige y verifica el 
+segundo factor para finalizar el acceso.  
+•  Validación CA-006-2 
+Obligatoriedad por configuración. Dado: un entorno de pruebas aislado y un 
+actor Administrador/supervisor, con los permisos indicados en el escenario y las 
+referencias válidas salvo las entradas negativas. Cuando: ejecuta la operación de 
+la historia HU-006 con los valores indicados. Entonces: Restringe navegación al 
+perfil y configuración de segundo factor.  
+•  Validación CA-006-3 
+Recuperación y rechazo. Dado: un entorno de pruebas aislado y un actor 
+Administrador/supervisor, con los permisos indicados en el escenario y las 
+referencias válidas salvo las entradas negativas. Cuando: ejecuta la operación de 
+la historia HU-006 con los valores indicados. Entonces: El código erróneo no 
+permite acceder; el de recuperación funciona solo una vez.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   22 
+Tabla 15: Historia de Consultar auditoría  
+Historia de Usuario  
+ID: HU-007 Usuario: Administrador 
+Nombre de historia: Consultar auditoría  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Administrador, quiero consultar la auditoría, para saber quién hizo 
+qué y cuándo.  
+Validaciones:  
+•  Validación CA-007-1 
+Consulta con filtros. Dado: un entorno de pruebas aislado y un actor 
+Administrador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -007 
+con los valores indicados. Entonces: Muestra solo registros coincidentes con 
+antes y después legibles.  
+•  Validación CA-007-2 
+Sin autorización. Dado: un entorno de pruebas aislado y un actor Administrador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -007 con los 
+valores indicados. Entonces: Deniega acceso; no devuelve datos de auditoría.  
+•  Validación CA-007-3 
+Historial protegido. Dado: un entorno de pruebas aislado y un actor 
+Administrador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -007 
+con los valores indicados. Entonces: Rechaza mutaciones y conserva registros; 
+verificar cada operación en BD de prueba.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   23 
+Tabla 16: Historia de Crear productos y generar SKU 
+Historia de Usuario  
+ID: HU-008 Usuario: Almacenero  
+Nombre de historia: Crear productos y generar SKU  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero crear productos con SKU automático, para no 
+repetir ni inventar códigos.  
+Validaciones:  
+•  Validación CA-008-1 
+SKU y nombre normalizado. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -008 
+con los valores indicados. Entonces: Crea LIB-000001, normaliza nombre y añade 
+presentación base de factor 1.  
+•  Validación CA-008-2 
+Catálogo de referencia inválido. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -008 
+con los valores indicados. Entonces: Rechaza y no persiste un producto parcial.  
+•  Validación CA-008-3 
+Actor sin permiso de escritura. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -008 
+con los valores indicados. Entonces: Deniega crear; sí permite consultar con 
+catalog.view.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   24 
+Tabla 17: Historia de Registrar códigos de barras  
+Historia de Usuario  
+ID: HU-009 Usuario: Almacenero  
+Nombre de historia: Registrar códigos de barras  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero registrar códigos de barras válidos, para 
+escanear sin errores.  
+Validaciones:  
+•  Validación CA-009-1 
+Código válido. Dado: que el código EAN -13 tiene 13 dígitos, dígito verificador 
+correcto y no pertenece a otro producto. Cuando: se guarda el producto. 
+Entonces: el sistema registra el código como parte del producto.  
+•  Validación CA-009-2 
+Dígito verificador incorrecto. Dado: que el dígito verificador no coincide con el 
+cálculo GS1. Cuando: intenta guardar el producto. Entonces: el sistema rechaza 
+el código e indica que el dígito verificador es incorrecto.  
+•  Validación CA-009-3 
+Código repetido. Dado: que el código ya pertenece a otro producto. Cuando: 
+intenta guardarlo. Entonces: el sistema rechaza el código y no deja el producto a 
+medio crear.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   25 
+Tabla 18: Historia de Definir presentaciones y factores  
+Historia de Usuario  
+ID: HU-010 Usuario: Comprador 
+Nombre de historia: Definir presentaciones y factores  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero presentaciones (unidad, docena, caja) con su 
+factor, para comprar por caja y vender por unidad.  
+Validaciones:  
+•  Validación CA-010-1 
+Conversión por presentación. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -010 
+con los valores indicados. Entonces: Conserva una presentación base y factores 
+positivos con tres decimales.  
+•  Validación CA-010-2 
+Factor inválido. Dado: un entorno de pruebas aislado y un actor Comprador, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -010 con los valores 
+indicados. Entonces: Rechaza precisión o valor inválido sin guardar 
+presentaciones parciales.  
+•  Validación CA-010-3 
+Base y duplicados. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -010 con los 
+valores indicados. Entonces: Rechaza factor base distinto de 1 y unidades 
+repetidas.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   26 
+Tabla 19: Historia de Editar con control de concurrencia  
+Historia de Usuario  
+ID: HU-011 Usuario: Supervisor 
+Nombre de historia: Editar con control de concurrencia  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero editar productos sin pisar los cambios de otra 
+persona, para no perder información.  
+Validaciones:  
+•  Validación CA-011-1 
+Edición con versión actual. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -011 
+con los valores indicados. Entonces: Actualiza solo cambios, guarda versión 2 y 
+auditoría antes y después.  
+•  Validación CA-011-2 
+Conflicto de versión. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -011 con los 
+valores indicados. Entonces: Rechaza edición obsoleta y conserva los datos más 
+recientes.  
+•  Validación CA-011-3 
+Edición sin cambios. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -011 con los 
+valores indicados. Entonces: No incrementa versión ni duplica auditoría de 
+cambio.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   27 
+Tabla 20: Historia de Dar de baja sin stock  
+Historia de Usuario  
+ID: HU-012 Usuario: Supervisor 
+Nombre de historia: Dar de baja sin stock  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero dar de baja un producto solo si ya no tiene 
+stock, para no perder inventario por error.  
+Validaciones:  
+•  Validación CA-012-1 
+Producto con stock. Dado: que el producto tiene unidades en alguna ubicación. 
+Cuando: el supervisor intenta darlo de baja. Entonces: el sistema lo rechaza e 
+indica que todavía hay stock.  
+•  Validación CA-012-2 
+Producto sin stock. Dado: que el stock total del producto es 0. Cuando: el 
+supervisor lo da de baja. Entonces: el sistema lo marca como inactivo, conserva 
+su historial y registra la auditoría.  
+•  Validación CA-012-3 
+Baja repetida. Dado: que el producto ya está dado de baja. Cuando: se vuelve a 
+dar de baja. Entonces: el sistema no repite el cambio ni duplica la auditoría.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   28 
+Tabla 21: Historia de Detectar nombres similares  
+Historia de Usuario  
+ID: HU-013 Usuario: Almacenero  
+Nombre de historia: Detectar nombres similares  
+Prioridad en negocio: Baja (3) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero que el sistema avise de nombres parecidos, 
+para evitar duplicados.  
+Validaciones:  
+•  Validación CA-013-1 
+Coincidencia de nombre. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -013 
+con los valores indicados. Entonces: Devuelve candidato normalizado con 
+similitud al menos 0.8.  
+•  Validación CA-013-2 
+Nombre distinto. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -013 con los 
+valores indicados. Entonces: No devuelve coincidencias bajo el umbral.  
+•  Validación CA-013-3 
+Advertencia en formulario. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -013 
+con los valores indicados. Entonces: Muestra aviso antes de guardar y permite 
+revisar el catálogo; la detección backend sola no satisface este caso.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   29 
+Tabla 22: Historia de Consultar producto y stock por código  
+Historia de Usuario  
+ID: HU-014 Usuario: Almacenero  
+Nombre de historia: Consultar producto y stock por código  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero escanear un código o SKU y ver el producto 
+con su stock por ubicación, para atender rápido.  
+Validaciones:  
+•  Validación CA-014-1 
+Consulta por SKU o código. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -014 
+con los valores indicados. Entonces: Devuelve mismo producto, presentación, 
+factor y stock por ubicación.  
+•  Validación CA-014-2 
+Código desconocido. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -014 
+con los valores indicados. Entonces: Devuelve resultado vacío controlado sin 
+modificar datos.  
+•  Validación CA-014-3 
+Presentación distinta. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -014 
+con los valores indicados. Entonces: Identifica la docena y mantiene stock 
+expresado en unidad base.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   30 
+Tabla 23: Historia de Gestionar categorías y marcas  
+Historia de Usuario  
+ID: HU-015 Usuario: Supervisor 
+Nombre de historia: Gestionar categorías y marcas  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero administrar categorías (3 niveles) y marcas, 
+para ordenar el catálogo.  
+Validaciones:  
+•  Validación CA-015-1 
+Jerarquía y marca válidas. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -015 
+con los valores indicados. Entonces: Crea niveles 1 a 3, conserva padre y registra 
+auditoría.  
+•  Validación CA-015-2 
+Cuarto nivel o código duplicado. Dado: un entorno de pruebas aislado y un 
+actor Supervisor, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-015 con los valores indicados. Entonces: Rechaza ambas entradas sin 
+corromper jerarquía.  
+•  Validación CA-015-3 
+Edición autorizada. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -015 con los 
+valores indicados. Entonces: Persiste cambio y registra valores anterior y nuevo.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   31 
+Tabla 24: Historia de Definir políticas de stock  
+Historia de Usuario  
+ID: HU-016 Usuario: Comprador 
+Nombre de historia: Definir políticas de stock  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero definir mínimo, máximo y reposición por 
+producto y almacén, para recibir alertas a tiempo.  
+Validaciones:  
+•  Validación CA-016-1 
+Política consistente. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -016 con los 
+valores indicados. Entonces: Guarda 10.000, 100.000 y 50.000 para ese producto 
+y almacén.  
+•  Validación CA-016-2 
+Mínimo mayor al máximo. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -016 
+con los valores indicados. Entonces: Rechaza con mensaje claro y conserva 
+política anterior.  
+•  Validación CA-016-3 
+Vacío frente a cero. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -016 con los 
+valores indicados. Entonces: El mapper normaliza mínimo a 0; máximo queda sin 
+límite; reposición cero se rechaza.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   32 
+Tabla 25: Historia de Conservar ledger inmutable  
+Historia de Usuario  
+ID: HU-017 Usuario: Dueño 
+Nombre de historia: Conservar ledger inmutable  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero que todo cambio de stock quede en un historial 
+que no se pueda borrar ni editar, para confiar en las cifras.  
+Validaciones:  
+•  Validación CA-017-1 
+Registro de un movimiento. Dado: que se registra un movimiento válido. 
+Cuando: se confirma la operación. Entonces: el sistema lo añade al historial con 
+usuario, fecha, tipo y cantidad.  
+•  Validación CA-017-2 
+Intento de modificar. Dado: que alguien intenta modificar un movimiento ya 
+registrado. Cuando: ejecuta un UPDATE directo en la base de datos. Entonces: 
+la base de datos rechaza el cambio.  
+•  Validación CA-017-3 
+Intento de borrar. Dado: que alguien intenta borrar o vaciar el historial. Cuando: 
+ejecuta DELETE o TRUNCATE. Entonces: la base de datos rechaza la operación; 
+los errores se corrigen con un movimiento nuevo.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   33 
+Tabla 26: Historia de Impedir saldo negativo  
+Historia de Usuario  
+ID: HU-018 Usuario: Dueño 
+Nombre de historia: Impedir saldo negativo  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero que nunca haya stock negativo, para que el 
+sistema refleje la realidad.  
+Validaciones:  
+•  Validación CA-018-1 
+Salida con stock suficiente. Dado: que hay 10 unidades en la ubicación. 
+Cuando: se registra una salida de 4 unidades. Entonces: el sistema deja el saldo 
+en 6 unidades.  
+•  Validación CA-018-2 
+Salida mayor al saldo. Dado: que hay 3 unidades en la ubicación. Cuando: se 
+registra una salida de 5 unidades. Entonces: el sistema rechaza por stock 
+insuficiente y no deja rastro en el historial.  
+•  Validación CA-018-3 
+Vaciar exactamente el saldo. Dado: que hay 5 unidades en la ubicación. 
+Cuando: se registra una salida de 5 unidades. Entonces: el sistema lo permite y 
+el saldo queda en 0.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   34 
+Tabla 27: Historia de Controlar reintentos idempotentes  
+Historia de Usuario  
+ID: HU-019 Usuario: Almacenero  
+Nombre de historia: Controlar reintentos idempotentes  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero que reintentar una operación no la duplique, 
+para no inflar el stock. 
+Validaciones:  
+•  Validación CA-019-1 
+Primer envío. Dado: que la clave de idempotencia es nueva. Cuando: se registra 
+el movimiento. Entonces: el sistema lo registra y actualiza el saldo una vez.  
+•  Validación CA-019-2 
+Reintento del mismo movimiento. Dado: que ya existe un movimiento con esa 
+clave. Cuando: se reenvía exactamente el mismo movimiento. Entonces: el 
+sistema responde con el resultado anterior sin duplicar el stock.  
+•  Validación CA-019-3 
+Clave reutilizada con otros datos. Dado: que la clave pertenece a un 
+movimiento distinto. Cuando: se envía otro movimiento con esa clave. Entonces: 
+el sistema lo rechaza por conflicto de idempotencia.  
+•  Validación CA-019-4 
+Conflicto con mismo UUID y datos distintos. Dado: un movimiento de 10 
+unidades ya registrado con UUID y clave únicos. Cuando: reenvía la misma clave 
+y UUID cambiando cantidad a 99. Entonces: Rechaza el conflicto de carga útil y 
+conserva el resultado original; no basta comparar únicamente el UUID.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   35 
+Tabla 28: Historia de Calcular costo promedio  
+Historia de Usuario  
+ID: HU-020 Usuario: Contador 
+Nombre de historia: Calcular costo promedio  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Contador, quiero costo promedio ponderado, para valorizar el 
+inventario. 
+Validaciones:  
+•  Validación CA-020-1 
+Compra a otro costo. Dado: que hay 10 unidades con costo promedio S/ 2,00. 
+Cuando: se compran 10 unidades a S/ 4,00. Entonces: el sistema calcula el 
+nuevo costo promedio en S/ 3,00.  
+•  Validación CA-020-2 
+Salida al costo vigente. Dado: que el costo promedio es S/ 3,00. Cuando: se 
+vende 5 unidades. Entonces: el sistema valoriza la salida a S/ 3,00 y el promedio 
+no cambia.  
+•  Validación CA-020-3 
+Compra con stock en cero. Dado: que no hay stock del producto. Cuando: se 
+compra a S/ 5,00. Entonces: el sistema toma S/ 5,00 como costo promedio.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   36 
+Tabla 29: Historia de Trasladar stock atómicamente  
+Historia de Usuario  
+ID: HU-021 Usuario: Almacenero  
+Nombre de historia: Trasladar stock atómicamente  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero mover stock entre ubicaciones sin que quede 
+a medias, para no perder mercadería en el camino.  
+Validaciones:  
+•  Validación CA-021-1 
+Transferencia completa. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -021 
+con los valores indicados. Entonces: Quedan 15 y 5; conserva total 20 y un 
+movimiento enlazado.  
+•  Validación CA-021-2 
+Fallo al actualizar destino. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -021 
+con los valores indicados. Entonces: Revierte origen, destino y ledger en la misma 
+transacción.  
+•  Validación CA-021-3 
+Ubicación congelada. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -021 
+con los valores indicados. Entonces: Rechaza el movimiento; solo ajustes de 
+conteo autorizados pueden operar durante congelación.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   37 
+Tabla 30: Historia de Consultar kardex  
+Historia de Usuario  
+ID: HU-022 Usuario: Supervisor 
+Nombre de historia: Consultar kardex  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero el kardex de un producto con saldo inicial, 
+corrido y final, para auditar sus movimientos.  
+Validaciones:  
+•  Validación CA-022-1 
+Kardex y saldos. Dado: un entorno de pruebas aislado y un actor Supervisor, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -022 con los valores 
+indicados. Entonces: Presenta saldo inicial, secuencia determinista, saldo corrido 
+y saldo final 15 en origen.  
+•  Validación CA-022-2 
+Filtro sin movimientos. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -022 
+con los valores indicados. Entonces: Devuelve lista vacía con saldo inicial y final 
+coherentes.  
+•  Validación CA-022-3 
+Paginación y límite. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -022 con los 
+valores indicados. Entonces: No pierde ni duplica movimientos entre páginas; 
+saldo final debe corresponder al filtro completo.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   38 
+Tabla 31: Historia de Conciliar inventario por horario  
+Historia de Usuario  
+ID: HU-023 Usuario: Dueño 
+Nombre de historia: Conciliar inventario por horario  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero una verificación nocturna de que el historial cuadra 
+con los saldos, para detectar errores temprano.  
+Validaciones:  
+•  Validación CA-023-1 
+Reconciliación programada. Dado: un entorno de pruebas aislado y un actor 
+Dueño, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -023 con 
+los valores indicados. Entonces: Ejecuta fn_reconcile_ledger, registra resultado 
+sin diferencias y hora de control.  
+•  Validación CA-023-2 
+Diferencia detectada. Dado: un entorno de pruebas aislado y un actor Dueño, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -023 con los 
+valores indicados. Entonces: Devuelve la diferencia y emite aviso al responsable 
+sin corregirla silenciosamente.  
+•  Validación CA-023-3 
+Fallo del proceso. Dado: un entorno de pruebas aislado y un actor Dueño, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -023 con los valores 
+indicados. Entonces: Registra el fallo y permite reintento sin reportar falsamente 
+un cierre correcto.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   39 
+Tabla 32: Historia de Crear borrador de recepción  
+Historia de Usuario  
+ID: HU-024 Usuario: Almacenero  
+Nombre de historia: Crear borrador de recepción  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero registrar una recepción como borrador con el 
+documento del proveedor, para ordenar lo que llega.  
+Validaciones:  
+•  Validación CA-024-1 
+Borrador válido. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -024 con los 
+valores indicados. Entonces: Crea REC correlativo en DRAFT con líneas; no 
+aumenta stock.  
+•  Validación CA-024-2 
+Documento o referencia inválida. Dado: un entorno de pruebas aislado y un 
+actor Almacenero, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-024 con los valores indicados. Entonces: Rechaza y no crea borrador parcial.  
+•  Validación CA-024-3 
+Factura repetida. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -024 con los 
+valores indicados. Entonces: Rechaza duplicado vigente; permite registrarla de 
+nuevo si la anterior fue anulada.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   40 
+Tabla 33: Historia de Confirmar recepción  
+Historia de Usuario  
+ID: HU-025 Usuario: Almacenero  
+Nombre de historia: Confirmar recepción  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero confirmar la recepción, para que ingrese el 
+stock. 
+Validaciones:  
+•  Validación CA-025-1 
+Confirmación completa. Dado: que el borrador tiene 3 líneas válidas. Cuando: el 
+almacenero confirma la recepción. Entonces: el sistema registra una entrada por 
+línea en una sola operación y el stock aumenta.  
+•  Validación CA-025-2 
+Una línea es rechazada. Dado: que una línea no se puede ingresar (por ejemplo, 
+ubicación desactivada). Cuando: se confirma la recepción. Entonces: el sistema 
+no ingresa ninguna línea y la recepción sigue en borrador.  
+•  Validación CA-025-3 
+Confirmar dos veces. Dado: que la recepción ya está confirmada. Cuando: se 
+vuelve a confirmar. Entonces: el sistema no registra movimientos adicionales.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   41 
+Tabla 34: Historia de Convertir cajas a unidades  
+Historia de Usuario  
+ID: HU-026 Usuario: Almacenero  
+Nombre de historia: Convertir cajas a unidades  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero recibir por caja y que entre en unidades, para 
+no hacer cuentas a mano.  
+Validaciones:  
+•  Validación CA-026-1 
+Cajas a unidad base. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -026 
+con los valores indicados. Entonces: Registra 24.000 UND a costo unitario 2.0000 
+y conserva presentación original.  
+•  Validación CA-026-2 
+Factor no positivo. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -026 con los 
+valores indicados. Entonces: Rechaza la conversión y no confirma la recepción.  
+•  Validación CA-026-3 
+Redondeo monetario. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -026 
+con los valores indicados. Entonces: Costo por unidad base 0.3333 con redondeo 
+half-up a cuatro decimales.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   42 
+Tabla 35: Historia de Anular borrador de recepción  
+Historia de Usuario  
+ID: HU-027 Usuario: Almacenero  
+Nombre de historia: Anular borrador de recepción  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero anular un borrador de recepción, para 
+corregir errores antes de confirmar.  
+Validaciones:  
+•  Validación CA-027-1 
+Anular borrador. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -027 con los 
+valores indicados. Entonces: Cambia a CANCELLED, audita y no genera 
+movimientos.  
+•  Validación CA-027-2 
+Recepción confirmada. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -027 
+con los valores indicados. Entonces: Rechaza; la corrección se tramita mediante 
+ajuste autorizado.  
+•  Validación CA-027-3 
+Modificar líneas del borrador. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -027 
+con los valores indicados. Entonces: Permite reemplazo válido; rechaza lista vacía 
+y mantiene borrador consistente.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   43 
+Tabla 36: Historia de Transferir de bodega a venta  
+Historia de Usuario  
+ID: HU-028 Usuario: Almacenero  
+Nombre de historia: Transferir de bodega a venta  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero transferir de bodega a piso de venta, para 
+reponer los anaqueles.  
+Validaciones:  
+•  Validación CA-028-1 
+Completar transferencia. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -028 
+con los valores indicados. Entonces: Cambia a COMPLETED y enlaza 
+movimiento con saldos 15 y 5.  
+•  Validación CA-028-2 
+Una línea sin stock. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -028 con los 
+valores indicados. Entonces: No mueve ninguna línea y el documento conserva 
+DRAFT.  
+•  Validación CA-028-3 
+Reintento y anulación. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -028 
+con los valores indicados. Entonces: Reintento no duplica; anular una completada 
+se rechaza.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   44 
+Tabla 37: Historia de Solicitar ajuste o merma  
+Historia de Usuario  
+ID: HU-029 Usuario: Almacenero  
+Nombre de historia: Solicitar ajuste o merma  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero solicitar un ajuste o merma explicando el 
+motivo, para corregir el stock con respaldo.  
+Validaciones:  
+•  Validación CA-029-1 
+Solicitud válida. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -029 con los 
+valores indicados. Entonces: Crea solicitud PENDING auditable sin descontar 
+stock.  
+•  Validación CA-029-2 
+Motivo incompleto. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -029 con los 
+valores indicados. Entonces: Rechaza sin crear una solicitud válida aparente.  
+•  Validación CA-029-3 
+Referencias inexistentes. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -029 
+con los valores indicados. Entonces: Rechaza con mensaje de referencia no 
+encontrada y sin movimientos.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   45 
+Tabla 38: Historia de Aprobar o rechazar ajustes  
+Historia de Usuario  
+ID: HU-030 Usuario: Supervisor 
+Nombre de historia: Aprobar o rechazar ajustes  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero aprobar o rechazar solicitudes de ajuste, para 
+controlar las pérdidas.  
+Validaciones:  
+•  Validación CA-030-1 
+Aprobación por otra persona. Dado: que hay una solicitud pendiente hecha por 
+el almacenero y existe stock suficiente. Cuando: el supervisor la aprueba. 
+Entonces: el sistema cambia el stock y guarda quién la pidió y quién la aprobó.  
+•  Validación CA-030-2 
+Autoaprobación. Dado: que quien aprueba es la misma persona que solicitó. 
+Cuando: intenta aprobar su propia solicitud. Entonces: el sistema lo rechaza 
+(separación de funciones).  
+•  Validación CA-030-3 
+Rechazo sin explicación. Dado: que hay una solicitud pendiente. Cuando: el 
+supervisor la rechaza sin escribir el motivo. Entonces: el sistema exige la 
+explicación y no cambia el stock.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   46 
+Tabla 39: Historia de Registrar ajuste directo menor  
+Historia de Usuario  
+ID: HU-031 Usuario: Supervisor 
+Nombre de historia: Registrar ajuste directo menor  
+Prioridad en negocio: Baja (3) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero registrar un ajuste directo pequeño sin esperar 
+aprobación, para agilizar casos menores.  
+Validaciones:  
+•  Validación CA-031-1 
+Ajuste dentro del límite. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -031 
+con los valores indicados. Entonces: Registra ajuste directo trazable solo si la 
+función está habilitada.  
+•  Validación CA-031-2 
+Función deshabilitada o exceso. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -031 
+con los valores indicados. Entonces: Rechaza sin tocar stock.  
+•  Validación CA-031-3 
+Límite exacto. Dado: un entorno de pruebas aislado y un actor Supervisor, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -031 con los valores 
+indicados. Entonces: Permite únicamente si la regla aprobada incluye el límite; 
+conserva autor y motivo.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   47 
+Tabla 40: Historia de Crear conteo y congelar alcance  
+Historia de Usuario  
+ID: HU-032 Usuario: Supervisor 
+Nombre de historia: Crear conteo y congelar alcance  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero iniciar un conteo por zona, ubicación, 
+categoría, clase A o todo el almacén, para verificar el stock real.  
+Validaciones:  
+•  Validación CA-032-1 
+Inicio por alcance. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -032 con los 
+valores indicados. Entonces: Fija stock esperado, crea conteo y congela 
+ubicaciones antes de contar.  
+•  Validación CA-032-2 
+Conteos superpuestos. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -032 
+con los valores indicados. Entonces: Rechaza segundo conteo sin alterar el 
+primero.  
+•  Validación CA-032-3 
+Alcance inválido. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -032 con los 
+valores indicados. Entonces: Rechaza sin congelar ubicaciones ni crear conteo 
+incompleto.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   48 
+Tabla 41: Historia de Contar a ciegas y registrar hallazgos  
+Historia de Usuario  
+ID: HU-033 Usuario: Almacenero  
+Nombre de historia: Contar a ciegas y registrar hallazgos  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero contar sin ver lo esperado y registrar 
+hallazgos, para que el conteo sea honesto.  
+Validaciones:  
+•  Validación CA-033-1 
+Conteo ciego. Dado: un entorno de pruebas aislado y un actor Almacenero, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -033 con los valores 
+indicados. Entonces: Permite guardar 8.000 sin mostrar esperado ni diferencia a 
+ese actor.  
+•  Validación CA-033-2 
+Hallazgo o producto inexistente. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -033 
+con los valores indicados. Entonces: Crea línea con esperado 0 para hallazgo 
+válido; rechaza producto inexistente.  
+•  Validación CA-033-3 
+Reemplazar conteo y cero. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -033 
+con los valores indicados. Entonces: Guarda 0.000 como valor contado; no lo 
+confunde con línea sin contar.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   49 
+Tabla 42: Historia de Recontar diferencias  
+Historia de Usuario  
+ID: HU-034 Usuario: Supervisor 
+Nombre de historia: Recontar diferencias  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero que las diferencias se recuenten antes de 
+cerrar, para descartar errores de conteo.  
+Validaciones:  
+•  Validación CA-034-1 
+Enviar y marcar diferencias. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -034 
+con los valores indicados. Entonces: Envía a REVIEW y solicita reconteo solo de 
+la línea diferente.  
+•  Validación CA-034-2 
+Líneas pendientes. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -034 con los 
+valores indicados. Entonces: Rechaza envío e indica cuántas faltan; mantiene 
+COUNTING.  
+•  Validación CA-034-3 
+Reconteo controlado. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -034 
+con los valores indicados. Entonces: Actualiza y limpia marca solo en línea 
+autorizada; rechaza modificar la no marcada.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   50 
+Tabla 43: Historia de Cerrar conteo y medir exactitud  
+Historia de Usuario  
+ID: HU-035 Usuario: Dueño 
+Nombre de historia: Cerrar conteo y medir exactitud  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero cerrar el conteo aplicando los ajustes y ver la 
+exactitud del inventario, para medir el control.  
+Validaciones:  
+•  Validación CA-035-1 
+Cierre correcto. Dado: que el conteo está en revisión, sin reconteos pendientes, y 
+cierra una persona distinta a la que contó. Cuando: se cierra el conteo. Entonces: 
+el sistema aplica las diferencias como ajustes, descongela las ubicaciones y 
+muestra la exactitud del inventario.  
+•  Validación CA-035-2 
+Cierra quien contó las diferencias. Dado: que quien cierra contó alguna línea 
+con diferencia. Cuando: intenta cerrar el conteo. Entonces: el sistema lo rechaza 
+y pide que cierre otra persona.  
+•  Validación CA-035-3 
+Un ajuste es rechazado. Dado: que el historial rechaza un ajuste (por ejemplo, 
+stock insuficiente). Cuando: se cierra el conteo. Entonces: el sistema no aplica 
+ningún ajuste, el conteo sigue en revisión y las ubicaciones siguen congeladas.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   51 
+Tabla 44: Historia de Anular conteo y descongelar  
+Historia de Usuario  
+ID: HU-036 Usuario: Supervisor 
+Nombre de historia: Anular conteo y descongelar  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero anular un conteo y descongelar, para reanudar 
+la operación si hubo un error.  
+Validaciones:  
+•  Validación CA-036-1 
+Anular conteo activo. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -036 
+con los valores indicados. Entonces: Marca CANCELLED, descongela y no 
+genera ajustes.  
+•  Validación CA-036-2 
+Conteo ya cerrado. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -036 con los 
+valores indicados. Entonces: Rechaza y conserva movimientos de cierre.  
+•  Validación CA-036-3 
+Repetir anulación. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -036 con los 
+valores indicados. Entonces: No repite efectos ni ajustes; las ubicaciones 
+permanecen liberadas.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   52 
+Tabla 45: Historia de Importar ventas del POS  
+Historia de Usuario  
+ID: HU-037 Usuario: Supervisor 
+Nombre de historia: Importar ventas del POS  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero importar las ventas del día del POS, para 
+descontar el piso de venta sin digitar.  
+Validaciones:  
+•  Validación CA-037-1 
+Simulación de ventas. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -037 
+con los valores indicados. Entonces: Agrupa 5 UND; informa proyección 5 y no 
+modifica stock.  
+•  Validación CA-037-2 
+Confirmación con errores por fila. Dado: un entorno de pruebas aislado y un 
+actor Supervisor, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-037 con los valores indicados. Entonces: Aplica solo filas válidas y reporta fila 
+y motivo de las rechazadas; no promete atomicidad global del archivo.  
+•  Validación CA-037-3 
+Insuficiencia de stock. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -037 
+con los valores indicados. Entonces: No descuenta ese producto y añade el error 
+al reporte.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   53 
+Tabla 46: Historia de Descargar errores de importación  
+Historia de Usuario  
+ID: HU-038 Usuario: Supervisor 
+Nombre de historia: Descargar errores de importación  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero un reporte descargable de las filas con error, 
+para corregirlas. 
+Validaciones:  
+•  Validación CA-038-1 
+Descargar errores. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -038 con los 
+valores indicados. Entonces: Descarga CSV con número de fila, código original y 
+explicación legible en Excel.  
+•  Validación CA-038-2 
+Sin errores. Dado: un entorno de pruebas aislado y un actor Supervisor, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -038 con los valores 
+indicados. Entonces: No ofrece un reporte inexistente ni produce excepción al 
+consultar el detalle.  
+•  Validación CA-038-3 
+Control del archivo. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -038 con los 
+valores indicados. Entonces: Deniega acceso al archivo y evita exposición de 
+datos por rutas arbitrarias.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   54 
+Tabla 47: Historia de Impedir confirmar archivo repetido  
+Historia de Usuario  
+ID: HU-039 Usuario: Supervisor 
+Nombre de historia: Impedir confirmar archivo repetido  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero que el mismo archivo no se pueda confirmar 
+dos veces, para no descontar dos veces.  
+Validaciones:  
+•  Validación CA-039-1 
+Primera confirmación. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -039 
+con los valores indicados. Entonces: Confirma y guarda hash y resultado de la 
+importación.  
+•  Validación CA-039-2 
+Archivo idéntico. Dado: un entorno de pruebas aislado y un actor Supervisor, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -039 con los valores 
+indicados. Entonces: Rechaza segundo compromiso sin volver a descontar stock.  
+•  Validación CA-039-3 
+Simular y corregir. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -039 con los 
+valores indicados. Entonces: Permite simulación sin stock y trata el nuevo 
+contenido según su hash, sujeto a validación.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   55 
+Tabla 48: Historia de Generar ubicaciones en lote  
+Historia de Usuario  
+ID: HU-040 Usuario: Supervisor 
+Nombre de historia: Generar ubicaciones en lote  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero generar ubicaciones en lote (zona × pasillo × 
+anaquel × nivel), para armar el almacén rápido.  
+Validaciones:  
+•  Validación CA-040-1 
+Generar lote válido. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -040 con los 
+valores indicados. Entonces: Crea BOD-Z1-P03-A02-N2 con almacén y 
+componentes correctos.  
+•  Validación CA-040-2 
+Lote excesivo o rango inverso. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -040 
+con los valores indicados. Entonces: Rechaza antes de insertar y no genera lote 
+parcial.  
+•  Validación CA-040-3 
+Repetir lote. Dado: un entorno de pruebas aislado y un actor Supervisor, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -040 con los valores 
+indicados. Entonces: Conserva una sola ubicación por código e informa creadas y 
+existentes.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   56 
+Tabla 49: Historia de Administrar estado de ubicación  
+Historia de Usuario  
+ID: HU-041 Usuario: Supervisor 
+Nombre de historia: Administrar estado de ubicación  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero congelar, desactivar y reactivar ubicaciones 
+con reglas, para proteger el stock.  
+Validaciones:  
+•  Validación CA-041-1 
+Congelar y liberar. Dado: un entorno de pruebas aislado y un actor Supervisor, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -041 con los 
+valores indicados. Entonces: Actualiza estados de todo el lote de forma atómica 
+con auditoría.  
+•  Validación CA-041-2 
+Desactivación protegida. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -041 
+con los valores indicados. Entonces: Rechaza desactivación sin perder inventario 
+ni dejar el conteo inconsistente.  
+•  Validación CA-041-3 
+Una ubicación inválida en lote. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -041 
+con los valores indicados. Entonces: No modifica ninguna si una referencia no 
+existe.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   57 
+Tabla 50: Historia de Gestionar proveedores y RUC  
+Historia de Usuario  
+ID: HU-042 Usuario: Comprador 
+Nombre de historia: Gestionar proveedores y RUC  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero gestionar proveedores con RUC válido, para 
+registrar compras correctas.  
+Validaciones:  
+•  Validación CA-042-1 
+RUC válido. Dado: que el RUC tiene 11 dígitos, dígito verificador correcto y no 
+está registrado. Cuando: se guarda el proveedor. Entonces: el sistema lo crea 
+activo y registra la auditoría.  
+•  Validación CA-042-2 
+RUC inválido. Dado: que el dígito verificador es incorrecto o la longitud no es 11. 
+Cuando: se guarda el proveedor. Entonces: el sistema lo rechaza indicando que 
+el RUC no es válido.  
+•  Validación CA-042-3 
+RUC repetido. Dado: que ya existe un proveedor con ese RUC. Cuando: se 
+guarda el proveedor. Entonces: el sistema lo rechaza por duplicado.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   58 
+Tabla 51: Historia de Asociar proveedores preferidos  
+Historia de Usuario  
+ID: HU-043 Usuario: Comprador 
+Nombre de historia: Asociar proveedores preferidos  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero vincular productos con proveedores y marcar 
+uno preferido, para saber a quién pedir.  
+Validaciones:  
+•  Validación CA-043-1 
+Proveedor preferido. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -043 
+con los valores indicados. Entonces: Guarda vínculo y como máximo un 
+proveedor preferido por producto.  
+•  Validación CA-043-2 
+Vínculo inválido. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -043 con los 
+valores indicados. Entonces: Rechaza sin crear vínculo parcial.  
+•  Validación CA-043-3 
+Cambiar preferido. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -043 con los 
+valores indicados. Entonces: B queda preferido, A permanece vinculado y deja de 
+ser preferido.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   59 
+Tabla 52: Historia de Consultar agotados y mínimos  
+Historia de Usuario  
+ID: HU-044 Usuario: Comprador 
+Nombre de historia: Consultar agotados y mínimos  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero ver qué productos están agotados o bajo el 
+mínimo, para pedir a tiempo. 
+Validaciones:  
+•  Validación CA-044-1 
+Estados de stock. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -044 con los 
+valores indicados. Entonces: Clasifica OUT, LOW, NEAR, OK y OVER 
+respectivamente según límites implementados.  
+•  Validación CA-044-2 
+Producto sin política. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -044 
+con los valores indicados. Entonces: No lo clasifica como normal 
+automáticamente; no aparece en la vista de políticas y debe identificarse la falta de 
+configuración.  
+•  Validación CA-044-3 
+Límite cercano y filtros. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -044 
+con los valores indicados. Entonces: Clasifica OK; respeta filtro de almacén y 
+excluye productos inactivos.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   60 
+Tabla 53: Historia de Exportar pedido sugerido  
+Historia de Usuario  
+ID: HU-045 Usuario: Comprador 
+Nombre de historia: Exportar pedido sugerido  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero el pedido sugerido por proveedor en CSV, 
+para ahorrar tiempo al comprar.  
+Validaciones:  
+•  Validación CA-045-1 
+Reposición sugerida. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -045 
+con los valores indicados. Entonces: Sugiere 17 UND y exporta por proveedor con 
+columnas consistentes.  
+•  Validación CA-045-2 
+Sin proveedor o sin demanda. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -045 
+con los valores indicados. Entonces: Muestra Sin proveedor y cobertura no 
+calculable, sin dividir por cero.  
+•  Validación CA-045-3 
+Cantidad configurada supera diferencia. Dado: un entorno de pruebas aislado y 
+un actor Comprador, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-045 con los valores indicados. Entonces: La regla actual propone 30 por 
+GREATEST; documentar y aprobar esta política antes de aceptar el resultado de 
+compra.  
+•  Validación CA-045-4 
+Exportación de pedido solo con permiso. Dado: un usuario con rol lectura, 
+alerts.view y sin reports.export. Cuando: accede a reposición e intenta descargar 
+el pedido sugerido. Entonces: La acción queda oculta y una invocación no 
+autorizada es denegada.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   61 
+Tabla 54: Historia de Consultar tablero del día  
+Historia de Usuario  
+ID: HU-046 Usuario: Dueño 
+Nombre de historia: Consultar tablero del día  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero un tablero con los indicadores del día, para decidir 
+de un vistazo. 
+Validaciones:  
+•  Validación CA-046-1 
+Indicadores coherentes. Dado: un entorno de pruebas aislado y un actor Dueño, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -046 con los 
+valores indicados. Entonces: Tablero muestra las seis métricas y coincide con 
+consultas de sus fuentes.  
+•  Validación CA-046-2 
+Sin datos. Dado: un entorno de pruebas aislado y un actor Dueño, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -046 con los valores 
+indicados. Entonces: Muestra ceros coherentes sin errores ni valores nulos 
+aparentes.  
+•  Validación CA-046-3 
+Acceso por permisos. Dado: un entorno de pruebas aislado y un actor Dueño, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -046 con los 
+valores indicados. Entonces: Solo el usuario autorizado ve los widgets y la tabla 
+de críticos.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   62 
+Tabla 55: Historia de Enviar alertas externas  
+Historia de Usuario  
+ID: HU-047 Usuario: Comprador 
+Nombre de historia: Enviar alertas externas  
+Prioridad en negocio: Baja (3) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero recibir alertas por correo o WhatsApp, para no 
+depender de entrar al sistema.  
+Validaciones:  
+•  Validación CA-047-1 
+Aviso externo programado. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -047 
+con los valores indicados. Entonces: Entrega aviso diario y registra destinatario, 
+hora y resultado. Fuera de la fase inicial.  
+•  Validación CA-047-2 
+Fallo del proveedor externo. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -047 
+con los valores indicados. Entonces: Registra fallo y reintenta con política acotada 
+sin afectar el stock.  
+•  Validación CA-047-3 
+Sin alertas o duplicados. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -047 
+con los valores indicados. Entonces: Evita mensajes vacíos y duplicados según 
+política acordada.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   63 
+Tabla 56: Historia de Consultar inventario valorizado  
+Historia de Usuario  
+ID: HU-048 Usuario: Dueño 
+Nombre de historia: Consultar inventario valorizado  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero el inventario valorizado por producto y almacén, 
+para conocer el capital invertido.  
+Validaciones:  
+•  Validación CA-048-1 
+Valorización correcta. Dado: un entorno de pruebas aislado y un actor Dueño, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -048 con los 
+valores indicados. Entonces: Muestra valor S/20 y total reconciliado por almacén.  
+•  Validación CA-048-2 
+Filtros del reporte. Dado: un entorno de pruebas aislado y un actor Dueño, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -048 con los valores 
+indicados. Entonces: Incluye solo BOD y ajusta totales al filtro.  
+•  Validación CA-048-3 
+Cero y precisión. Dado: un entorno de pruebas aislado y un actor Dueño, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -048 con los valores 
+indicados. Entonces: No crea valor artificial; conserva cálculo decimal y redondea 
+solo presentación monetaria.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   64 
+Tabla 57: Historia de Analizar rotación y clase ABC  
+Historia de Usuario  
+ID: HU-049 Usuario: Comprador 
+Nombre de historia: Analizar rotación y clase ABC  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Comprador, quiero rotación y clase ABC, para decidir qué 
+comprar. 
+Validaciones:  
+•  Validación CA-049-1 
+Clasificación ABC. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -049 con los 
+valores indicados. Entonces: A incluye producto que cruza el 80 por ciento; B 
+hasta cruce de 95; C resto, según acumulado previo.  
+•  Validación CA-049-2 
+Producto sin ventas. Dado: un entorno de pruebas aislado y un actor 
+Comprador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -049 
+con los valores indicados. Entonces: Clasifica SIN_VENTAS; cobertura no 
+calculable y valor vendido cero.  
+•  Validación CA-049-3 
+Empates y período. Dado: un entorno de pruebas aislado y un actor Comprador, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -049 con los 
+valores indicados. Entonces: Orden estable por product_id; excluye ventas fuera 
+del período definido.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   65 
+Tabla 58: Historia de Consultar mermas y responsables  
+Historia de Usuario  
+ID: HU-050 Usuario: Dueño 
+Nombre de historia: Consultar mermas y responsables  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero ver mermas y ajustes negativos con responsable y 
+valor, para controlar pérdidas.  
+Validaciones:  
+•  Validación CA-050-1 
+Merma trazable. Dado: un entorno de pruebas aislado y un actor Dueño, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -050 con los valores 
+indicados. Entonces: Reporte muestra ambos responsables, motivo y valor S/6.  
+•  Validación CA-050-2 
+Filtros y tipos. Dado: un entorno de pruebas aislado y un actor Dueño, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -050 con los valores 
+indicados. Entonces: Incluye solo mermas y ajustes negativos del filtro.  
+•  Validación CA-050-3 
+Sin resultados. Dado: un entorno de pruebas aislado y un actor Dueño, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -050 con los valores 
+indicados. Entonces: Muestra tabla vacía y total cero sin habilitar acciones de 
+escritura.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   66 
+Tabla 59: Historia de Descargar reportes  
+Historia de Usuario  
+ID: HU-051 Usuario: Contador 
+Nombre de historia: Descargar reportes  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Contador, quiero descargar los reportes, para trabajarlos en 
+Excel. 
+Validaciones:  
+•  Validación CA-051-1 
+Exportación CSV. Dado: un entorno de pruebas aislado y un actor Contador, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -051 con los valores 
+indicados. Entonces: Descarga CSV compatible con Excel, encabezados y filas 
+correctamente escapados.  
+•  Validación CA-051-2 
+Permiso de exportación. Dado: un entorno de pruebas aislado y un actor 
+Contador, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -051 
+con los valores indicados. Entonces: Permite ver, deniega descargar y oculta 
+acción de exportación.  
+•  Validación CA-051-3 
+Filtros y formato no implementado. Dado: un entorno de pruebas aislado y un 
+actor Contador, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-051 con los valores indicados. Entonces: CSV respeta alcance definido; PDF 
+no se anuncia como disponible mientras no esté implementado.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   67 
+Tabla 60: Historia de Importar catálogo inicial  
+Historia de Usuario  
+ID: HU-052 Usuario: Supervisor 
+Nombre de historia: Importar catálogo inicial  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Supervisor, quiero cargar el catálogo desde Excel/CSV, para no 
+digitar miles de productos.  
+Validaciones:  
+•  Validación CA-052-1 
+Simular catálogo masivo. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -052 
+con los valores indicados. Entonces: Valida fila a fila y reporta creados previstos 
+sin insertar. Importador aún pendiente.  
+•  Validación CA-052-2 
+Filas inválidas. Dado: un entorno de pruebas aislado y un actor Supervisor, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -052 con los valores 
+indicados. Entonces: Devuelve número de fila y causa; ninguna fila inválida se 
+guarda silenciosamente.  
+•  Validación CA-052-3 
+Confirmar y reintentar. Dado: un entorno de pruebas aislado y un actor 
+Supervisor, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -052 
+con los valores indicados. Entonces: Carga bajo política transaccional e 
+idempotente acordada, con auditoría y resumen.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   68 
+Tabla 61: Historia de Cargar apertura por ubicación  
+Historia de Usuario  
+ID: HU-053 Usuario: Dueño 
+Nombre de historia: Cargar apertura por ubicación  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero cargar el saldo inicial por ubicación, para arrancar 
+con el stock real. 
+Validaciones:  
+•  Validación CA-053-1 
+Carga de apertura. Dado: un entorno de pruebas aislado y un actor Dueño, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -053 con los valores 
+indicados. Entonces: Registra SALDO_INICIAL auditable, saldo10 y costo2 con 
+referencia del lote.  
+•  Validación CA-053-2 
+Apertura repetida. Dado: un entorno de pruebas aislado y un actor Dueño, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -053 con los valores 
+indicados. Entonces: Rechaza segunda apertura aunque cambie la clave; no 
+basta idempotencia de una solicitud.  
+•  Validación CA-053-3 
+Sin autorización o inválido. Dado: un entorno de pruebas aislado y un actor 
+Dueño, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -053 con 
+los valores indicados. Entonces: Deniega por permiso o validación; no añade 
+stock.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   69 
+Tabla 62: Historia de Escanear con cámara móvil  
+Historia de Usuario  
+ID: HU-054 Usuario: Almacenero  
+Nombre de historia: Escanear con cámara móvil  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero escanear con la cámara del celular, para 
+consultar y operar.  
+Validaciones:  
+•  Validación CA-054-1 
+Escaneo en cámara. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -054 
+con los valores indicados. Entonces: Lee código, consulta producto y muestra 
+stock por ubicación. Interfaz de cámara aún pendiente.  
+•  Validación CA-054-2 
+Permiso o contexto inválido. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -054 
+con los valores indicados. Entonces: Informa situación y ofrece entrada manual 
+sin bloquear toda la pantalla.  
+•  Validación CA-054-3 
+Código desconocido. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -054 
+con los valores indicados. Entonces: Muestra no encontrado y permite nuevo 
+intento sin registrar movimientos.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   70 
+Tabla 63: Historia de Operar sin conexión y sincronizar  
+Historia de Usuario  
+ID: HU-055 Usuario: Almacenero  
+Nombre de historia: Operar sin conexión y sincronizar  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero seguir trabajando sin internet y sincronizar 
+después, para no parar la operación.  
+Validaciones:  
+•  Validación CA-055-1 
+Trabajo sin conexión. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -055 
+con los valores indicados. Entonces: Conserva cola local y muestra pendiente sin 
+confirmar stock del servidor. Fuera de fase inicial.  
+•  Validación CA-055-2 
+Reintento de sincronización. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -055 
+con los valores indicados. Entonces: Confirma una sola operación y retira 
+pendiente tras respuesta verificable.  
+•  Validación CA-055-3 
+Conflicto al sincronizar. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -055 
+con los valores indicados. Entonces: Rechaza con conflicto visible y conserva 
+información para resolución, sin stock negativo.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   71 
+Tabla 64: Historia de Capturar conteos y recepciones móviles  
+Historia de Usuario  
+ID: HU-056 Usuario: Almacenero  
+Nombre de historia: Capturar conteos y recepciones móviles  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Almacenero, quiero contar y recibir rápido desde el celular, para 
+ahorrar tiempo. 
+Validaciones:  
+•  Validación CA-056-1 
+Recepción móvil. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -056 con los 
+valores indicados. Entonces: Permite captura rápida, muestra 24 UND y confirma 
+solo tras validación. Fuera de fase inicial.  
+•  Validación CA-056-2 
+Conteo ciego móvil. Dado: un entorno de pruebas aislado y un actor Almacenero, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -056 con los 
+valores indicados. Entonces: Oculta esperado y diferencia; registra 8 con actor y 
+ubicación.  
+•  Validación CA-056-3 
+Entrada inválida o duplicada. Dado: un entorno de pruebas aislado y un actor 
+Almacenero, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -056 
+con los valores indicados. Entonces: Evita duplicación involuntaria y exige 
+resolver producto antes de enviar.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   72 
+Tabla 65: Historia de Verificar límites entre capas  
+Historia de Usuario  
+ID: HU-057 Usuario: Equipo de desarrollo  
+Nombre de historia: Verificar límites entre capas  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Equipo de desarrollo, quiero capas con límites verificados 
+automáticamente, para mantener el código ordenado.  
+Validaciones:  
+•  Validación CA-057-1 
+Dependencias entre capas. Dado: un entorno de pruebas aislado y un actor 
+Equipo de desarrollo, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-057 con los valores indicados. Entonces: Termina con 0 violaciones, 0 errores 
+y 0 dependencias no cubiertas.  
+•  Validación CA-057-2 
+Regla de arquitectura. Dado: un entorno de pruebas aislado y un actor Equipo de 
+desarrollo, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -057 
+con los valores indicados. Entonces: La regla detecta la violación; no se modifica 
+el proyecto entregado para esta prueba.  
+•  Validación CA-057-3 
+Alcance de la regla. Dado: un entorno de pruebas aislado y un actor Equipo de 
+desarrollo, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -057 
+con los valores indicados. Entonces: Documenta que la configuración actual de 
+Deptrac no incluye ese directorio; no afirma cobertura de toda la presentación.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   73 
+Tabla 66: Historia de Verificar análisis estático y formato  
+Historia de Usuario  
+ID: HU-058 Usuario: Equipo de desarrollo  
+Nombre de historia: Verificar análisis estático y formato  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Equipo de desarrollo, quiero análisis estático y formato en cada 
+cambio, para detectar errores temprano.  
+Validaciones:  
+•  Validación CA-058-1 
+Formato consistente. Dado: un entorno de pruebas aislado y un actor Equipo de 
+desarrollo, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -058 
+con los valores indicados. Entonces: Código de salida 0; no modifica archivos 
+durante la auditoría.  
+•  Validación CA-058-2 
+Análisis estático. Dado: un entorno de pruebas aislado y un actor Equipo de 
+desarrollo, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -058 
+con los valores indicados. Entonces: Código de salida0 sin errores; nivel8 es meta 
+posterior, no resultado actual.  
+•  Validación CA-058-3 
+Instalación reproducible. Dado: un entorno de pruebas aislado y un actor Equipo 
+de desarrollo, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -058 
+con los valores indicados. Entonces: Deben incluir Filament y Livewire usados por 
+app; dependencias solo en vendor no satisfacen el criterio.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   74 
+Tabla 67: Historia de Bloquear código roto en CI  
+Historia de Usuario  
+ID: HU-059 Usuario: Equipo de desarrollo  
+Nombre de historia: Bloquear código roto en CI  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Equipo de desarrollo, quiero integración continua que bloquee 
+código roto, para no publicar errores.  
+Validaciones:  
+•  Validación CA-059-1 
+Pipeline en repositorio remoto. Dado: un entorno de pruebas aislado y un actor 
+Equipo de desarrollo, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-059 con los valores indicados. Entonces: Ejecuta calidad, seguridad y 
+cobertura; conserva enlace a ejecución satisfactoria. YAML local solo es 
+configuración.  
+•  Validación CA-059-2 
+Fallo de calidad. Dado: un entorno de pruebas aislado y un actor Equipo de 
+desarrollo, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -059 
+con los valores indicados. Entonces: El job falla y la protección configurada impide 
+integrar; verificar protección de rama por separado.  
+•  Validación CA-059-3 
+Mutación y evidencia. Dado: un entorno de pruebas aislado y un actor Equipo de 
+desarrollo, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -059 
+con los valores indicados. Entonces: Publica resultado medido; documenta que el 
+workflow actual no tiene schedule nocturno aunque lo diga un comentario.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   75 
+Tabla 68: Historia de Respaldar y probar restauración  
+Historia de Usuario  
+ID: HU-060 Usuario: Dueño 
+Nombre de historia: Respaldar y probar restauración  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero respaldo diario de la base y una restauración 
+probada, para no perder datos.  
+Validaciones:  
+•  Validación CA-060-1 
+Respaldo diario. Dado: un entorno de pruebas aislado y un actor Dueño, con los 
+permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -060 con los valores 
+indicados. Entonces: Genera respaldo, verifica integridad y registra fecha sin 
+exponer credenciales.  
+•  Validación CA-060-2 
+Restauración controlada. Dado: un entorno de pruebas aislado y un actor 
+Dueño, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -060 con 
+los valores indicados. Entonces: Restaura y reconcilia tablas y ledger; documenta 
+tiempo y datos recuperados.  
+•  Validación CA-060-3 
+Fallo de respaldo. Dado: un entorno de pruebas aislado y un actor Dueño, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -060 con los valores 
+indicados. Entonces: Notifica fallo y no marca respaldo como correcto.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   76 
+Tabla 69: Historia de Publicar con HTTPS y protección  
+Historia de Usuario  
+ID: HU-061 Usuario: Dueño 
+Nombre de historia: Publicar con HTTPS y protección  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Dueño, quiero el sistema publicado con HTTPS y datos 
+protegidos, para usarlo con seguridad.  
+Validaciones:  
+•  Validación CA-061-1 
+Despliegue seguro. Dado: un entorno de pruebas aislado y un actor Dueño, con 
+los permisos indicados en el escenario y las referencias válidas salvo las entradas 
+negativas. Cuando: ejecuta la operación de la historia HU -061 con los valores 
+indicados. Entonces: Certificado válido, cookies seguras y rutas sensibles 
+protegidas; demo local no equivale a producción.  
+•  Validación CA-061-2 
+Configuración insegura. Dado: un entorno de pruebas aislado y un actor Dueño, 
+con los permisos indicados en el escenario y las referencias válidas salvo las 
+entradas negativas. Cuando: ejecuta la operación de la historia HU -061 con los 
+valores indicados. Entonces: El checklist de publicación bloquea la entrega hasta 
+corregirlas.  
+•  Validación CA-061-3 
+Recuperación del servicio. Dado: un entorno de pruebas aislado y un actor 
+Dueño, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -061 con 
+los valores indicados. Entonces: Servicio recupera salud y conserva datos 
+persistentes; validar aparte TLS público y respaldo.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   77 
+Tabla 70: Historia de Evaluar carga y seguridad  
+Historia de Usuario  
+ID: HU-062 Usuario: Equipo de calidad  
+Nombre de historia: Evaluar carga y seguridad  
+Prioridad en negocio: Media (2) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Equipo de calidad, quiero pruebas de carga (JMeter) y escaneo 
+de seguridad (ZAP), para conocer los límites del sistema.  
+Validaciones:  
+•  Validación CA-062-1 
+Carga reproducible. Dado: un entorno de pruebas aislado y un actor Equipo de 
+calidad, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -062 con 
+los valores indicados. Entonces: Obtiene tiempos y errores con archivo de 
+resultados; compara media con meta1.5s sin inventar p95 ni concurrencia.  
+•  Validación CA-062-2 
+Escaneo de seguridad. Dado: un entorno de pruebas aislado y un actor Equipo 
+de calidad, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -062 
+con los valores indicados. Entonces: Conserva reporte, clasifica hallazgos y 
+documenta correcciones sin escanear terceros.  
+•  Validación CA-062-3 
+Incumplimiento de umbral. Dado: un entorno de pruebas aislado y un actor 
+Equipo de calidad, con los permisos indicados en el escenario y las referencias 
+válidas salvo las entradas negativas. Cuando: ejecuta la operación de la historia 
+HU-062 con los valores indicados. Entonces: Registra incumplimiento, acción y 
+nueva medición; no declara conformidad ISO por ejecutar herramientas.  
+Fuente: Elaboración propia (2026). 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   78 
+Tabla 71: Historia de Evaluar calidad y aplicar SUS  
+Historia de Usuario  
+ID: HU-063 Usuario: Equipo de calidad  
+Nombre de historia: Evaluar calidad y aplicar SUS  
+Prioridad en negocio: Alta (1) Riesgo en desarrollo: Por evaluar 
+Responsable: Equipo de desarrollo; asignación individual pendiente  
+Descripción: Como Equipo de calidad, quiero la evaluación ISO/IEC 25010 y la 
+encuesta SUS, para medir la calidad.  
+Validaciones:  
+•  Validación CA-063-1 
+Evaluación de calidad. Dado: un entorno de pruebas aislado y un actor Equipo 
+de calidad, con los permisos indicados en el escenario y las referencias válidas 
+salvo las entradas negativas. Cuando: ejecuta la operación de la historia HU -063 
+con los valores indicados. Entonces: Cada indicador distingue medido de 
+pendiente; no confunde porcentaje de avance con conformidad.  
+•  Validación CA-063-2 
+Encuesta SUS. Dado: un entorno de pruebas aislado y un actor Equipo de 
+calidad, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -063 con 
+los valores indicados. Entonces: Calcula puntuación0a100 mediante fórmula SUS; 
+meta85 puntos, sin presentarla como porcentaje de satisfacción.  
+•  Validación CA-063-3 
+Datos incompletos. Dado: un entorno de pruebas aislado y un actor Equipo de 
+calidad, con los permisos indicados en el escenario y las referencias válidas salvo 
+las entradas negativas. Cuando: ejecuta la operación de la historia HU -063 con 
+los valores indicados. Entonces: No calcula resultado global como válido y 
+conserva el motivo de no evaluación.  
+Fuente: Elaboración propia (2026). 
+ 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   79 
+5.1.3 Requerimientos no funcionales  
+Código Requisito verificable Evidencia o validación prevista 
+RNF-01 Mantener exactitud decimal de 
+cantidades y costos 
+Cantidades con tres decimales y costos con 
+cuatro; BCMath y pruebas de frontera 
+RNF-02 Evitar saldos negativos y 
+cierres parciales 
+Restricciones SQL, bloqueos y pruebas 
+transaccionales  
+RNF-03 Restringir operaciones y 
+exportación por permisos 
+Matriz de roles y pruebas de autorización en 
+servidor e interfaz 
+RNF-04 Conservar trazabilidad del 
+inventario  
+Ledger sin UPDATE, DELETE ni TRUNCATE y 
+auditoría pertinente 
+RNF-05 Facilitar mantenibilidad  Análisis estático, contratos de dominio y suite 
+de regresión 
+RNF-06 Instalar y operar de forma 
+reproducible 
+Docker Compose, dependencias declaradas y 
+ensayo de instalación limpia  
+RNF-07 Cumplir respuesta media de 
+hasta 1,5 segundos 
+Prueba de carga con volumen, concurrencia y 
+entorno documentados  
+RNF-08 Alcanzar SUS de al menos 85 
+puntos 
+Instrumento y protocolo con usuarios de la 
+empresa 
+RNF-09 Recuperar información ante 
+fallos 
+Política de respaldo y ensayo de restauración 
+aún pendientes  
+ 
+5.1.4 Modelo de interacciones del producto completo  
+Las ocho vistas siguientes cubren las historias de todo el backlog, incluidas las futuras. 
+Cada elemento conserva su ID y las notas del modelo editable remiten a criterios de 
+aceptación. Se utiliza notación rectangular de casos de uso con su icono UML. En la Figura 
+2 los actores se agrupan por rol; en las figuras 3 a 9 se repiten por historia para mantener 
+asociaciones legibles y representan el mismo rol funcional. La autorización definitiva 
+requiere la validación de la matriz de permisos. Los escenarios al ternativos y de error se 
+detallan en el Excel, de modo que los diagramas no sustituyen la especificación de 
+aceptación. 
+La Figura 2 sigue la columna Rol del Excel (HU -003: Dueño; HU -006: Administrador y 
+Supervisor). En las figuras 3 a 9 se conserva el actor dibujado en el modelo editable. Las 
+diferencias respecto del Excel son las siguientes y deben ratificarse con la empresa o 
+corregirse en el modelo antes de la entrega final.  
+Historia Rol en el 
+backlog Actor en el diagrama Figura Situación 
+HU-008 Almacenero Supervisor 3 Propuesta registrada en el Excel; 
+pendiente de ratificación 
+HU-009 Almacenero Supervisor 3 
+Propuesta registrada en el Excel; la 
+consulta sigue disponible al 
+Almacenero 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   80 
+Historia Rol en el 
+backlog Actor en el diagrama Figura Situación 
+HU-010 Comprador Supervisor 3 Propuesta registrada en el Excel; 
+pendiente de ratificación 
+HU-016 Comprador Supervisor 3 Propuesta registrada en el Excel; 
+pendiente de ratificación 
+HU-023 Dueño Supervisor 4 Sin propuesta registrada; por 
+ratificar 
+HU-035 Dueño Supervisor 6 Sin propuesta registrada; por 
+ratificar 
+HU-053 Dueño Administrador 8 Sin propuesta registrada; por 
+ratificar 
+HU-046, HU-048, 
+HU-050 Dueño Gerencia y 
+Contabilidad 7 Denominación de interesado; 
+Gerencia equivale a Dueño 
+HU-051 Contador Gerencia y 
+Contabilidad 7 Denominación de interesado 
+HU-042, HU-043, 
+HU-044, HU-045, 
+HU-047, HU-049 
+Comprador Compras 4 y 7 Compras es el rol de aplicación del 
+Comprador 
+ 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   81 
+Figura 2  Casos de uso objetivo de acceso usuarios y auditoría 
+ 
+Fuente: elaboración a partir de la columna Rol del Product Backlog (Excel). Un actor por rol; el actor de HU-003 y 
+HU-006 sigue el Excel. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   82 
+Figura 3  Casos de uso objetivo de catálogo identificación y políticas 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. 
+«propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   83 
+Figura 4  Casos de uso objetivo de inventario ubicaciones y proveedores 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. 
+«propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   84 
+Figura 5  Casos de uso objetivo de recepciones transferencias y ajustes 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. 
+«propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   85 
+Figura 6  Casos de uso objetivo de conteos e importación de ventas 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. 
+«propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   86 
+Figura 7  Casos de uso objetivo de alertas reposición y reportes 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. 
+«propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   87 
+Figura 8  Casos de uso objetivo de carga inicial y operación móvil 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. 
+«propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   88 
+Figura 9  Casos de uso objetivo de calidad publicación y continuidad 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. 
+«propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   89 
+5.2 Arquitectura del sistema 
+5.2.1 Descripción 
+La implementación corresponde a un monolito modular Laravel. Los siete módulos 
+principales son Iam, Catalog, Inventory, Operations, Locations, Suppliers y Audit. En el 
+conjunto revisado se identificaron 169 clases, interfaces y enumeraciones distribuidas entre 
+Domain, Application e Infrastructure. El panel Filament y Livewire reside en app/Filament; los 
+modelos y políticas de aplicación complementan los módulos.  
+La capa de dominio contiene valores, reglas y contratos. La aplicación coordina casos de 
+uso y transacciones. La infraestructura implementa persistencia, eventos y adaptadores. El 
+panel invoca comportamientos y consulta modelos o vistas de PostgreSQL. Algunas lecturas 
+de Filament acceden directamente a vistas de datos; por ello, el diseño se describe como 
+modular y con puertos en los casos relevantes, sin afirmar una separación absoluta de todas 
+las consultas de presentación.  
+5.2.2 Justificación 
+El monolito modular permite desplegar una sola aplicación y mantener límites de 
+responsabilidad sin introducir la complejidad operativa de servicios distribuidos. Los puertos 
+facilitan probar las reglas con dobles en memoria y verificar por separado la implementación 
+PostgreSQL. El ledger y los saldos se actualizan dentro de transacciones, con bloqueos 
+cuando corresponde, para preservar consistencia durante recepciones, salidas, traslados y 
+conteos. 
+Las funciones futuras se incorporan como contratos de diseño. Se proponen importadores 
+separados de catálogo y apertura, una tarea programada de conciliación, un despachador 
+de alertas y procesos de copia y restauración. El cliente móvil objetivo usa una cola local de 
+pendientes y un servicio de sincronización con validación de conflictos. IndexedDB y esos 
+contratos móviles son decisiones propuestas; no son tablas PostgreSQL ya implementadas 
+ni capacidades verificadas del panel actual.  
+5.2.3 Diagramas UML  
+5.2.3.1 Arquitectura lógica  
+5.2.3.1.1 Diagrama de componentes  
+La vista de componentes relaciona el panel, los servicios de aplicación, el dominio y los 
+adaptadores. El cliente móvil y los servicios pendientes aparecen identificados como 
+propuestos. La dependencia hacia contratos no implica que ya exista un endpoint público 
+para todas las integraciones objetivo.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   90 
+Figura 10  Arquitectura lógica objetivo del WMS completo 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   91 
+5.2.3.1.2 Diagramas de clases  
+Las vistas de clases muestran atributos, visibilidad, operaciones, parámetros, tipos y 
+relaciones relevantes. Las láminas de clases y datos utilizan formato A3 para conservar la 
+legibilidad del detalle; el texto principal mantiene A4. El modelo editable incorpora las 169 
+definiciones extraídas del código y 13 contratos propuestos. Las firmas de constructores 
+extensas se conservan en las notas de los elementos para evitar saturar las figuras. Estas 
+clases propuestas especifican el diseño pendiente y no se in cluyen en los resultados de 
+cobertura del código existente.  
+RegisterMovement coordina la transacción, consulta el ledger, aplica los cambios de saldo y 
+publica el evento. StockLedger define el contrato de persistencia y PostgresStockLedger su 
+adaptación. NewMovement y los valores Quantity y UnitCost encapsulan los datos y 
+precisión del movimiento. Los diagramas de recepción y de movilidad completan los 
+procesos de entrada y la evolución prevista.  
+Las vistas complementarias detallan usuarios y autenticación, catálogo, ubicaciones, 
+proveedores, auditoría, conteos, POS, transferencias, ajustes y continuidad. Sus relaciones 
+proceden de atributos, firmas y adaptadores de las clases del proyecto. Las dos clases de 
+continuidad son propuestas y se identifican como tales.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   92 
+Figura 11  Clases de aplicación y contratos de inventario 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   93 
+Figura 12  Clases de dominio del movimiento y valores decimales 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   94 
+Figura 13  Clases del proceso de recepción 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   95 
+Figura 14  Clases propuestas para importación y conciliación 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   96 
+Figura 15  Clases objetivo del cliente móvil y sincronización 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   97 
+Figura 16  Clases de usuarios roles y creación de cuentas 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   98 
+Figura 17  Clases de contraseñas y control de intentos 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   99 
+Figura 18  Clases de catálogo y generación de SKU 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   100 
+Figura 19  Clases de códigos presentaciones y políticas 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   101 
+Figura 20  Clases de almacenes ubicaciones y estados 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   102 
+Figura 21  Clases de proveedores RUC y asociaciones 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   103 
+Figura 22  Clases de contratos y persistencia de auditoría 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   104 
+Figura 23  Clases de apertura registro y cierre de conteos 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   105 
+Figura 24  Clases de importación de ventas y errores 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   106 
+Figura 25  Clases de transferencias y confirmación 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   107 
+Figura 26  Clases de ajustes solicitud y aprobación 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   108 
+Figura 27  Clases propuestas de respaldo y restauración 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   109 
+5.2.3.1.3 Modelo de datos y reglas de integridad  
+La extracción estructural de la base revisada identificó 46 tablas físicas, incluidas 
+infraestructura y una partición, con 343 columnas y 66 claves foráneas. No se cuentan las 
+vistas como tablas de negocio. El modelo conserva los tipos efectivos con longitud o 
+precisión, las claves primarias, las referencias y la nulabilidad. NN significa no nulo y NULL 
+indica que el campo admite ausencia de valor.  
+El catálogo se relaciona con categorías, marcas, unidades, presentaciones y códigos. El 
+inventario relaciona productos y ubicaciones con movimientos y saldos. Las operaciones 
+disponen de cabeceras y detalles, y los conteos incluyen líneas y el conjunto de ubicaciones 
+afectadas. IAM utiliza usuarios, roles, permisos y tablas de asociación; auditoría, 
+importaciones y alertas conservan registros de soporte. Las figuras se dividen por área para 
+permitir leer los atributos; las referencias que atraviesan áreas s e consultan en el modelo y 
+diccionario adjuntos. 
+El ledger rechaza cambios destructivos mediante triggers. Las restricciones de saldo y las 
+transacciones aportan controles adicionales a las validaciones PHP. Estas defensas se 
+verificaron parcialmente contra wms_test. Las reglas propuestas de unicidad de apertura y 
+conflicto de idempotencia necesitan reforzarse según los resultados del capítulo 6.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   110 
+Figura 28  Modelo de datos de catálogo y códigos 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   111 
+Figura 29  Modelo de datos de almacenes ubicaciones y políticas 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   112 
+Figura 30  Modelo de datos de proveedores y abastecimiento 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   113 
+Figura 31  Modelo de datos de recepciones y documentos de proveedor 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   114 
+Figura 32  Modelo de datos de transferencias y ajustes 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   115 
+Figura 33  Modelo de datos de conteos y alcance de ubicaciones 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   116 
+Figura 34  Modelo de datos de ledger y saldos de inventario 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   117 
+Figura 35  Modelo de datos de usuarios roles y permisos 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   118 
+Figura 36  Modelo de datos de auditoría importaciones y alertas 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   119 
+Figura 37  Modelo de datos de soporte y persistencia operativa 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   120 
+Figura 38  Modelo de datos de infraestructura de colas y caché 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   121 
+5.2.3.1.4 Estados del conteo  
+El conteo distingue COUNTING, REVIEW, CLOSED y CANCELLED. Enviar a revisión exige que todas las líneas tengan valor contado; cero es 
+distinto de no contado. El cierre exige resolver reconteos y cumplir la segregación de funciones cuando corresponde. La aplic ación de ajustes y la 
+liberación de ubicaciones deben ser atómicas. La anulación libera las ubicaciones sin registrar ajustes del cierre.  
+Figura 39  Ciclo de conteo y reglas de cierre 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   122 
+5.2.3.2 Arquitectura física  
+5.2.3.2.1 Diagrama de despliegue  
+Docker Compose define app, worker, scheduler, db, caddy y tools. Caddy recibe las conexiones en los puertos 80 y 443 y se com unica con la aplicación por el puerto interno 8000. PostgreSQL utiliza 5432. El servicio 
+tools ejecuta los controles en contenedores temporales. Las conexiones de prueba deben seleccionar explícitamente wms_test y mantenerse separadas de wms.  
+La instancia en ejecución también exponía app por 8080; esa publicación no figura en la configuración Compose actual inspecci onada y debe reconciliarse en la documentación de instalación. La figura expresa el 
+despliegue objetivo según Compose y distingue los canales móviles, externos y de respaldo todavía propuestos. La presencia de l contenedor scheduler no demuestra que la conciliación nocturna esté programada: 
+routes/console.php no contiene esa programación al corte.  
+Figura 40  Despliegue objetivo y canales del sistema completo 
+ 
+Fuente: elaboración a partir del backlog completo y del código del proyecto, mediante Enterprise Architect. «propuesto» identifica diseño pendiente de implementación. 
+
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   123 
+CAPÍTULO 6 ARTEFACTOS DE PRUEBA  
+6.1 Casos de prueba  
+6.1.1 Pruebas unitarias 
+La suite incluye validación de valores y reglas de catálogo, usuarios, ubicaciones, 
+proveedores, inventario, operaciones y auditoría. Una comprobación adicional cargó las 
+clases reales y utilizó dobles en memoria para ejecutar 41 criterios específicos con sus 
+entradas documentadas. Cuarenta resultaron conformes y uno detectó el conflicto de 
+idempotencia. Los dobles aíslan el dominio; no acreditan persistencia ni criptografía real 
+cuando se sustituye el hasher.  
+6.1.2 Pruebas de integración  
+Las pruebas de integración utilizan Laravel y PostgreSQL. La comprobación adicional de 
+cinco escenarios se ejecutó con APP_ENV=testing y DB_DATABASE=wms_test, después 
+de comprobar el nombre efectivo de la base. Sus inserciones se realizaron dentro de una 
+transacción revertida al finalizar. Se verificaron las protecciones del ledger, la idempotencia, 
+la apertura y la visibilidad de la acción de exportación. El esquema de prueba fue migrado 
+de manera explícita sin ejecutar una reconstrucción destructiva de la  base operativa. 
+6.1.3 Pruebas de sistemas  
+La suite contiene pruebas de recursos, páginas y acciones del panel mediante las 
+herramientas del framework. Esto aporta evidencia de integración de componentes, pero no 
+acredita todos los flujos de navegador, compatibilidad de dispositivos, accesibilidad ni 
+aceptación en la empresa. Las pruebas completas de sistema, cámara y sincronización 
+quedan pendientes según su estado en el backlog.  
+6.1.4 Pruebas de aceptación  
+Se especificaron 191 criterios para las 63 historias. Al corte existen 45 criterios distintos 
+ejecutados mediante las comprobaciones adicionales: 42 conformes y tres no conformes. 
+Hay 119 casos con código o pruebas relacionadas que aún no se ejecutaron con la entrada 
+exacta del nuevo criterio y 27 vinculados con capacidades pendientes de implementar. La 
+prueba de idempotencia aparece en ambos niveles y se cuenta una sola vez en el total de 
+criterios distintos. 
+Criterio Escenario y entrada Resultado observado 
+CA-017-2 Intentar UPDATE sobre el 
+ledger PostgreSQL rechaza la modificación  
+CA-017-3 Intentar DELETE y 
+TRUNCATE CASCADE  PostgreSQL rechaza las operaciones 
+CA-019-4 Repetir UUID y clave 
+cambiando cantidad de 10 a 99 
+Se devuelve duplicado sin advertir el contenido 
+distinto; no conforme  
+CA-053-2 Registrar dos aperturas de 10 
+con identificadores distintos  
+Se obtiene saldo 20,000; no conforme con 
+apertura única  
+CA-045-4 Rol lectura sin reports.export 
+consulta acción de reposición  
+La acción aparece visible; no conforme con el 
+permiso esperado 
+ 
+Los 36 criterios iniciales del Excel se conservaron y se relacionaron con evidencia de 
+dominio o integración según correspondía. La ejecución técnica no constituye aprobación 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   124 
+del usuario final. Las entradas, pasos, responsables técnicos y resultados de cada escenario 
+se consultan en la hoja Criterios de Aceptación; los resultados JSON permiten contrastar los 
+casos ejecutados. 
+6.2 Resultados de pruebas  
+6.2.1 Cobertura de código  
+6.2.1.1 Cobertura de declaraciones  
+La ejecución instrumentada con PCOV registró 1913 líneas ejecutables cubiertas de 1997 
+en app/Modules, equivalentes a 95,79 por ciento. También se registraron 320 de 370 
+métodos cubiertos y 99 de 138 clases cubiertas, según el criterio del generador. El filtro 
+comprende 169 archivos de módulos y excluye el panel, los modelos y las políticas situados 
+fuera de esa ruta; el resultado no se presenta como cobertura de toda la aplicación.  
+6.2.1.2 Cobertura de ramas  
+PCOV no proporcionó medición de ramas para esta ejecución. El valor cero de 
+condicionales en el archivo de cobertura significa ausencia de esa medición, no cobertura de 
+ramas igual a cero ni cobertura completa. Se requiere instrumentación compatible y una 
+ejecución específica para informar el indicador.  
+6.2.1.3 Cobertura de caminos  
+No se realizó una medición de caminos. Las combinaciones de escenarios funcionales y las 
+pruebas de frontera complementan la validación, pero no sustituyen una métrica 
+instrumentada de caminos ni prueban todas las combinaciones posibles de ejecución.  
+6.2.2 Tasa de éxito en pruebas  
+La ejecución ordinaria de Pest obtuvo 253 pruebas aprobadas, 1363 aserciones y ninguna 
+prueba fallida u omitida. Su duración fue de 365,80 segundos. La ejecución con cobertura 
+repitió 253 aprobadas y 1363 aserciones en 353,51 segundos. Estas duraciones 
+corresponden a la suite y no constituyen tiempos de respuesta de la aplicación.  
+La tasa de éxito de la suite existente es 253 de 253, equivalente a 100 por ciento. Para la 
+aceptación adicional, la tasa es 42 de 45, equivalente a 93,33 por ciento de los criterios 
+distintos ejecutados. Los 146 criterios sin ejecución específica se informan por separado y 
+no se excluyen para declarar aceptado el producto completo. La proporción de criterios 
+conformes sobre el total especificado es 42 de 191; este indicador mide verificación 
+documentada y no avance físico del software.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   125 
+6.3 Métricas de calidad 
+6.3.1 Métricas estáticas 
+Control Resultado observado Alcance y límite 
+Laravel Pint 377 archivos conformes Formato del código incluido en la ejecución  
+PHPStan nivel 6  Sin errores Reglas y rutas de la configuración actual  
+Deptrac Cero infracciones y cero no 
+cubiertas; 769 permitidas 
+app/Modules y app/Shared; no cubre toda la 
+presentación real 
+Composer validate Validación sintáctica 
+satisfactoria 
+No demuestra instalación limpia ni resuelve 
+dependencias omitidas  
+ 
+La configuración de Deptrac busca una capa Presentation bajo los módulos, mientras la 
+interfaz real reside en app/Filament. Las pruebas de arquitectura enumeran explícitamente 
+Inventory, Catalog, Iam y Audit. Se recomienda ampliar el alcance a los demás módulos y a 
+las dependencias efectivas del panel antes de presentar el análisis como verificación 
+arquitectónica total. 
+6.3.2 Métricas dinámicas  
+Se dispone de pruebas funcionales e integración y de cobertura de líneas. No se midieron 
+latencia de operaciones con carga, consumo de recursos bajo concurrencia, puntuación 
+SUS, recuperación de respaldos ni seguridad dinámica. Esas mediciones requieren un 
+protocolo con datos, usuarios, entorno, volumen y criterios de salida definidos.  
+6.3.3 Análisis de resultados y conclusiones  
+Los controles automáticos respaldan una base técnica consistente dentro de su alcance. Las 
+comprobaciones adicionales evidencian que una suite aprobada puede omitir escenarios 
+relevantes. D01 exige comparar el contenido de un reintento con el movimiento original; D02 
+exige definir y hacer cumplir la unicidad de la apertura; D03 exige revisar la autorización de 
+la exportación. Estos criterios añadidos deben ratificarse con negocio y convertirse en 
+pruebas de regresión permanentes.  
+El kardex limita la consulta a 500 movimientos sin paginación ni aviso de truncamiento. Las 
+exportaciones revisadas utilizan vistas globales y no trasladan automáticamente los filtros de 
+la tabla. La exactitud de conteo observada trunca 2 de 3 a 66,66 por ciento; la política de 
+presentación debe acordarse. Estos puntos requieren especificación y validación, sin atribuir 
+por defecto un resultado de negocio que el plan no había definido.  
+6.4 Aseguramiento de la calidad en el proyecto  
+6.4.1 Aplicación de ISO 25010 en el aseguramiento de la calidad  
+La matriz vincula requisitos con pruebas y resultados, mientras el plan de calidad relaciona 
+atributos con métricas. La revisión del segundo avance distingue evidencia ejecutada, 
+diseño pendiente y aceptación empresarial. Se deberán incorporar mediciones de operación 
+y usuarios para evaluar el efecto del sistema en el contexto de la empresa.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   126 
+6.4.2 Evaluación de atributos del sistema  
+La funcionalidad cuenta con evidencia automatizada y tres brechas específicas abiertas. La 
+fiabilidad dispone de transacciones y restricciones probadas parcialmente, pero falta verificar 
+restauración. La mantenibilidad cuenta con controles estáticos y cobertura del ámbito 
+modular; la instalación limpia requiere declarar dependencias faltantes. Rendimiento, 
+interacción con usuarios y adaptación móvil permanecen sin evaluación final. Esta 
+evaluación parcial no acredita certificación ISO ni preparación para pr oducción. 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   127 
+CAPÍTULO 7 MANUALES Y CÓDIGO FUENTE  
+7.1 Manual de usuario  
+7.1.1 Guía de instalación 
+El punto de partida verificable es un entorno con Docker Engine y Docker Compose, los 
+servicios de la configuración del proyecto y las variables de conexión correspondientes. 
+Antes de entregar una guía final deben corregirse las dependencias no declaradas, ensayar 
+una instalación limpia y reconciliar los puertos de la instancia con Compose. Las 
+credenciales y datos sensibles no se incorporan al informe.  
+7.1.2 Guía de uso  
+El flujo operativo previsto es acceder con un rol autorizado, mantener el catálogo, preparar 
+ubicaciones, registrar operaciones y consultar saldos, kardex y reportes. Los conteos 
+requieren registrar cada línea, revisar diferencias y cerrar con las guardas establecidas. El 
+manual ilustrado con pasos de navegador y usuarios de la empresa se completará después 
+de validar los permisos y resolver los escenarios no conformes.  
+7.1.3 Resolución de problemas comunes  
+Ante una operación rechazada debe comprobarse el rol, el estado del documento, la 
+disponibilidad y las reglas del producto. No se debe repetir una apertura para corregir un 
+saldo: las correcciones requieren un procedimiento autorizado y trazable. La instalación y la 
+recuperación se ensayarán en un entorno separado antes de intervenir datos operativos.  
+7.2 Código fuente  
+El proyecto se organiza en app/Modules, app/Filament, app/Models, app/Policies, database, 
+tests y archivos de configuración de Docker y calidad. Se entregan las evidencias de esta 
+revisión junto con los modelos; no se declara una publicación remota ni un despliegue 
+productivo como realizados. La documentación final deberá fijar la versión entregada y las 
+instrucciones reproducibles del repositorio.  
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   128 
+CONCLUSIONES Y RECOMENDACIONES 
+El segundo avance dispone de una arquitectura modular y de una suite que aprobó 253 
+pruebas y 1363 aserciones. La cobertura de líneas del ámbito app/Modules supera la meta 
+del plan, aunque no mide interfaz, ramas ni caminos. Las tres no conformidades de 
+aceptación y la instalación no reproducible impiden considerar cerrado el aseguramiento de 
+calidad. 
+El diseño documenta todo el producto previsto en el backlog, incluidas las capacidades 
+futuras. Su separación respecto de los resultados de ejecución evita confundir una 
+propuesta con una función disponible. El Excel concentra la trazabilidad de los 191 criterios 
+y constituye el registro que deberá actualizarse con cada nueva validación.  
+Se recomienda resolver y revalidar D01 a D03, declarar Filament y Livewire en las 
+dependencias, ratificar roles y reglas de apertura con la empresa, completar importadores y 
+automatizaciones y ejecutar la validación completa de interfaz. Después deberán medirse 
+rendimiento, SUS y recuperación, y registrar las revisiones y la aceptación empresarial antes 
+del cierre. 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   129 
+BIBLIOGRAFÍA 
+International Organization for Standardization. (2023). ISO/IEC 25010:2023 Systems and 
+software engineering Product quality model. https://www.iso.org/standard/78176.html  
+Object Management Group. (2017). Unified Modeling Language Version 2.5.1. 
+https://www.omg.org/spec/UML/2.5.1/PDF 
+Schwaber, K., y Sutherland, J. (2020). La Guía Scrum. https://scrumguides.org/scrum -
+guide.html 
+Sparx Systems. (s. f.). UML tutorials. https://sparxsystems.com/resources/tutorials/uml -
+tutorials.html 
+Laravel. (2026). Laravel 13 documentation. https://laravel.com/framework/docs/13.x  
+Filament. (s. f.). Filament 5 documentation. 
+https://filamentphp.com/docs/5.x/introduction/overview  
+Pest. (s. f.). Test coverage. https://pestphp.com/docs/test -coverage 
+PostgreSQL Global Development Group. (s. f.). PostgreSQL 17 Constraints. 
+https://www.postgresql.org/docs/17/ddl-constraints.html 
+Equipo del proyecto. (2026). Informe académico original y Product Backlog WMS Fase 
+Inicial Cronograma. Documentos internos del proyecto.  
+Plan de prácticas preprofesionales PMI Scrum mejorado y Guía docente del plan de 
+prácticas. (s. f.). Materiales de referencia proporcionados para organizar la gestión y las 
+evidencias del proyecto. 
+CITY OFERTAS     Sistema de inventario y almacén     Segundo avance 
+Corte 28 de octubre de 2026   |   130 
+ANEXOS 
+El libro Product_Backlog_WMS_Formato_Docente.xlsx contiene Backlog del Producto, 
+Sprints, Cronograma, Tareas, Sprint 1, Criterios de Aceptación, Indicaciones, Ejemplo y 
+Gestión PMI. Los escenarios de Ejemplo son material orientativo y no resultados del 
+sistema. 
+El paquete de modelos contiene el repositorio editable Diseno_Integral_WMS.eap y las 
+figuras por área. El diccionario de datos conserva las 46 tablas físicas, sus columnas y las 
+66 referencias verificadas. El archivo ERwin contiene el inventario de entidades, atributos y 
+claves primarias. Las relaciones completas se consultan en Enterprise Architect y en el 
+diccionario de datos. 
+El paquete de evidencia conserva los resultados JUnit y de cobertura, las salidas de Pint, 
+PHPStan y Deptrac y los resultados de las comprobaciones adicionales. El Mini Informe de 
+Validación detalla el procedimiento y las limitaciones de los hallazgos. Estos anexos 
+permiten reproducir y ampliar la verificación sin incluir credenciales ni datos operativos de la 
+empresa. 

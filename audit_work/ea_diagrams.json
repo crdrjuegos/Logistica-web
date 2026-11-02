@@ -1,0 +1,1313 @@
+[
+  {
+    "key": "componentes",
+    "title": "Arquitectura lógica por componentes",
+    "type": "Component",
+    "nodes": [
+      {
+        "id": "ui",
+        "name": "Panel administrativo\nFilament 5 y Livewire 4",
+        "kind": "Component",
+        "x": 40,
+        "y": 40,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "cases",
+        "name": "Casos de uso\nCatalog · Iam · Operations",
+        "kind": "Component",
+        "x": 340,
+        "y": 40,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "inv",
+        "name": "Servicio de inventario\nRegisterMovement",
+        "kind": "Component",
+        "x": 340,
+        "y": 240,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "domain",
+        "name": "Dominio y puertos\nStockLedger · Transaction",
+        "kind": "Component",
+        "x": 640,
+        "y": 140,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "infra",
+        "name": "Adaptadores de infraestructura\nEloquent y PostgreSQL",
+        "kind": "Component",
+        "x": 640,
+        "y": 340,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "db",
+        "name": "Persistencia transaccional\nLedger · saldos · auditoría",
+        "kind": "Component",
+        "x": 340,
+        "y": 440,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "auth",
+        "name": "Autenticación y autorización\nPolicies y matriz de permisos",
+        "kind": "Component",
+        "x": 40,
+        "y": 240,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      }
+    ],
+    "edges": [
+      {
+        "a": "ui",
+        "b": "cases",
+        "type": "Dependency",
+        "name": "invoca"
+      },
+      {
+        "a": "ui",
+        "b": "inv",
+        "type": "Dependency",
+        "name": "operaciones"
+      },
+      {
+        "a": "ui",
+        "b": "auth",
+        "type": "Dependency",
+        "name": "control de acceso"
+      },
+      {
+        "a": "cases",
+        "b": "domain",
+        "type": "Dependency",
+        "name": "usa contratos"
+      },
+      {
+        "a": "inv",
+        "b": "domain",
+        "type": "Dependency",
+        "name": "usa contratos"
+      },
+      {
+        "a": "infra",
+        "b": "domain",
+        "type": "Realisation",
+        "name": "implementa puertos"
+      },
+      {
+        "a": "infra",
+        "b": "db",
+        "type": "Dependency",
+        "name": "SQL y transacciones"
+      },
+      {
+        "a": "cases",
+        "b": "inv",
+        "type": "Dependency",
+        "name": "puerto StockMovements"
+      }
+    ]
+  },
+  {
+    "key": "clases",
+    "title": "Clases del núcleo de inventario",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "reg",
+        "name": "RegisterMovement",
+        "kind": "Class",
+        "x": 340,
+        "y": 40,
+        "w": 250,
+        "h": 175,
+        "notes": "app/Modules/Inventory/Application/RegisterMovement.php\n__invoke(NewMovement): MovementRecorded",
+        "attributes": [
+          {
+            "name": "ledger",
+            "type": "StockLedger"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction"
+          },
+          {
+            "name": "events",
+            "type": "EventBus"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "MovementRecorded"
+          }
+        ]
+      },
+      {
+        "id": "new",
+        "name": "NewMovement",
+        "kind": "Class",
+        "x": 40,
+        "y": 40,
+        "w": 230,
+        "h": 175,
+        "notes": "UUID, clave, tipo, producto, origen, destino, cantidad, costo y actor.",
+        "attributes": [
+          {
+            "name": "uuid",
+            "type": "string"
+          },
+          {
+            "name": "idempotencyKey",
+            "type": "string"
+          },
+          {
+            "name": "productId",
+            "type": "int"
+          },
+          {
+            "name": "quantity",
+            "type": "Quantity"
+          },
+          {
+            "name": "unitCost",
+            "type": "UnitCost?"
+          }
+        ],
+        "methods": []
+      },
+      {
+        "id": "ledger",
+        "name": "StockLedger",
+        "kind": "Interface",
+        "x": 680,
+        "y": 40,
+        "w": 230,
+        "h": 175,
+        "notes": "Contrato del ledger: lockProduct, findByIdempotencyKey, append, increase, decrease.",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "lockProduct",
+            "type": "ProductSnapshot?"
+          },
+          {
+            "name": "append",
+            "type": "int"
+          },
+          {
+            "name": "increase",
+            "type": "void"
+          },
+          {
+            "name": "decrease",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "id": "tx",
+        "name": "Transaction",
+        "kind": "Interface",
+        "x": 40,
+        "y": 330,
+        "w": 230,
+        "h": 175,
+        "notes": "run(callable): mixed",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "run",
+            "type": "mixed"
+          }
+        ]
+      },
+      {
+        "id": "pg",
+        "name": "PostgresStockLedger",
+        "kind": "Class",
+        "x": 680,
+        "y": 330,
+        "w": 230,
+        "h": 130,
+        "notes": "Adaptador PostgreSQL. Bloqueos, append y modificación de saldos en transacción.",
+        "attributes": [],
+        "methods": []
+      },
+      {
+        "id": "qty",
+        "name": "Quantity",
+        "kind": "Class",
+        "x": 340,
+        "y": 330,
+        "w": 250,
+        "h": 175,
+        "notes": "value: string de tres decimales; aritmética exacta con BCMath.",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "methods": [
+          {
+            "name": "of",
+            "type": "Quantity"
+          },
+          {
+            "name": "add",
+            "type": "Quantity"
+          },
+          {
+            "name": "subtract",
+            "type": "Quantity"
+          }
+        ]
+      },
+      {
+        "id": "result",
+        "name": "MovementRecorded",
+        "kind": "Class",
+        "x": 340,
+        "y": 620,
+        "w": 250,
+        "h": 175,
+        "notes": "movementId, uuid, duplicate",
+        "attributes": [
+          {
+            "name": "movementId",
+            "type": "int"
+          },
+          {
+            "name": "uuid",
+            "type": "string"
+          },
+          {
+            "name": "duplicate",
+            "type": "bool"
+          }
+        ],
+        "methods": []
+      },
+      {
+        "id": "cost",
+        "name": "UnitCost",
+        "kind": "Class",
+        "x": 680,
+        "y": 620,
+        "w": 230,
+        "h": 175,
+        "notes": "value: string de cuatro decimales.",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "methods": [
+          {
+            "name": "of",
+            "type": "UnitCost"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "a": "reg",
+        "b": "new",
+        "type": "Dependency",
+        "name": "recibe"
+      },
+      {
+        "a": "reg",
+        "b": "ledger",
+        "type": "Dependency",
+        "name": "usa"
+      },
+      {
+        "a": "pg",
+        "b": "ledger",
+        "type": "Realisation",
+        "name": "implementa"
+      },
+      {
+        "a": "reg",
+        "b": "tx",
+        "type": "Dependency",
+        "name": "atomicidad"
+      },
+      {
+        "a": "new",
+        "b": "qty",
+        "type": "Association",
+        "name": "valores"
+      },
+      {
+        "a": "reg",
+        "b": "result",
+        "type": "Dependency",
+        "name": "devuelve"
+      },
+      {
+        "a": "new",
+        "b": "cost",
+        "type": "Dependency",
+        "name": "costo de compra"
+      }
+    ]
+  },
+  {
+    "key": "despliegue",
+    "title": "Despliegue local con Docker Compose",
+    "type": "Deployment",
+    "nodes": [
+      {
+        "id": "browser",
+        "name": "Equipo cliente\nNavegador web",
+        "kind": "Node",
+        "x": 40,
+        "y": 40,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "caddy",
+        "name": "Contenedor caddy\nHTTP 80 y HTTPS 443",
+        "kind": "Node",
+        "x": 340,
+        "y": 40,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "app",
+        "name": "Contenedor app\nFrankenPHP y Laravel Octane",
+        "kind": "Node",
+        "x": 640,
+        "y": 40,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "db",
+        "name": "Contenedor db\nPostgreSQL 17",
+        "kind": "Node",
+        "x": 640,
+        "y": 290,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "worker",
+        "name": "Contenedor worker\nqueue work",
+        "kind": "Node",
+        "x": 40,
+        "y": 290,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "scheduler",
+        "name": "Contenedor scheduler\nschedule work",
+        "kind": "Node",
+        "x": 340,
+        "y": 290,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "tools",
+        "name": "Contenedor temporal tools\nPest · Pint · PHPStan · Deptrac",
+        "kind": "Node",
+        "x": 340,
+        "y": 540,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "volume",
+        "name": "Volumen persistente pgdata\nNo sustituye un respaldo",
+        "kind": "Node",
+        "x": 640,
+        "y": 540,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      }
+    ],
+    "edges": [
+      {
+        "a": "browser",
+        "b": "caddy",
+        "type": "Association",
+        "name": "HTTP o HTTPS"
+      },
+      {
+        "a": "caddy",
+        "b": "app",
+        "type": "Association",
+        "name": "HTTP interno 8000"
+      },
+      {
+        "a": "app",
+        "b": "db",
+        "type": "Association",
+        "name": "SQL TCP 5432"
+      },
+      {
+        "a": "worker",
+        "b": "db",
+        "type": "Association",
+        "name": "trabajos y datos"
+      },
+      {
+        "a": "scheduler",
+        "b": "app",
+        "type": "Dependency",
+        "name": "comandos programados"
+      },
+      {
+        "a": "tools",
+        "b": "db",
+        "type": "Association",
+        "name": "wms_test en pruebas"
+      },
+      {
+        "a": "db",
+        "b": "volume",
+        "type": "Association",
+        "name": "persistencia"
+      }
+    ]
+  },
+  {
+    "key": "casos_uso",
+    "title": "Casos de uso operativos por rol",
+    "type": "Use Case",
+    "nodes": [
+      {
+        "id": "alm",
+        "name": "Almacenero",
+        "kind": "Actor",
+        "x": 20,
+        "y": 80,
+        "w": 100,
+        "h": 150,
+        "notes": ""
+      },
+      {
+        "id": "sup",
+        "name": "Supervisor",
+        "kind": "Actor",
+        "x": 20,
+        "y": 380,
+        "w": 100,
+        "h": 150,
+        "notes": ""
+      },
+      {
+        "id": "rec",
+        "name": "Registrar y confirmar\nrecepción",
+        "kind": "UseCase",
+        "x": 250,
+        "y": 40,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "transfer",
+        "name": "Completar transferencia",
+        "kind": "UseCase",
+        "x": 250,
+        "y": 240,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "req",
+        "name": "Solicitar ajuste o merma",
+        "kind": "UseCase",
+        "x": 250,
+        "y": 440,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "approve",
+        "name": "Aprobar o rechazar\najuste ajeno",
+        "kind": "UseCase",
+        "x": 560,
+        "y": 440,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "count",
+        "name": "Iniciar revisar y cerrar\nconteo",
+        "kind": "UseCase",
+        "x": 560,
+        "y": 240,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "blind",
+        "name": "Registrar conteo ciego",
+        "kind": "UseCase",
+        "x": 560,
+        "y": 40,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      }
+    ],
+    "edges": [
+      {
+        "a": "alm",
+        "b": "rec",
+        "type": "Association",
+        "name": ""
+      },
+      {
+        "a": "alm",
+        "b": "transfer",
+        "type": "Association",
+        "name": ""
+      },
+      {
+        "a": "alm",
+        "b": "req",
+        "type": "Association",
+        "name": ""
+      },
+      {
+        "a": "alm",
+        "b": "blind",
+        "type": "Association",
+        "name": ""
+      },
+      {
+        "a": "sup",
+        "b": "approve",
+        "type": "Association",
+        "name": ""
+      },
+      {
+        "a": "sup",
+        "b": "count",
+        "type": "Association",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "key": "estados_conteo",
+    "title": "Estados y controles del conteo físico",
+    "type": "Statechart",
+    "nodes": [
+      {
+        "id": "counting",
+        "name": "COUNTING\nUbicaciones congeladas",
+        "kind": "State",
+        "x": 40,
+        "y": 100,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "review",
+        "name": "REVIEW\nReconteos de diferencias",
+        "kind": "State",
+        "x": 340,
+        "y": 100,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "closed",
+        "name": "CLOSED\nAjustes y liberación atómicos",
+        "kind": "State",
+        "x": 640,
+        "y": 100,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "cancelled",
+        "name": "CANCELLED\nLibera sin ajustar",
+        "kind": "State",
+        "x": 340,
+        "y": 360,
+        "w": 220,
+        "h": 100,
+        "notes": ""
+      },
+      {
+        "id": "rules",
+        "name": "Reglas\nSin líneas pendientes\nCierra otra persona si hubo diferencias\nFallo revierte cierre",
+        "kind": "Note",
+        "x": 640,
+        "y": 340,
+        "w": 260,
+        "h": 150,
+        "notes": ""
+      }
+    ],
+    "edges": [
+      {
+        "a": "counting",
+        "b": "review",
+        "type": "StateFlow",
+        "name": "enviar todas las líneas"
+      },
+      {
+        "a": "review",
+        "b": "closed",
+        "type": "StateFlow",
+        "name": "sin reconteos pendientes"
+      },
+      {
+        "a": "counting",
+        "b": "cancelled",
+        "type": "StateFlow",
+        "name": "anular"
+      },
+      {
+        "a": "review",
+        "b": "cancelled",
+        "type": "StateFlow",
+        "name": "anular"
+      }
+    ]
+  },
+  {
+    "key": "er_catalogo",
+    "title": "Modelo de datos del catálogo",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "categories",
+        "name": "categories",
+        "kind": "Class",
+        "x": 40,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "parent_id",
+            "type": "bigint"
+          },
+          {
+            "name": "name",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "units",
+        "name": "units",
+        "kind": "Class",
+        "x": 340,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "smallint"
+          },
+          {
+            "name": "name",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "products",
+        "name": "products",
+        "kind": "Class",
+        "x": 640,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "sku",
+            "type": "character varying"
+          },
+          {
+            "name": "name",
+            "type": "character varying"
+          },
+          {
+            "name": "base_unit_id",
+            "type": "smallint"
+          },
+          {
+            "name": "cost_avg",
+            "type": "numeric"
+          },
+          {
+            "name": "status",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "product_units",
+        "name": "product_units",
+        "kind": "Class",
+        "x": 940,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "product_id",
+            "type": "bigint"
+          },
+          {
+            "name": "unit_id",
+            "type": "smallint"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "product_barcodes",
+        "name": "product_barcodes",
+        "kind": "Class",
+        "x": 40,
+        "y": 430,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "product_id",
+            "type": "bigint"
+          },
+          {
+            "name": "barcode",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "suppliers",
+        "name": "suppliers",
+        "kind": "Class",
+        "x": 340,
+        "y": 430,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "ruc",
+            "type": "character"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "product_suppliers",
+        "name": "product_suppliers",
+        "kind": "Class",
+        "x": 640,
+        "y": 430,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "product_id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "supplier_id {PK}",
+            "type": "bigint"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      }
+    ],
+    "edges": [
+      {
+        "a": "categories",
+        "b": "categories",
+        "type": "Association",
+        "name": "parent_id"
+      },
+      {
+        "a": "products",
+        "b": "categories",
+        "type": "Association",
+        "name": "category_id"
+      },
+      {
+        "a": "products",
+        "b": "units",
+        "type": "Association",
+        "name": "base_unit_id"
+      },
+      {
+        "a": "product_units",
+        "b": "products",
+        "type": "Association",
+        "name": "product_id"
+      },
+      {
+        "a": "product_units",
+        "b": "units",
+        "type": "Association",
+        "name": "unit_id"
+      },
+      {
+        "a": "product_barcodes",
+        "b": "products",
+        "type": "Association",
+        "name": "product_id"
+      },
+      {
+        "a": "product_barcodes",
+        "b": "product_units",
+        "type": "Association",
+        "name": "presentation_id"
+      },
+      {
+        "a": "product_suppliers",
+        "b": "products",
+        "type": "Association",
+        "name": "product_id"
+      },
+      {
+        "a": "product_suppliers",
+        "b": "suppliers",
+        "type": "Association",
+        "name": "supplier_id"
+      }
+    ]
+  },
+  {
+    "key": "er_inventario",
+    "title": "Modelo de datos del inventario",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "warehouses",
+        "name": "warehouses",
+        "kind": "Class",
+        "x": 40,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "name",
+            "type": "character varying"
+          },
+          {
+            "name": "type",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "locations",
+        "name": "locations",
+        "kind": "Class",
+        "x": 340,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "warehouse_id",
+            "type": "bigint"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "products",
+        "name": "products",
+        "kind": "Class",
+        "x": 640,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "sku",
+            "type": "character varying"
+          },
+          {
+            "name": "name",
+            "type": "character varying"
+          },
+          {
+            "name": "base_unit_id",
+            "type": "smallint"
+          },
+          {
+            "name": "cost_avg",
+            "type": "numeric"
+          },
+          {
+            "name": "status",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "stock_balances",
+        "name": "stock_balances",
+        "kind": "Class",
+        "x": 940,
+        "y": 40,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "product_id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "location_id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "quantity",
+            "type": "numeric"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "stock_movements",
+        "name": "stock_movements",
+        "kind": "Class",
+        "x": 40,
+        "y": 430,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "type",
+            "type": "character varying"
+          },
+          {
+            "name": "product_id",
+            "type": "bigint"
+          },
+          {
+            "name": "from_location_id",
+            "type": "bigint"
+          },
+          {
+            "name": "to_location_id",
+            "type": "bigint"
+          },
+          {
+            "name": "quantity",
+            "type": "numeric"
+          },
+          {
+            "name": "user_id",
+            "type": "bigint"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "users",
+        "name": "users",
+        "kind": "Class",
+        "x": 340,
+        "y": 430,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "name",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "stock_counts",
+        "name": "stock_counts",
+        "kind": "Class",
+        "x": 640,
+        "y": 430,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "warehouse_id",
+            "type": "bigint"
+          },
+          {
+            "name": "status",
+            "type": "character varying"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      },
+      {
+        "id": "stock_count_lines",
+        "name": "stock_count_lines",
+        "kind": "Class",
+        "x": 940,
+        "y": 430,
+        "w": 245,
+        "h": 265,
+        "notes": "Tabla PostgreSQL. Se muestran campos principales. La estructura completa está en el archivo ERwin.",
+        "attributes": [
+          {
+            "name": "id {PK}",
+            "type": "bigint"
+          },
+          {
+            "name": "count_id",
+            "type": "bigint"
+          },
+          {
+            "name": "product_id",
+            "type": "bigint"
+          },
+          {
+            "name": "location_id",
+            "type": "bigint"
+          },
+          {
+            "name": "expected_qty",
+            "type": "numeric"
+          },
+          {
+            "name": "counted_qty",
+            "type": "numeric"
+          }
+        ],
+        "methods": [],
+        "stereotype": "table"
+      }
+    ],
+    "edges": [
+      {
+        "a": "users",
+        "b": "warehouses",
+        "type": "Association",
+        "name": "default_warehouse_id"
+      },
+      {
+        "a": "locations",
+        "b": "warehouses",
+        "type": "Association",
+        "name": "warehouse_id"
+      },
+      {
+        "a": "products",
+        "b": "users",
+        "type": "Association",
+        "name": "created_by"
+      },
+      {
+        "a": "stock_movements",
+        "b": "products",
+        "type": "Association",
+        "name": "product_id"
+      },
+      {
+        "a": "stock_movements",
+        "b": "locations",
+        "type": "Association",
+        "name": "from_location_id"
+      },
+      {
+        "a": "stock_movements",
+        "b": "locations",
+        "type": "Association",
+        "name": "to_location_id"
+      },
+      {
+        "a": "stock_movements",
+        "b": "users",
+        "type": "Association",
+        "name": "user_id"
+      },
+      {
+        "a": "stock_movements",
+        "b": "users",
+        "type": "Association",
+        "name": "approved_by"
+      },
+      {
+        "a": "stock_balances",
+        "b": "products",
+        "type": "Association",
+        "name": "product_id"
+      },
+      {
+        "a": "stock_balances",
+        "b": "locations",
+        "type": "Association",
+        "name": "location_id"
+      },
+      {
+        "a": "stock_counts",
+        "b": "warehouses",
+        "type": "Association",
+        "name": "warehouse_id"
+      },
+      {
+        "a": "stock_counts",
+        "b": "users",
+        "type": "Association",
+        "name": "opened_by"
+      },
+      {
+        "a": "stock_counts",
+        "b": "users",
+        "type": "Association",
+        "name": "closed_by"
+      },
+      {
+        "a": "stock_count_lines",
+        "b": "stock_counts",
+        "type": "Association",
+        "name": "count_id"
+      },
+      {
+        "a": "stock_count_lines",
+        "b": "products",
+        "type": "Association",
+        "name": "product_id"
+      },
+      {
+        "a": "stock_count_lines",
+        "b": "locations",
+        "type": "Association",
+        "name": "location_id"
+      },
+      {
+        "a": "stock_count_lines",
+        "b": "users",
+        "type": "Association",
+        "name": "counted_by"
+      }
+    ]
+  }
+]

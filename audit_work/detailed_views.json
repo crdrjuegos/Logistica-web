@@ -1,0 +1,1946 @@
+[
+  {
+    "key": "clases_inventario",
+    "title": "Clases de aplicación y contratos de inventario",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Inventory\\Application\\RegisterMovement",
+        "name": "RegisterMovement",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Application/RegisterMovement.php",
+        "attributes": [
+          {
+            "name": "ledger",
+            "type": "StockLedger",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "events",
+            "type": "EventBus",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "MovementRecorded",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "movement",
+                "type": "NewMovement"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Inventory/Application/RegisterMovement.php\nFirma del constructor __construct(ledger: StockLedger, transaction: Transaction, events: EventBus)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 130,
+        "w": 420,
+        "x": 40,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\StockLedger",
+        "name": "StockLedger",
+        "kind": "Interface",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/StockLedger.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "lockProduct",
+            "type": "?ProductSnapshot",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "locationStates",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationIds",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "findByIdempotencyKey",
+            "type": "?RecordedMovement",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "key",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lockBalance",
+            "type": "Quantity",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "totalQuantity",
+            "type": "Quantity",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "append",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "movement",
+                "type": "NewMovement"
+              },
+              {
+                "name": "recordedCost",
+                "type": "UnitCost"
+              }
+            ]
+          },
+          {
+            "name": "increase",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "quantity",
+                "type": "Quantity"
+              }
+            ]
+          },
+          {
+            "name": "decrease",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "quantity",
+                "type": "Quantity"
+              }
+            ]
+          },
+          {
+            "name": "updateProductCost",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "average",
+                "type": "UnitCost"
+              },
+              {
+                "name": "lastCost",
+                "type": "?UnitCost"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Inventory/Domain/StockLedger.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 268,
+        "w": 420,
+        "x": 580,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Infrastructure\\PostgresStockLedger",
+        "name": "PostgresStockLedger",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Infrastructure/PostgresStockLedger.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "lockProduct",
+            "type": "?ProductSnapshot",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "locationStates",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "locationIds",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "findByIdempotencyKey",
+            "type": "?RecordedMovement",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "key",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "lockBalance",
+            "type": "Quantity",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "totalQuantity",
+            "type": "Quantity",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "append",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "movement",
+                "type": "NewMovement"
+              },
+              {
+                "name": "recordedCost",
+                "type": "UnitCost"
+              }
+            ]
+          },
+          {
+            "name": "increase",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "quantity",
+                "type": "Quantity"
+              }
+            ]
+          },
+          {
+            "name": "decrease",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "quantity",
+                "type": "Quantity"
+              }
+            ]
+          },
+          {
+            "name": "updateProductCost",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "average",
+                "type": "UnitCost"
+              },
+              {
+                "name": "lastCost",
+                "type": "?UnitCost"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Inventory/Infrastructure/PostgresStockLedger.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 268,
+        "w": 420,
+        "x": 1120,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\Transaction",
+        "name": "Transaction",
+        "kind": "Interface",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/Transaction.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "run",
+            "type": "mixed",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "callback",
+                "type": "callable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Inventory/Domain/Transaction.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 76,
+        "w": 420,
+        "x": 40,
+        "y": 470
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\EventBus",
+        "name": "EventBus",
+        "kind": "Interface",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/EventBus.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "publish",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "event",
+                "type": "object"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Inventory/Domain/EventBus.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 76,
+        "w": 420,
+        "x": 580,
+        "y": 470
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Application\\MovementRecorded",
+        "name": "MovementRecorded",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Application/MovementRecorded.php",
+        "attributes": [
+          {
+            "name": "movementId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "duplicate",
+            "type": "bool",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Inventory/Application/MovementRecorded.php\nFirma del constructor __construct(movementId: int, uuid: string, duplicate: bool)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 106,
+        "w": 420,
+        "x": 1120,
+        "y": 470
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Inventory\\Application\\RegisterMovement",
+        "b": "App\\Modules\\Inventory\\Domain\\StockLedger",
+        "type": "Dependency",
+        "name": "persistencia"
+      },
+      {
+        "a": "App\\Modules\\Inventory\\Infrastructure\\PostgresStockLedger",
+        "b": "App\\Modules\\Inventory\\Domain\\StockLedger",
+        "type": "Realisation",
+        "name": "implementa"
+      },
+      {
+        "a": "App\\Modules\\Inventory\\Application\\RegisterMovement",
+        "b": "App\\Modules\\Inventory\\Domain\\Transaction",
+        "type": "Dependency",
+        "name": "atomicidad"
+      },
+      {
+        "a": "App\\Modules\\Inventory\\Application\\RegisterMovement",
+        "b": "App\\Modules\\Inventory\\Domain\\EventBus",
+        "type": "Dependency",
+        "name": "evento"
+      },
+      {
+        "a": "App\\Modules\\Inventory\\Application\\RegisterMovement",
+        "b": "App\\Modules\\Inventory\\Application\\MovementRecorded",
+        "type": "Dependency",
+        "name": "resultado"
+      }
+    ],
+    "layout": true
+  },
+  {
+    "key": "clases_movimiento",
+    "title": "Clases de dominio del movimiento y valores decimales",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\NewMovement",
+        "name": "NewMovement",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/NewMovement.php",
+        "attributes": [
+          {
+            "name": "uuid",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "idempotencyKey",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "type",
+            "type": "MovementType",
+            "visibility": "Public"
+          },
+          {
+            "name": "productId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "fromLocationId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "toLocationId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "quantity",
+            "type": "Quantity",
+            "visibility": "Public"
+          },
+          {
+            "name": "userId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "unitCost",
+            "type": "?UnitCost",
+            "visibility": "Public"
+          },
+          {
+            "name": "reasonId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "presentationId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "presentationQty",
+            "type": "?Quantity",
+            "visibility": "Public"
+          },
+          {
+            "name": "sourceType",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "sourceId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "documentRef",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "notes",
+            "type": "?string",
+            "visibility": "Public"
+          },
+          {
+            "name": "approvedBy",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "clientCreatedAt",
+            "type": "DateTimeImmutable",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "allowsFrozenLocations",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "locationIds",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Inventory/Domain/NewMovement.php\nFirma del constructor __construct(uuid: string, idempotencyKey: string, type: MovementType, productId: int, fromLocationId: ?int, toLocationId: ?int, quantity: Quantity, userId: int, unitCost: ?UnitCost, reasonId: ?int, presentationId: ?int, presentationQty: ?Quantity, sourceType: ?string, sourceId: ?int, documentRef: ?string, notes: ?string, approvedBy: ?int, clientCreatedAt: DateTimeImmutable)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 424,
+        "w": 420,
+        "x": 40,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\Quantity",
+        "name": "Quantity",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/Quantity.php",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "of",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string|int"
+              }
+            ]
+          },
+          {
+            "name": "zero",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": []
+          },
+          {
+            "name": "add",
+            "type": "self",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "other",
+                "type": "self"
+              }
+            ]
+          },
+          {
+            "name": "subtract",
+            "type": "self",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "other",
+                "type": "self"
+              }
+            ]
+          },
+          {
+            "name": "isPositive",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "lessThan",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "other",
+                "type": "self"
+              }
+            ]
+          },
+          {
+            "name": "greaterThanOrEqual",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "other",
+                "type": "self"
+              }
+            ]
+          },
+          {
+            "name": "equals",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "other",
+                "type": "self"
+              }
+            ]
+          },
+          {
+            "name": "__toString",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Inventory/Domain/Quantity.php\nFirma del constructor __construct(value: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 286,
+        "w": 420,
+        "x": 580,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\UnitCost",
+        "name": "UnitCost",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/UnitCost.php",
+        "attributes": [
+          {
+            "name": "value",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "of",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "value",
+                "type": "string|int"
+              }
+            ]
+          },
+          {
+            "name": "zero",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": []
+          },
+          {
+            "name": "equals",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "other",
+                "type": "self"
+              }
+            ]
+          },
+          {
+            "name": "__toString",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Inventory/Domain/UnitCost.php\nFirma del constructor __construct(value: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 166,
+        "w": 420,
+        "x": 1120,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\MovementType",
+        "name": "MovementType",
+        "kind": "Enumeration",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/MovementType.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "isEntry",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "isExit",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "isTransfer",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "requiresReason",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "requiresCost",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          },
+          {
+            "name": "requiredPermission",
+            "type": "string",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Inventory/Domain/MovementType.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 196,
+        "w": 420,
+        "x": 40,
+        "y": 470
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\RecordedMovement",
+        "name": "RecordedMovement",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/RecordedMovement.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Inventory/Domain/RecordedMovement.php\nFirma del constructor __construct(id: int, uuid: string)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 88,
+        "w": 420,
+        "x": 580,
+        "y": 470
+      },
+      {
+        "id": "App\\Modules\\Inventory\\Domain\\ProductSnapshot",
+        "name": "ProductSnapshot",
+        "kind": "Class",
+        "module": "Inventory",
+        "path": "app/Modules/Inventory/Domain/ProductSnapshot.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "costAvg",
+            "type": "UnitCost",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Inventory/Domain/ProductSnapshot.php\nFirma del constructor __construct(id: int, costAvg: UnitCost)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 88,
+        "w": 420,
+        "x": 1120,
+        "y": 470
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Inventory\\Domain\\NewMovement",
+        "b": "App\\Modules\\Inventory\\Domain\\Quantity",
+        "type": "Association",
+        "name": "quantity y presentationQty"
+      },
+      {
+        "a": "App\\Modules\\Inventory\\Domain\\NewMovement",
+        "b": "App\\Modules\\Inventory\\Domain\\UnitCost",
+        "type": "Association",
+        "name": "unitCost"
+      },
+      {
+        "a": "App\\Modules\\Inventory\\Domain\\NewMovement",
+        "b": "App\\Modules\\Inventory\\Domain\\MovementType",
+        "type": "Association",
+        "name": "type"
+      },
+      {
+        "a": "App\\Modules\\Inventory\\Domain\\ProductSnapshot",
+        "b": "App\\Modules\\Inventory\\Domain\\UnitCost",
+        "type": "Association",
+        "name": "costAvg"
+      }
+    ],
+    "layout": true
+  },
+  {
+    "key": "clases_recepciones",
+    "title": "Clases del proceso de recepción",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "App\\Modules\\Operations\\Application\\CreateReceiptDraft",
+        "name": "CreateReceiptDraft",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/CreateReceiptDraft.php",
+        "attributes": [
+          {
+            "name": "receipts",
+            "type": "ReceiptRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "lookup",
+            "type": "OperationsLookup",
+            "visibility": "Private"
+          },
+          {
+            "name": "numbers",
+            "type": "DocumentNumbers",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "receipt",
+                "type": "NewReceipt"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/CreateReceiptDraft.php\nFirma del constructor __construct(receipts: ReceiptRepository, lookup: OperationsLookup, numbers: DocumentNumbers, transaction: Transaction, audit: AuditTrail, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 184,
+        "w": 420,
+        "x": 40,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Operations\\Application\\ConfirmReceipt",
+        "name": "ConfirmReceipt",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Application/ConfirmReceipt.php",
+        "attributes": [
+          {
+            "name": "receipts",
+            "type": "ReceiptRepository",
+            "visibility": "Private"
+          },
+          {
+            "name": "movements",
+            "type": "StockMovements",
+            "visibility": "Private"
+          },
+          {
+            "name": "transaction",
+            "type": "Transaction",
+            "visibility": "Private"
+          },
+          {
+            "name": "audit",
+            "type": "AuditTrail",
+            "visibility": "Private"
+          },
+          {
+            "name": "clock",
+            "type": "Clock",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "__invoke",
+            "type": "array",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "receiptId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Application/ConfirmReceipt.php\nFirma del constructor __construct(receipts: ReceiptRepository, movements: StockMovements, transaction: Transaction, audit: AuditTrail, clock: Clock)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 166,
+        "w": 420,
+        "x": 580,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\ReceiptRepository",
+        "name": "ReceiptRepository",
+        "kind": "Interface",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/ReceiptRepository.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "activeDocumentExists",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "supplierId",
+                "type": "int"
+              },
+              {
+                "name": "type",
+                "type": "DocumentType"
+              },
+              {
+                "name": "number",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "insertReceipt",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "receipt",
+                "type": "NewReceipt"
+              },
+              {
+                "name": "code",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "replaceReceiptItems",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "receiptId",
+                "type": "int"
+              },
+              {
+                "name": "lines",
+                "type": "array"
+              }
+            ]
+          },
+          {
+            "name": "lockReceipt",
+            "type": "?ReceiptRecord",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setItemMovement",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "itemId",
+                "type": "int"
+              },
+              {
+                "name": "movementId",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "setReceiptStatus",
+            "type": "void",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "id",
+                "type": "int"
+              },
+              {
+                "name": "status",
+                "type": "ReceiptStatus"
+              },
+              {
+                "name": "confirmedAt",
+                "type": "DateTimeImmutable"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/ReceiptRepository.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 196,
+        "w": 420,
+        "x": 1120,
+        "y": 40
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\StockMovements",
+        "name": "StockMovements",
+        "kind": "Interface",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/StockMovements.php",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "register",
+            "type": "int",
+            "visibility": "Public",
+            "static": false,
+            "parameters": [
+              {
+                "name": "request",
+                "type": "MovementRequest"
+              }
+            ]
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/StockMovements.php\nFirma del constructor \nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 76,
+        "w": 420,
+        "x": 40,
+        "y": 470
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\ReceiptLine",
+        "name": "ReceiptLine",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/ReceiptLine.php",
+        "attributes": [
+          {
+            "name": "productId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "locationId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "quantity",
+            "type": "Quantity",
+            "visibility": "Public"
+          },
+          {
+            "name": "unitCost",
+            "type": "UnitCost",
+            "visibility": "Public"
+          },
+          {
+            "name": "expected",
+            "type": "?Quantity",
+            "visibility": "Public"
+          },
+          {
+            "name": "presentationId",
+            "type": "?int",
+            "visibility": "Public"
+          },
+          {
+            "name": "presentationQty",
+            "type": "?Quantity",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [
+          {
+            "name": "fromPresentation",
+            "type": "self",
+            "visibility": "Public",
+            "static": true,
+            "parameters": [
+              {
+                "name": "productId",
+                "type": "int"
+              },
+              {
+                "name": "locationId",
+                "type": "int"
+              },
+              {
+                "name": "presentationId",
+                "type": "int"
+              },
+              {
+                "name": "presentationQty",
+                "type": "Quantity"
+              },
+              {
+                "name": "factor",
+                "type": "string"
+              },
+              {
+                "name": "costPerPresentation",
+                "type": "string"
+              },
+              {
+                "name": "expectedPresentation",
+                "type": "?Quantity"
+              }
+            ]
+          },
+          {
+            "name": "hasDiscrepancy",
+            "type": "bool",
+            "visibility": "Public",
+            "static": false,
+            "parameters": []
+          }
+        ],
+        "notes": "app/Modules/Operations/Domain/ReceiptLine.php\nFirma del constructor __construct(productId: int, locationId: int, quantity: Quantity, unitCost: UnitCost, expected: ?Quantity, presentationId: ?int, presentationQty: ?Quantity)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 226,
+        "w": 420,
+        "x": 580,
+        "y": 470
+      },
+      {
+        "id": "App\\Modules\\Operations\\Domain\\ReceiptRecord",
+        "name": "ReceiptRecord",
+        "kind": "Class",
+        "module": "Operations",
+        "path": "app/Modules/Operations/Domain/ReceiptRecord.php",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "status",
+            "type": "ReceiptStatus",
+            "visibility": "Public"
+          },
+          {
+            "name": "supplierId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "warehouseId",
+            "type": "int",
+            "visibility": "Public"
+          },
+          {
+            "name": "docType",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "docNumber",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "items",
+            "type": "array",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "app/Modules/Operations/Domain/ReceiptRecord.php\nFirma del constructor __construct(id: int, code: string, status: ReceiptStatus, supplierId: int, warehouseId: int, docType: string, docNumber: string, items: array)\nModelo extraído del código al 28/10/2026.",
+        "state": "Existente",
+        "h": 196,
+        "w": 420,
+        "x": 1120,
+        "y": 470
+      }
+    ],
+    "edges": [
+      {
+        "a": "App\\Modules\\Operations\\Application\\CreateReceiptDraft",
+        "b": "App\\Modules\\Operations\\Domain\\ReceiptRepository",
+        "type": "Dependency",
+        "name": "borrador"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\ConfirmReceipt",
+        "b": "App\\Modules\\Operations\\Domain\\ReceiptRepository",
+        "type": "Dependency",
+        "name": "estado"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Application\\ConfirmReceipt",
+        "b": "App\\Modules\\Operations\\Domain\\StockMovements",
+        "type": "Dependency",
+        "name": "entradas"
+      },
+      {
+        "a": "App\\Modules\\Operations\\Domain\\ReceiptRecord",
+        "b": "App\\Modules\\Operations\\Domain\\ReceiptLine",
+        "type": "Association",
+        "name": "líneas"
+      }
+    ],
+    "layout": true
+  },
+  {
+    "key": "clases_objetivo",
+    "title": "Clases propuestas para importación y conciliación",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "Target\\Imports\\CatalogImportService",
+        "name": "CatalogImportService",
+        "kind": "Class",
+        "module": "Objetivo Imports",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "parser",
+            "type": "CatalogFileParser",
+            "visibility": "Private"
+          },
+          {
+            "name": "jobs",
+            "type": "ImportJobs",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "simulate",
+            "type": "ImportPreview",
+            "parameters": [
+              {
+                "name": "file",
+                "type": "string"
+              },
+              {
+                "name": "actorId",
+                "type": "int"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "commit",
+            "type": "ImportResult",
+            "parameters": [
+              {
+                "name": "importId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "int"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-052. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 136,
+        "w": 420,
+        "x": 40,
+        "y": 40
+      },
+      {
+        "id": "Target\\Imports\\OpeningBalanceImporter",
+        "name": "OpeningBalanceImporter",
+        "kind": "Class",
+        "module": "Objetivo Imports",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "ledger",
+            "type": "StockMovements",
+            "visibility": "Private"
+          },
+          {
+            "name": "jobs",
+            "type": "ImportJobs",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "validate",
+            "type": "array",
+            "parameters": [
+              {
+                "name": "rows",
+                "type": "array"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "commit",
+            "type": "ImportResult",
+            "parameters": [
+              {
+                "name": "importId",
+                "type": "int"
+              },
+              {
+                "name": "actorId",
+                "type": "int"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-053. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 136,
+        "w": 420,
+        "x": 580,
+        "y": 40
+      },
+      {
+        "id": "Target\\Imports\\CatalogFileParser",
+        "name": "CatalogFileParser",
+        "kind": "Class",
+        "module": "Objetivo Imports",
+        "path": "Diseño propuesto",
+        "attributes": [],
+        "methods": [
+          {
+            "name": "parse",
+            "type": "ImportPreview",
+            "parameters": [
+              {
+                "name": "file",
+                "type": "string"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-052. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 76,
+        "w": 420,
+        "x": 1120,
+        "y": 40
+      },
+      {
+        "id": "Target\\Inventory\\StockReconciliationJob",
+        "name": "StockReconciliationJob",
+        "kind": "Class",
+        "module": "Objetivo Inventory",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "reader",
+            "type": "ReconciliationReader",
+            "visibility": "Private"
+          },
+          {
+            "name": "alerts",
+            "type": "AlertDispatcher",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "handle",
+            "type": "ReconciliationResult",
+            "parameters": [],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-023. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 112,
+        "w": 420,
+        "x": 40,
+        "y": 470
+      },
+      {
+        "id": "Target\\Alerts\\AlertDispatcher",
+        "name": "AlertDispatcher",
+        "kind": "Class",
+        "module": "Objetivo Alerts",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "email",
+            "type": "EmailGateway",
+            "visibility": "Private"
+          },
+          {
+            "name": "whatsapp",
+            "type": "WhatsAppGateway",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "notify",
+            "type": "DeliveryReceipt",
+            "parameters": [
+              {
+                "name": "channel",
+                "type": "string"
+              },
+              {
+                "name": "recipient",
+                "type": "string"
+              },
+              {
+                "name": "alerts",
+                "type": "array"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-047. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 112,
+        "w": 420,
+        "x": 580,
+        "y": 470
+      }
+    ],
+    "edges": [
+      {
+        "a": "Target\\Imports\\CatalogImportService",
+        "b": "Target\\Imports\\CatalogFileParser",
+        "type": "Dependency",
+        "name": "parsear"
+      },
+      {
+        "a": "Target\\Inventory\\StockReconciliationJob",
+        "b": "Target\\Alerts\\AlertDispatcher",
+        "type": "Dependency",
+        "name": "avisar diferencias"
+      }
+    ],
+    "layout": true
+  },
+  {
+    "key": "clases_movil",
+    "title": "Clases objetivo del cliente móvil y sincronización",
+    "type": "Class",
+    "nodes": [
+      {
+        "id": "Target\\Mobile\\CameraScanner",
+        "name": "CameraScanner",
+        "kind": "Class",
+        "module": "Objetivo Mobile",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "camera",
+            "type": "MediaStream",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "start",
+            "type": "void",
+            "parameters": [],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "stop",
+            "type": "void",
+            "parameters": [],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "decode",
+            "type": "string",
+            "parameters": [],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-054. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 142,
+        "w": 420,
+        "x": 40,
+        "y": 40
+      },
+      {
+        "id": "Target\\Operations\\MobileCapture",
+        "name": "MobileCapture",
+        "kind": "Class",
+        "module": "Objetivo Operations",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "scanner",
+            "type": "CameraScanner",
+            "visibility": "Private"
+          },
+          {
+            "name": "queue",
+            "type": "OfflineQueue",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "receive",
+            "type": "void",
+            "parameters": [
+              {
+                "name": "barcode",
+                "type": "string"
+              },
+              {
+                "name": "quantity",
+                "type": "decimal"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "count",
+            "type": "void",
+            "parameters": [
+              {
+                "name": "barcode",
+                "type": "string"
+              },
+              {
+                "name": "counted",
+                "type": "decimal"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-056. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 136,
+        "w": 420,
+        "x": 580,
+        "y": 40
+      },
+      {
+        "id": "Target\\Mobile\\OfflineQueue",
+        "name": "OfflineQueue",
+        "kind": "Class",
+        "module": "Objetivo Mobile",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "store",
+            "type": "IndexedDB",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "enqueue",
+            "type": "void",
+            "parameters": [
+              {
+                "name": "operation",
+                "type": "PendingOperation"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "pending",
+            "type": "array",
+            "parameters": [],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "markSynced",
+            "type": "void",
+            "parameters": [
+              {
+                "name": "uuid",
+                "type": "string"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-055. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 142,
+        "w": 420,
+        "x": 1120,
+        "y": 40
+      },
+      {
+        "id": "Target\\Mobile\\PendingOperation",
+        "name": "PendingOperation",
+        "kind": "Class",
+        "module": "Objetivo Mobile",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "uuid",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "idempotencyKey",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "operationType",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "payload",
+            "type": "object",
+            "visibility": "Public"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "visibility": "Public"
+          },
+          {
+            "name": "createdAt",
+            "type": "datetime",
+            "visibility": "Public"
+          },
+          {
+            "name": "retryCount",
+            "type": "int",
+            "visibility": "Public"
+          }
+        ],
+        "methods": [],
+        "notes": "Contrato propuesto para HU-055, HU-056. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 178,
+        "w": 420,
+        "x": 40,
+        "y": 470
+      },
+      {
+        "id": "Target\\Mobile\\SyncPendingOperations",
+        "name": "SyncPendingOperations",
+        "kind": "Class",
+        "module": "Objetivo Mobile",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "queue",
+            "type": "OfflineQueue",
+            "visibility": "Private"
+          },
+          {
+            "name": "client",
+            "type": "SyncEndpointClient",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "flush",
+            "type": "SyncResult",
+            "parameters": [],
+            "visibility": "Public",
+            "static": false
+          },
+          {
+            "name": "resolveConflict",
+            "type": "void",
+            "parameters": [
+              {
+                "name": "uuid",
+                "type": "string"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-055, HU-056. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 136,
+        "w": 420,
+        "x": 580,
+        "y": 470
+      },
+      {
+        "id": "Target\\Mobile\\SyncOperations",
+        "name": "SyncOperations",
+        "kind": "Class",
+        "module": "Objetivo Mobile",
+        "path": "Diseño propuesto",
+        "attributes": [
+          {
+            "name": "movements",
+            "type": "StockMovements",
+            "visibility": "Private"
+          }
+        ],
+        "methods": [
+          {
+            "name": "execute",
+            "type": "SyncResult",
+            "parameters": [
+              {
+                "name": "request",
+                "type": "array"
+              },
+              {
+                "name": "actorId",
+                "type": "int"
+              }
+            ],
+            "visibility": "Public",
+            "static": false
+          }
+        ],
+        "notes": "Contrato propuesto para HU-055. No existe todavía en el repositorio. Requiere refinamiento y pruebas antes de implementarse.",
+        "state": "Propuesto",
+        "h": 94,
+        "w": 420,
+        "x": 1120,
+        "y": 470
+      }
+    ],
+    "edges": [
+      {
+        "a": "Target\\Operations\\MobileCapture",
+        "b": "Target\\Mobile\\CameraScanner",
+        "type": "Dependency",
+        "name": "captura"
+      },
+      {
+        "a": "Target\\Operations\\MobileCapture",
+        "b": "Target\\Mobile\\OfflineQueue",
+        "type": "Dependency",
+        "name": "sin conexión"
+      },
+      {
+        "a": "Target\\Mobile\\OfflineQueue",
+        "b": "Target\\Mobile\\PendingOperation",
+        "type": "Association",
+        "name": "0..* pendientes"
+      },
+      {
+        "a": "Target\\Mobile\\SyncPendingOperations",
+        "b": "Target\\Mobile\\OfflineQueue",
+        "type": "Dependency",
+        "name": "vaciar cola"
+      },
+      {
+        "a": "Target\\Mobile\\SyncPendingOperations",
+        "b": "Target\\Mobile\\SyncOperations",
+        "type": "Dependency",
+        "name": "HTTPS propuesto"
+      }
+    ],
+    "layout": true
+  }
+]

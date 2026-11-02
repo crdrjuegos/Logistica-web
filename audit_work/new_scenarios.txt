@@ -1,0 +1,153 @@
+2|Acceso autorizado|correo=ana@cityofertas.test; clave válida; cuenta activa con rol|Permite entrar al panel y actualiza last_login_at.
+2|Cuenta restringida|is_active=false, locked_until futuro o cuenta sin rol; clave correcta|Deniega el panel sin conceder permisos ni levantar el bloqueo.
+2|Credenciales incorrectas|correo existente; clave incorrecta|Deniega el acceso con mensaje genérico y contabiliza el fallo.
+4|Desactivar otra cuenta|actor administrador 1; usuario objetivo 2 activo|is_active=false; conserva usuario e historial y registra una auditoría.
+4|Protección del administrador|actor=objetivo o único administrador activo|Rechaza la desactivación y mantiene una cuenta administradora operativa.
+4|Reactivar y repetir|usuario 2 inactivo; reactivar dos veces|Queda activo; la segunda operación no duplica la auditoría.
+5|Restablecimiento correcto|objetivo bloqueado; clave=otra-clave-larga-segura-9|Guarda hash, limpia bloqueo e intentos y audita sin secretos.
+5|Clave débil o usuario inexistente|clave=123; objetivo inexistente 999|Rechaza sin modificar credenciales ni auditoría de éxito.
+5|Actor sin permiso|rol=lectura; intento de restablecer contraseña ajena|No muestra o deniega la acción por users.manage.
+6|Segundo factor configurado|admin; secreto TOTP y códigos de recuperación activos; código vigente|Exige y verifica el segundo factor para finalizar el acceso.
+6|Obligatoriedad por configuración|require_2fa=true; admin o supervisor sin secreto|Restringe navegación al perfil y configuración de segundo factor.
+6|Recuperación y rechazo|código TOTP erróneo; después código de recuperación válido usado dos veces|El código erróneo no permite acceder; el de recuperación funciona solo una vez.
+7|Consulta con filtros|actor con audit.view; acción product.updated; actor 7; fechas 01/10 a 28/10|Muestra solo registros coincidentes con antes y después legibles.
+7|Sin autorización|rol=lectura; URL del recurso de auditoría|Deniega acceso; no devuelve datos de auditoría.
+7|Historial protegido|entrada de auditoría existente; UPDATE, DELETE y TRUNCATE|Rechaza mutaciones y conserva registros; verificar cada operación en BD de prueba.
+8|SKU y nombre normalizado|supervisor con catalog.write; categoría LIB; nombre con espacios; unidad UND|Crea LIB-000001, normaliza nombre y añade presentación base de factor 1.
+8|Catálogo de referencia inválido|categoría inexistente o inactiva; marca o unidad inexistentes|Rechaza y no persiste un producto parcial.
+8|Actor sin permiso de escritura|rol=almacenero; formulario de nuevo producto|Deniega crear; sí permite consultar con catalog.view.
+10|Conversión por presentación|base UND=1; DOC=12; CAJA=24|Conserva una presentación base y factores positivos con tres decimales.
+10|Factor inválido|factor=0, -1 o 1.0001|Rechaza precisión o valor inválido sin guardar presentaciones parciales.
+10|Base y duplicados|unidad base con factor 2; unidad DOC repetida|Rechaza factor base distinto de 1 y unidades repetidas.
+11|Edición con versión actual|producto versión 1; nombre nuevo; expectedVersion=1|Actualiza solo cambios, guarda versión 2 y auditoría antes y después.
+11|Conflicto de versión|producto ya en versión 2; expectedVersion=1|Rechaza edición obsoleta y conserva los datos más recientes.
+11|Edición sin cambios|producto versión 2; valores idénticos; expectedVersion=2|No incrementa versión ni duplica auditoría de cambio.
+13|Coincidencia de nombre|nombre existente Cuaderno A4 100 hojas; consulta igual con mayúsculas y espacios|Devuelve candidato normalizado con similitud al menos 0.8.
+13|Nombre distinto|existente Cuaderno A4; búsqueda Pelota de fútbol número 5|No devuelve coincidencias bajo el umbral.
+13|Advertencia en formulario|nuevo nombre similar al existente; supervisor creando producto|Muestra aviso antes de guardar y permite revisar el catálogo; la detección backend sola no satisface este caso.
+14|Consulta por SKU o código|LIB-000001 o EAN13 4006381333931; stock BOD=10|Devuelve mismo producto, presentación, factor y stock por ubicación.
+14|Código desconocido|código=no-existe o cadena vacía|Devuelve resultado vacío controlado sin modificar datos.
+14|Presentación distinta|código DOCENA-0001 vinculado a factor 12|Identifica la docena y mantiene stock expresado en unidad base.
+15|Jerarquía y marca válidas|categoría raíz LIB, hija y nieta; marca de nombre único|Crea niveles 1 a 3, conserva padre y registra auditoría.
+15|Cuarto nivel o código duplicado|crear hija de nivel 3 o raíz LIB repetida|Rechaza ambas entradas sin corromper jerarquía.
+15|Edición autorizada|supervisor con catalog.write; cambio de nombre de marca|Persiste cambio y registra valores anterior y nuevo.
+16|Política consistente|almacén BOD; mínimo=10; máximo=100; reposición=50|Guarda 10.000, 100.000 y 50.000 para ese producto y almacén.
+16|Mínimo mayor al máximo|mínimo=20; máximo=10|Rechaza con mensaje claro y conserva política anterior.
+16|Vacío frente a cero|mínimo vacío en formulario; máximo vacío; reposición=0|El mapper normaliza mínimo a 0; máximo queda sin límite; reposición cero se rechaza.
+21|Transferencia completa|origen BOD=20; destino PIS=0; cantidad=5|Quedan 15 y 5; conserva total 20 y un movimiento enlazado.
+21|Fallo al actualizar destino|saldo origen=20; cantidad=5; fallo simulado al incrementar destino|Revierte origen, destino y ledger en la misma transacción.
+21|Ubicación congelada|destino is_frozen=true; entrada ordinaria de 1 unidad|Rechaza el movimiento; solo ajustes de conteo autorizados pueden operar durante congelación.
+22|Kardex y saldos|compra 20; transferencia de 5; filtro por producto y ubicación|Presenta saldo inicial, secuencia determinista, saldo corrido y saldo final 15 en origen.
+22|Filtro sin movimientos|producto válido sin movimientos en el período|Devuelve lista vacía con saldo inicial y final coherentes.
+22|Paginación y límite|más de 500 movimientos; filtro por fechas y ubicación|No pierde ni duplica movimientos entre páginas; saldo final debe corresponder al filtro completo.
+23|Reconciliación programada|ledger y saldos consistentes; ejecución nocturna configurada|Ejecuta fn_reconcile_ledger, registra resultado sin diferencias y hora de control.
+23|Diferencia detectada|fixture de prueba con discrepancia controlada de 1 unidad|Devuelve la diferencia y emite aviso al responsable sin corregirla silenciosamente.
+23|Fallo del proceso|servicio de BD no disponible al ejecutar tarea|Registra el fallo y permite reintento sin reportar falsamente un cierre correcto.
+24|Borrador válido|proveedor activo; BOD; FACTURA F001-234; fecha no futura; línea de 10 UND|Crea REC correlativo en DRAFT con líneas; no aumenta stock.
+24|Documento o referencia inválida|proveedor inactivo, ubicación ajena, almacén inexistente o fecha futura|Rechaza y no crea borrador parcial.
+24|Factura repetida|mismo proveedor y F001-234 ya vigentes; después factura anulada|Rechaza duplicado vigente; permite registrarla de nuevo si la anterior fue anulada.
+26|Cajas a unidad base|2 cajas; factor=12; costo por caja S/24|Registra 24.000 UND a costo unitario 2.0000 y conserva presentación original.
+26|Factor no positivo|factor=0 o -12; cantidad=2 cajas|Rechaza la conversión y no confirma la recepción.
+26|Redondeo monetario|1 caja; factor=3; costo por caja S/1|Costo por unidad base 0.3333 con redondeo half-up a cuatro decimales.
+27|Anular borrador|recepción DRAFT con 2 líneas|Cambia a CANCELLED, audita y no genera movimientos.
+27|Recepción confirmada|recepción CONFIRMED; intento de anulación|Rechaza; la corrección se tramita mediante ajuste autorizado.
+27|Modificar líneas del borrador|borrador existente; reemplazo por 20 UND; después lista vacía|Permite reemplazo válido; rechaza lista vacía y mantiene borrador consistente.
+28|Completar transferencia|borrador con 5 UND de BOD a PIS; stock origen=20|Cambia a COMPLETED y enlaza movimiento con saldos 15 y 5.
+28|Una línea sin stock|dos líneas; segunda pide 9 con saldo 3|No mueve ninguna línea y el documento conserva DRAFT.
+28|Reintento y anulación|transferencia completada; completar de nuevo o anular|Reintento no duplica; anular una completada se rechaza.
+29|Solicitud válida|MERMA de 2 UND; motivo activo; explicación Se mojaron en bodega|Crea solicitud PENDING auditable sin descontar stock.
+29|Motivo incompleto|explicación vacía, motivo inactivo o tipo incompatible|Rechaza sin crear una solicitud válida aparente.
+29|Referencias inexistentes|producto 999 o ubicación 999|Rechaza con mensaje de referencia no encontrada y sin movimientos.
+31|Ajuste dentro del límite|supervisor autorizado; límite S/10; ajuste valorizado S/8|Registra ajuste directo trazable solo si la función está habilitada.
+31|Función deshabilitada o exceso|límite=0 o ajuste S/10.01 con límite S/10|Rechaza sin tocar stock.
+31|Límite exacto|límite S/10; valorización exacta S/10|Permite únicamente si la regla aprobada incluye el límite; conserva autor y motivo.
+32|Inicio por alcance|BOD; alcance FULL con 3 líneas en ubicaciones 10 y 11|Fija stock esperado, crea conteo y congela ubicaciones antes de contar.
+32|Conteos superpuestos|conteo activo en ubicación 10; nuevo conteo la incluye|Rechaza segundo conteo sin alterar el primero.
+32|Alcance inválido|LOCATION sin identificador o alcance sin ubicaciones|Rechaza sin congelar ubicaciones ni crear conteo incompleto.
+33|Conteo ciego|almacenero sin counts.close; ubicación con esperado 10; contado 8|Permite guardar 8.000 sin mostrar esperado ni diferencia a ese actor.
+33|Hallazgo o producto inexistente|producto existente sin línea; cantidad 3; después producto 999|Crea línea con esperado 0 para hallazgo válido; rechaza producto inexistente.
+33|Reemplazar conteo y cero|línea contada 8; nuevo conteo 0|Guarda 0.000 como valor contado; no lo confunde con línea sin contar.
+34|Enviar y marcar diferencias|3 líneas contadas; una con esperado 4 y contado 3|Envía a REVIEW y solicita reconteo solo de la línea diferente.
+34|Líneas pendientes|3 líneas; solo una contada|Rechaza envío e indica cuántas faltan; mantiene COUNTING.
+34|Reconteo controlado|línea marcada en REVIEW; reconteo=3; otra línea no marcada|Actualiza y limpia marca solo en línea autorizada; rechaza modificar la no marcada.
+36|Anular conteo activo|conteo COUNTING o REVIEW con ubicaciones congeladas|Marca CANCELLED, descongela y no genera ajustes.
+36|Conteo ya cerrado|conteo CLOSED; solicitud de anulación|Rechaza y conserva movimientos de cierre.
+36|Repetir anulación|conteo ya CANCELLED; mismo actor|No repite efectos ni ajustes; las ubicaciones permanecen liberadas.
+37|Simulación de ventas|CSV sku,cantidad; LIB-000001,2; LIB-000001,3; stock PIS=10|Agrupa 5 UND; informa proyección 5 y no modifica stock.
+37|Confirmación con errores por fila|CSV con producto válido 2 UND, código inexistente y cantidad inválida|Aplica solo filas válidas y reporta fila y motivo de las rechazadas; no promete atomicidad global del archivo.
+37|Insuficiencia de stock|saldo PIS=3; venta agrupada=5|No descuenta ese producto y añade el error al reporte.
+38|Descargar errores|importación con errores en filas 2 y 4; usuario con pos.import|Descarga CSV con número de fila, código original y explicación legible en Excel.
+38|Sin errores|archivo confirmado sin errores|No ofrece un reporte inexistente ni produce excepción al consultar el detalle.
+38|Control del archivo|rol sin pos.import o ruta de reporte ajena|Deniega acceso al archivo y evita exposición de datos por rutas arbitrarias.
+39|Primera confirmación|CSV nuevo; hash SHA256 no registrado|Confirma y guarda hash y resultado de la importación.
+39|Archivo idéntico|mismos bytes con otro nombre; confirmación ya realizada|Rechaza segundo compromiso sin volver a descontar stock.
+39|Simular y corregir|archivo previamente confirmado; simular; luego contenido corregido con hash diferente|Permite simulación sin stock y trata el nuevo contenido según su hash, sujeto a validación.
+40|Generar lote válido|BOD; zona 1; pasillos 3 a 3; anaqueles 2 a 2; niveles 2 a 2|Crea BOD-Z1-P03-A02-N2 con almacén y componentes correctos.
+40|Lote excesivo o rango inverso|más de 2000 combinaciones o pasillo inicial mayor al final|Rechaza antes de insertar y no genera lote parcial.
+40|Repetir lote|mismo lote válido ejecutado dos veces|Conserva una sola ubicación por código e informa creadas y existentes.
+41|Congelar y liberar|ubicaciones activas 10 y 11; congelación y posterior liberación|Actualiza estados de todo el lote de forma atómica con auditoría.
+41|Desactivación protegida|ubicación con stock, en conteo o marcada recepción|Rechaza desactivación sin perder inventario ni dejar el conteo inconsistente.
+41|Una ubicación inválida en lote|lote 10,11,999 al congelar|No modifica ninguna si una referencia no existe.
+43|Proveedor preferido|producto activo; proveedor A activo; marcar preferido|Guarda vínculo y como máximo un proveedor preferido por producto.
+43|Vínculo inválido|proveedor inactivo o producto inexistente|Rechaza sin crear vínculo parcial.
+43|Cambiar preferido|producto con A preferido; elegir B activo|B queda preferido, A permanece vinculado y deja de ser preferido.
+44|Estados de stock|mínimo=10; máximo=20; stock=0,10,12.5,20,21|Clasifica OUT, LOW, NEAR, OK y OVER respectivamente según límites implementados.
+44|Producto sin política|producto activo sin product_stock_policies|No lo clasifica como normal automáticamente; no aparece en la vista de políticas y debe identificarse la falta de configuración.
+44|Límite cercano y filtros|mínimo=10; stock=12.501; filtro BOD|Clasifica OK; respeta filtro de almacén y excluye productos inactivos.
+45|Reposición sugerida|stock=3; mínimo=10; máximo=20; reorder=5; proveedor preferido|Sugiere 17 UND y exporta por proveedor con columnas consistentes.
+45|Sin proveedor o sin demanda|producto crítico sin preferido; vendido 30 días=0|Muestra Sin proveedor y cobertura no calculable, sin dividir por cero.
+45|Cantidad configurada supera diferencia|stock=3; mínimo=10; máximo=20; reorder=30|La regla actual propone 30 por GREATEST; documentar y aprobar esta política antes de aceptar el resultado de compra.
+46|Indicadores coherentes|fixture con inventario valorizado, 1 agotado, 1 bajo, 1 ajuste pendiente|Tablero muestra las seis métricas y coincide con consultas de sus fuentes.
+46|Sin datos|base de prueba sin stock, ajustes, conteos ni mermas|Muestra ceros coherentes sin errores ni valores nulos aparentes.
+46|Acceso por permisos|usuario con alerts.view frente a uno sin ese permiso|Solo el usuario autorizado ve los widgets y la tabla de críticos.
+47|Aviso externo programado|canal correo o WhatsApp configurado; producto crítico|Entrega aviso diario y registra destinatario, hora y resultado. Fuera de la fase inicial.
+47|Fallo del proveedor externo|canal devuelve error o agota tiempo|Registra fallo y reintenta con política acotada sin afectar el stock.
+47|Sin alertas o duplicados|ningún producto crítico o tarea repetida en el mismo período|Evita mensajes vacíos y duplicados según política acordada.
+48|Valorización correcta|10 UND a costo 2.0000 en BOD|Muestra valor S/20 y total reconciliado por almacén.
+48|Filtros del reporte|mismo producto con stock en BOD y PIS; filtro BOD|Incluye solo BOD y ajusta totales al filtro.
+48|Cero y precisión|producto sin stock; costo con 4 decimales|No crea valor artificial; conserva cálculo decimal y redondea solo presentación monetaria.
+49|Clasificación ABC|ventas valorizadas 80,15,5 en últimos 90 días|A incluye producto que cruza el 80 por ciento; B hasta cruce de 95; C resto, según acumulado previo.
+49|Producto sin ventas|producto activo sin SALIDA_VENTA en 90 días|Clasifica SIN_VENTAS; cobertura no calculable y valor vendido cero.
+49|Empates y período|dos productos con mismo valor; venta de más de 90 días|Orden estable por product_id; excluye ventas fuera del período definido.
+50|Merma trazable|MERMA 2 UND a S/3; solicitante 7; aprobador 9|Reporte muestra ambos responsables, motivo y valor S/6.
+50|Filtros y tipos|AJUSTE_NEGATIVO y COMPRA; rango de fechas acotado|Incluye solo mermas y ajustes negativos del filtro.
+50|Sin resultados|período sin mermas; rol lectura|Muestra tabla vacía y total cero sin habilitar acciones de escritura.
+51|Exportación CSV|reporte con tildes, comillas y separador dentro del nombre|Descarga CSV compatible con Excel, encabezados y filas correctamente escapados.
+51|Permiso de exportación|rol lectura con reports.view sin reports.export|Permite ver, deniega descargar y oculta acción de exportación.
+51|Filtros y formato no implementado|filtro por BOD; solicitud PDF|CSV respeta alcance definido; PDF no se anuncia como disponible mientras no esté implementado.
+52|Simular catálogo masivo|CSV con categoría LIB, UND, nombre y EAN válidos|Valida fila a fila y reporta creados previstos sin insertar. Importador aún pendiente.
+52|Filas inválidas|EAN incorrecto, categoría inexistente, SKU duplicado, costo negativo|Devuelve número de fila y causa; ninguna fila inválida se guarda silenciosamente.
+52|Confirmar y reintentar|archivo validado; usuario con catalog.import; repetición del contenido|Carga bajo política transaccional e idempotente acordada, con auditoría y resumen.
+53|Carga de apertura|administrador; producto1/ubicación10 sin apertura; 10 UND a S/2|Registra SALDO_INICIAL auditable, saldo10 y costo2 con referencia del lote.
+53|Apertura repetida|mismo producto/ubicación con SALDO_INICIAL previo; nueva clave|Rechaza segunda apertura aunque cambie la clave; no basta idempotencia de una solicitud.
+53|Sin autorización o inválido|supervisor sin inventory.opening_balance; cantidad negativa|Deniega por permiso o validación; no añade stock.
+54|Escaneo en cámara|celular con HTTPS; permiso cámara; EAN válido existente|Lee código, consulta producto y muestra stock por ubicación. Interfaz de cámara aún pendiente.
+54|Permiso o contexto inválido|cámara denegada, dispositivo sin cámara o HTTP sin contexto seguro|Informa situación y ofrece entrada manual sin bloquear toda la pantalla.
+54|Código desconocido|código bien leído pero no registrado|Muestra no encontrado y permite nuevo intento sin registrar movimientos.
+55|Trabajo sin conexión|dispositivo sin red; operación guardada con clave estable|Conserva cola local y muestra pendiente sin confirmar stock del servidor. Fuera de fase inicial.
+55|Reintento de sincronización|misma operación enviada dos veces al recuperar red|Confirma una sola operación y retira pendiente tras respuesta verificable.
+55|Conflicto al sincronizar|saldo servidor menor a lo solicitado mientras estuvo sin red|Rechaza con conflicto visible y conserva información para resolución, sin stock negativo.
+56|Recepción móvil|rol almacenero; escaneo repetido de 2 cajas con factor12|Permite captura rápida, muestra 24 UND y confirma solo tras validación. Fuera de fase inicial.
+56|Conteo ciego móvil|rol almacenero; producto con esperado10 y contado8|Oculta esperado y diferencia; registra 8 con actor y ubicación.
+56|Entrada inválida o duplicada|lectura repetida por cámara; producto desconocido|Evita duplicación involuntaria y exige resolver producto antes de enviar.
+57|Dependencias entre capas|ejecutar Deptrac sobre app/Modules y app/Shared|Termina con 0 violaciones, 0 errores y 0 dependencias no cubiertas.
+57|Regla de arquitectura|introducir importación Illuminate en dominio en copia de prueba|La regla detecta la violación; no se modifica el proyecto entregado para esta prueba.
+57|Alcance de la regla|clases Filament bajo app/Filament|Documenta que la configuración actual de Deptrac no incluye ese directorio; no afirma cobertura de toda la presentación.
+58|Formato consistente|ejecutar Pint con --test en Docker|Código de salida 0; no modifica archivos durante la auditoría.
+58|Análisis estático|ejecutar PHPStan con nivel configurado6 y memoria1G|Código de salida0 sin errores; nivel8 es meta posterior, no resultado actual.
+58|Instalación reproducible|instalar desde composer.json y composer.lock en carpeta limpia|Deben incluir Filament y Livewire usados por app; dependencias solo en vendor no satisfacen el criterio.
+59|Pipeline en repositorio remoto|push o pull request autorizado; workflow CI|Ejecuta calidad, seguridad y cobertura; conserva enlace a ejecución satisfactoria. YAML local solo es configuración.
+59|Fallo de calidad|cambio que incumple prueba en rama de prueba|El job falla y la protección configurada impide integrar; verificar protección de rama por separado.
+59|Mutación y evidencia|ejecución Infection sobre main; umbral MSI70|Publica resultado medido; documenta que el workflow actual no tiene schedule nocturno aunque lo diga un comentario.
+60|Respaldo diario|base de datos de prueba; copia cifrada fuera del servidor|Genera respaldo, verifica integridad y registra fecha sin exponer credenciales.
+60|Restauración controlada|copia válida; base vacía aislada|Restaura y reconcilia tablas y ledger; documenta tiempo y datos recuperados.
+60|Fallo de respaldo|destino inaccesible o copia dañada|Notifica fallo y no marca respaldo como correcto.
+61|Despliegue seguro|dominio real HTTPS; APP_ENV=production; APP_DEBUG=false; claves propias|Certificado válido, cookies seguras y rutas sensibles protegidas; demo local no equivale a producción.
+61|Configuración insegura|depuración activa o credenciales de desarrollo|El checklist de publicación bloquea la entrega hasta corregirlas.
+61|Recuperación del servicio|reinicio controlado de app y consulta /up|Servicio recupera salud y conserva datos persistentes; validar aparte TLS público y respaldo.
+62|Carga reproducible|plan JMeter con usuarios, rampa, duración y datos definidos|Obtiene tiempos y errores con archivo de resultados; compara media con meta1.5s sin inventar p95 ni concurrencia.
+62|Escaneo de seguridad|OWASP ZAP contra entorno de pruebas autorizado|Conserva reporte, clasifica hallazgos y documenta correcciones sin escanear terceros.
+62|Incumplimiento de umbral|media mayor1.5s o hallazgo alto sin tratar|Registra incumplimiento, acción y nueva medición; no declara conformidad ISO por ejecutar herramientas.
+63|Evaluación de calidad|matriz de atributos con meta, método, resultado y evidencia|Cada indicador distingue medido de pendiente; no confunde porcentaje de avance con conformidad.
+63|Encuesta SUS|10 respuestas Likert1a5 por participante; muestra y fechas registradas|Calcula puntuación0a100 mediante fórmula SUS; meta85 puntos, sin presentarla como porcentaje de satisfacción.
+63|Datos incompletos|respuesta SUS faltante o cobertura sin instrumentación|No calcula resultado global como válido y conserva el motivo de no evaluación.

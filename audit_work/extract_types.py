@@ -1,0 +1,4 @@
+import json,subprocess
+from pathlib import Path
+q="SELECT json_agg(x) FROM (SELECT c.table_name,c.column_name,format_type(a.atttypid,a.atttypmod) AS full_type,c.is_nullable,c.ordinal_position FROM information_schema.columns c JOIN pg_class cl ON cl.relname=c.table_name JOIN pg_namespace n ON n.oid=cl.relnamespace AND n.nspname=c.table_schema JOIN pg_attribute a ON a.attrelid=cl.oid AND a.attname=c.column_name WHERE c.table_schema='public' AND c.table_name IN (SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') ORDER BY c.table_name,c.ordinal_position)x"
+r=subprocess.run(['docker','compose','exec','-T','db','psql','-U','wms_owner','-d','wms','-Atc',q],capture_output=True,text=True,encoding='utf-8',timeout=30);Path('audit_work/db_types.json').write_text(r.stdout,encoding='utf-8');print(len(json.loads(r.stdout)),'tipos físicos detallados')

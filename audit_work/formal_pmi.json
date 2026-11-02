@@ -1,0 +1,325 @@
+[
+  {
+    "phase": "FASE 1. INICIO (PMI)"
+  },
+  {
+    "activity": "Identificación de la problemática y necesidad de CITY OFERTAS",
+    "weeks": [
+      1
+    ],
+    "number": 1
+  },
+  {
+    "activity": "Identificación de interesados y área beneficiaria",
+    "weeks": [
+      1
+    ],
+    "number": 2
+  },
+  {
+    "activity": "Elaboración de la visión y objetivo general del WMS",
+    "weeks": [
+      1
+    ],
+    "number": 3
+  },
+  {
+    "activity": "Elaboración del acta o ficha de inicio del proyecto",
+    "weeks": [
+      1
+    ],
+    "number": 4
+  },
+  {
+    "phase": "FASE 2. PLANIFICACIÓN (PMI)"
+  },
+  {
+    "activity": "Definición del alcance del WMS",
+    "weeks": [
+      1
+    ],
+    "number": 5
+  },
+  {
+    "activity": "Identificación y análisis de requerimientos",
+    "weeks": [
+      1,
+      2
+    ],
+    "number": 6
+  },
+  {
+    "activity": "Definición del Product Goal",
+    "weeks": [
+      1
+    ],
+    "number": 7
+  },
+  {
+    "activity": "Elaboración de épicas, historias de usuario y criterios de aceptación",
+    "weeks": [
+      1,
+      2
+    ],
+    "number": 8
+  },
+  {
+    "activity": "Creación y priorización del Product Backlog",
+    "weeks": [
+      1,
+      2
+    ],
+    "number": 9
+  },
+  {
+    "activity": "Elaboración del roadmap y planificación general de sprints",
+    "weeks": [
+      2
+    ],
+    "number": 10
+  },
+  {
+    "activity": "Identificación de riesgos y acciones de respuesta",
+    "weeks": [
+      1,
+      2
+    ],
+    "number": 11
+  },
+  {
+    "activity": "Definición de criterios de calidad y Definition of Done (DoD)",
+    "weeks": [
+      2
+    ],
+    "number": 12
+  },
+  {
+    "phase": "FASE 3. EJECUCIÓN — METODOLOGÍA SCRUM"
+  },
+  {
+    "activity": "Sprint Planning al inicio de cada sprint",
+    "weeks": [
+      1,
+      3,
+      5,
+      7
+    ],
+    "number": 13
+  },
+  {
+    "activity": "Sprint 1 — Cimientos: accesos, catálogo, ledger, arquitectura y herramientas de calidad",
+    "weeks": [
+      1,
+      2
+    ],
+    "number": 14
+  },
+  {
+    "activity": "Sprint 2 — Almacén: ubicaciones, proveedores, recepción, transferencias, ajustes, kardex y carga inicial",
+    "weeks": [
+      3,
+      4
+    ],
+    "number": 15
+  },
+  {
+    "activity": "Sprint 3 — Control y análisis: conteos, ventas POS, alertas, tablero y reportes",
+    "weeks": [
+      5,
+      6
+    ],
+    "number": 16
+  },
+  {
+    "activity": "Sprint 4 — Seguridad, cámara, calidad, respaldos, despliegue, informe y sustentación",
+    "weeks": [
+      7,
+      8
+    ],
+    "number": 17
+  },
+  {
+    "activity": "Diseño, desarrollo, pruebas, integración y documentación del incremento",
+    "weeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 18
+  },
+  {
+    "phase": "FASE 4. MONITOREO Y CONTROL — SCRUM"
+  },
+  {
+    "activity": "Daily Scrum y seguimiento del Sprint Goal",
+    "weeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 19
+  },
+  {
+    "activity": "Seguimiento y actualización del Sprint Backlog",
+    "weeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 20
+  },
+  {
+    "activity": "Gestión de impedimentos y seguimiento de riesgos",
+    "weeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 21
+  },
+  {
+    "activity": "Verificación de criterios de aceptación, calidad y Definition of Done",
+    "weeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 22
+  },
+  {
+    "activity": "Sprint Review e inspección del incremento",
+    "weeks": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "number": 23
+  },
+  {
+    "activity": "Validación del incremento y retroalimentación de interesados",
+    "weeks": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "number": 24
+  },
+  {
+    "activity": "Refinamiento y actualización del Product Backlog",
+    "weeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 25
+  },
+  {
+    "activity": "Seguimiento de métricas de avance, calidad y cumplimiento",
+    "weeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 26
+  },
+  {
+    "activity": "Sprint Retrospective e identificación de oportunidades de mejora",
+    "weeks": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "number": 27
+  },
+  {
+    "activity": "Implementación de acciones de mejora del proceso",
+    "weeks": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "number": 28
+  },
+  {
+    "phase": "FASE 5. CIERRE (PMI)"
+  },
+  {
+    "activity": "Validación final del WMS y consolidación de pruebas de carga, seguridad y calidad",
+    "weeks": [
+      7,
+      8
+    ],
+    "number": 29
+  },
+  {
+    "activity": "Consolidación de documentación técnica y funcional; prueba de restauración de respaldo",
+    "weeks": [
+      7,
+      8
+    ],
+    "number": 30
+  },
+  {
+    "activity": "Entrega, transferencia y aceptación del producto por la empresa",
+    "weeks": [
+      8
+    ],
+    "number": 31
+  },
+  {
+    "activity": "Registro de lecciones aprendidas y cierre de pendientes",
+    "weeks": [
+      8
+    ],
+    "number": 32
+  },
+  {
+    "activity": "Presentación final de resultados y conformidad del proyecto",
+    "weeks": [
+      8
+    ],
+    "number": 33
+  }
+]

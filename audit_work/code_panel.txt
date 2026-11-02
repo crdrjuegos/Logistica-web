@@ -1,0 +1,4199 @@
+
+FILE app\Filament\Support\CsvExport.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Support;
+6: 
+7: use Symfony\Component\HttpFoundation\StreamedResponse;
+8: 
+9: /** Descarga CSV que Excel en español abre bien (UTF-8 con BOM y punto y coma). */
+10: final class CsvExport
+11: {
+12:     /**
+13:      * @param  list<string>  $headers
+14:      * @param  iterable<list<scalar|null>>  $rows
+15:      */
+16:     public static function download(string $baseName, array $headers, iterable $rows): StreamedResponse
+17:     {
+18:         return response()->streamDownload(static function () use ($headers, $rows): void {
+19:             $out = fopen('php://output', 'w');
+20:             if ($out === false) {
+21:                 return;
+22:             }
+23:             fwrite($out, "\xEF\xBB\xBF");
+24:             fputcsv($out, $headers, ';', '"', '');
+25:             foreach ($rows as $row) {
+26:                 fputcsv($out, $row, ';', '"', '');
+27:             }
+28:             fclose($out);
+29:         }, $baseName.'-'.now('America/Lima')->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+30:     }
+31: }
+
+
+FILE app\Filament\Support\FormInput.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Support;
+6: 
+7: use App\Modules\Operations\Domain\OperationsException;
+8: 
+9: /** Lectura segura de los datos que llegan de los formularios. */
+10: final class FormInput
+11: {
+12:     public static function string(mixed $value): string
+13:     {
+14:         return is_scalar($value) ? trim((string) $value) : '';
+15:     }
+16: 
+17:     public static function nullableString(mixed $value): ?string
+18:     {
+19:         $s = self::string($value);
+20: 
+21:         return $s === '' ? null : $s;
+22:     }
+23: 
+24:     public static function requiredInt(mixed $value, string $label): int
+25:     {
+26:         $s = self::string($value);
+27: 
+28:         return $s === '' ? throw OperationsException::invalid("Falta seleccionar {$label}.") : (int) $s;
+29:     }
+30: 
+31:     public static function requiredDecimal(mixed $value, string $label): string
+32:     {
+33:         $s = self::string($value);
+34: 
+35:         return $s === '' ? throw OperationsException::invalid("Falta indicar {$label}.") : $s;
+36:     }
+37: 
+38:     /** @return list<array<string, mixed>> */
+39:     public static function rows(mixed $value): array
+40:     {
+41:         return is_array($value) ? array_values(array_filter($value, 'is_array')) : [];
+42:     }
+43: }
+
+
+FILE app\Filament\Support\SearchOptions.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Support;
+6: 
+7: use Illuminate\Support\Facades\DB;
+8: 
+9: /** Búsqueda en vivo para selectores de productos y ubicaciones (hay demasiados para cargarlos todos). */
+10: final class SearchOptions
+11: {
+12:     /** @return array<int, string> id => "SKU — nombre" */
+13:     public static function products(string $search): array
+14:     {
+15:         $s = trim($search);
+16: 
+17:         $query = DB::table('products')->whereNull('deleted_at')->where('status', 'ACTIVE');
+18:         if ($s !== '') {
+19:             $query->where(static function ($q) use ($s): void {
+20:                 $q->where('sku', 'ilike', "%{$s}%")
+21:                     ->orWhere('name', 'ilike', "%{$s}%")
+22:                     ->orWhereIn('id', DB::table('product_barcodes')->select('product_id')->where('barcode', $s));
+23:             });
+24:         }
+25: 
+26:         $options = [];
+27:         foreach ($query->orderBy('name')->limit(30)->get(['id', 'sku', 'name']) as $p) {
+28:             $options[(int) $p->id] = $p->sku.' — '.$p->name;
+29:         }
+30: 
+31:         return $options;
+32:     }
+33: 
+34:     public static function productLabel(mixed $id): ?string
+35:     {
+36:         $p = DB::table('products')->where('id', (int) $id)->first(['sku', 'name']);
+37: 
+38:         return $p === null ? null : $p->sku.' — '.$p->name;
+39:     }
+40: 
+41:     /** @return array<int, string> id => código de ubicación */
+42:     public static function locations(string $search): array
+43:     {
+44:         $s = trim($search);
+45: 
+46:         $query = DB::table('locations')->where('is_active', true);
+47:         if ($s !== '') {
+48:             $query->where('code', 'ilike', "%{$s}%");
+49:         }
+50: 
+51:         $options = [];
+52:         foreach ($query->orderBy('code')->limit(30)->get(['id', 'code']) as $l) {
+53:             $options[(int) $l->id] = (string) $l->code;
+54:         }
+55: 
+56:         return $options;
+57:     }
+58: 
+59:     public static function locationLabel(mixed $id): ?string
+60:     {
+61:         $code = DB::table('locations')->where('id', (int) $id)->value('code');
+62: 
+63:         return $code === null ? null : (string) $code;
+64:     }
+65: }
+
+
+FILE app\Filament\Widgets\CriticalStockTable.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Widgets;
+6: 
+7: use App\Models\ReplenishmentSuggestion;
+8: use Filament\Tables\Columns\TextColumn;
+9: use Filament\Tables\Table;
+10: use Filament\Widgets\TableWidget;
+11: 
+12: class CriticalStockTable extends TableWidget
+13: {
+14:     protected static ?int $sort = 2;
+15: 
+16:     protected int|string|array $columnSpan = 'full';
+17: 
+18:     public static function canView(): bool
+19:     {
+20:         return auth()->user()?->can('alerts.view') ?? false;
+21:     }
+22: 
+23:     public function table(Table $table): Table
+24:     {
+25:         $qty = static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0';
+26: 
+27:         return $table
+28:             ->heading('Productos agotados o bajo el mínimo')
+29:             ->query(ReplenishmentSuggestion::query()->whereIn('status', ['OUT', 'LOW'])->orderByDesc('suggested_qty'))
+30:             ->columns([
+31:                 TextColumn::make('sku')->label('SKU'),
+32:                 TextColumn::make('product_name')->label('Producto')->wrap(),
+33:                 TextColumn::make('warehouse_name')->label('Almacén'),
+34:                 TextColumn::make('status')->label('Estado')->badge()
+35:                     ->formatStateUsing(static fn (string $state): string => $state === 'OUT' ? 'Agotado' : 'Bajo el mínimo')
+36:                     ->color(static fn (string $state): string => $state === 'OUT' ? 'danger' : 'warning'),
+37:                 TextColumn::make('stock')->label('Stock')->alignEnd()->formatStateUsing($qty),
+38:                 TextColumn::make('min_qty')->label('Mínimo')->alignEnd()->formatStateUsing($qty),
+39:                 TextColumn::make('suggested_qty')->label('Pedir')->alignEnd()->weight('bold')->formatStateUsing($qty),
+40:                 TextColumn::make('supplier_name')->label('Proveedor')->placeholder('Sin proveedor'),
+41:             ])
+42:             ->paginated([5, 10, 25])
+43:             ->defaultPaginationPageOption(5)
+44:             ->emptyStateHeading('Todo en orden: nada por debajo del mínimo');
+45:     }
+46: }
+
+
+FILE app\Filament\Widgets\InventoryStats.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Widgets;
+6: 
+7: use Filament\Widgets\StatsOverviewWidget;
+8: use Filament\Widgets\StatsOverviewWidget\Stat;
+9: use Illuminate\Support\Facades\DB;
+10: 
+11: class InventoryStats extends StatsOverviewWidget
+12: {
+13:     protected static ?int $sort = 1;
+14: 
+15:     public static function canView(): bool
+16:     {
+17:         return auth()->user()?->can('alerts.view') ?? false;
+18:     }
+19: 
+20:     protected function getStats(): array
+21:     {
+22:         $value = (float) DB::table('stock_balances as sb')->join('products as p', 'p.id', '=', 'sb.product_id')
+23:             ->selectRaw('COALESCE(SUM(sb.quantity * p.cost_avg), 0) AS v')->value('v');
+24:         $out = DB::table('v_replenishment')->where('status', 'OUT')->count();
+25:         $low = DB::table('v_replenishment')->where('status', 'LOW')->count();
+26:         $pending = DB::table('stock_adjustment_requests')->where('status', 'PENDING')->count();
+27:         $counting = DB::table('stock_counts')->whereIn('status', ['COUNTING', 'REVIEW'])->count();
+28:         $waste = (float) DB::table('stock_movements')->where('type', 'MERMA')
+29:             ->where('created_at', '>=', now('America/Lima')->startOfMonth())
+30:             ->selectRaw('COALESCE(SUM(quantity * unit_cost), 0) AS v')->value('v');
+31: 
+32:         return [
+33:             Stat::make('Valor del inventario', 'S/ '.number_format($value, 2, '.', ','))->description('Al costo promedio, sin IGV')->color('primary'),
+34:             Stat::make('Agotados', (string) $out)->description('Productos con política de stock')->color($out > 0 ? 'danger' : 'success'),
+35:             Stat::make('Bajo el mínimo', (string) $low)->description('Conviene pedir')->color($low > 0 ? 'warning' : 'success'),
+36:             Stat::make('Ajustes por aprobar', (string) $pending)->description('Mermas y ajustes pendientes')->color($pending > 0 ? 'warning' : 'success'),
+37:             Stat::make('Conteos abiertos', (string) $counting)->description('En curso o en revisión')->color('gray'),
+38:             Stat::make('Mermas del mes', 'S/ '.number_format($waste, 2, '.', ','))->description('Valorizadas al costo')->color($waste > 0 ? 'warning' : 'success'),
+39:         ];
+40:     }
+41: }
+
+
+FILE app\Filament\Resources\Adjustments\AdjustmentFormMapper.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Adjustments;
+6: 
+7: use App\Filament\Support\FormInput;
+8: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+9: use App\Modules\Inventory\Domain\Quantity;
+10: use App\Modules\Operations\Domain\AdjustmentKind;
+11: use App\Modules\Operations\Domain\NewAdjustment;
+12: use App\Modules\Operations\Domain\OperationsException;
+13: 
+14: final class AdjustmentFormMapper
+15: {
+16:     /** @param array<string, mixed> $data */
+17:     public static function toNewAdjustment(array $data, int $userId): NewAdjustment
+18:     {
+19:         try {
+20:             return new NewAdjustment(
+21:                 AdjustmentKind::tryFrom(FormInput::string($data['kind'] ?? null)) ?? throw OperationsException::invalid('Seleccione el tipo de ajuste.'),
+22:                 FormInput::requiredInt($data['product_id'] ?? null, 'el producto'),
+23:                 FormInput::requiredInt($data['location_id'] ?? null, 'la ubicación'),
+24:                 Quantity::of(FormInput::requiredDecimal($data['quantity'] ?? null, 'la cantidad')),
+25:                 FormInput::requiredInt($data['reason_id'] ?? null, 'el motivo'),
+26:                 FormInput::string($data['notes'] ?? null),
+27:                 $userId,
+28:             );
+29:         } catch (InventoryException $e) {
+30:             throw OperationsException::invalid($e->getMessage());
+31:         }
+32:     }
+33: }
+
+
+FILE app\Filament\Resources\Adjustments\AdjustmentResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Adjustments;
+6: 
+7: use App\Filament\Resources\Adjustments\Pages\CreateAdjustment;
+8: use App\Filament\Resources\Adjustments\Pages\ListAdjustments;
+9: use App\Filament\Resources\Products\CatalogOptions;
+10: use App\Filament\Support\SearchOptions;
+11: use App\Models\StockAdjustmentRequest;
+12: use App\Modules\Operations\Application\ApproveAdjustment;
+13: use App\Modules\Operations\Application\RejectAdjustment;
+14: use App\Modules\Operations\Domain\AdjustmentKind;
+15: use App\Modules\Operations\Domain\OperationsException;
+16: use BackedEnum;
+17: use Filament\Actions\Action;
+18: use Filament\Forms\Components\Select;
+19: use Filament\Forms\Components\Textarea;
+20: use Filament\Forms\Components\TextInput;
+21: use Filament\Notifications\Notification;
+22: use Filament\Resources\Resource;
+23: use Filament\Schemas\Components\Section;
+24: use Filament\Schemas\Components\Utilities\Get;
+25: use Filament\Schemas\Components\Utilities\Set;
+26: use Filament\Schemas\Schema;
+27: use Filament\Tables\Columns\TextColumn;
+28: use Filament\Tables\Filters\SelectFilter;
+29: use Filament\Tables\Table;
+30: use Illuminate\Database\Eloquent\Builder;
+31: use Illuminate\Support\Facades\DB;
+32: use UnitEnum;
+33: 
+34: class AdjustmentResource extends Resource
+35: {
+36:     protected static ?string $model = StockAdjustmentRequest::class;
+37: 
+38:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-adjustments-horizontal';
+39: 
+40:     protected static string|UnitEnum|null $navigationGroup = 'Almacén';
+41: 
+42:     protected static ?int $navigationSort = 3;
+43: 
+44:     protected static ?string $navigationLabel = 'Ajustes y mermas';
+45: 
+46:     protected static ?string $modelLabel = 'solicitud de ajuste';
+47: 
+48:     protected static ?string $pluralModelLabel = 'ajustes y mermas';
+49: 
+50:     protected static ?string $recordTitleAttribute = 'code';
+51: 
+52:     public static function form(Schema $schema): Schema
+53:     {
+54:         return $schema->components([
+55:             Section::make('Solicitud')
+56:                 ->description('El stock NO cambia hasta que otra persona (supervisor) la apruebe.')
+57:                 ->schema([
+58:                     Select::make('kind')->label('Tipo')->required()->live()
+59:                         ->options([
+60:                             'WRITE_OFF' => 'Merma (daño, robo, vencimiento, muestra)',
+61:                             'NEGATIVE' => 'Ajuste negativo (hay menos físico que en el sistema)',
+62:                             'POSITIVE' => 'Ajuste positivo (hay más físico que en el sistema)',
+63:                         ])
+64:                         ->afterStateUpdated(static fn (Set $set) => $set('reason_id', null)),
+65:                     Select::make('reason_id')->label('Motivo')->required()
+66:                         ->options(static function (Get $get): array {
+67:                             $kind = AdjustmentKind::tryFrom((string) $get('kind'));
+68: 
+69:                             return $kind === null ? [] : CatalogOptions::reasons($kind->reasonMovementType());
+70:                         }),
+71:                     Select::make('product_id')->label('Producto')->required()->searchable()
+72:                         ->getSearchResultsUsing(fn (string $search): array => SearchOptions::products($search))
+73:                         ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::productLabel($value)),
+74:                     Select::make('location_id')->label('Ubicación')->required()->searchable()
+75:                         ->getSearchResultsUsing(fn (string $search): array => SearchOptions::locations($search))
+76:                         ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::locationLabel($value)),
+77:                     TextInput::make('quantity')->label('Cantidad')->numeric()->minValue(0.001)->required(),
+78:                     Textarea::make('notes')->label('Explicación (obligatoria)')->required()->minLength(5)->maxLength(500)->rows(3)->columnSpanFull(),
+79:                 ])->columns(2),
+80:         ]);
+81:     }
+82: 
+83:     public static function table(Table $table): Table
+84:     {
+85:         return $table
+86:             ->columns([
+87:                 TextColumn::make('code')->label('Código')->searchable()->sortable(),
+88:                 TextColumn::make('kind')->label('Tipo')->badge()
+89:                     ->formatStateUsing(static fn (string $state): string => ['WRITE_OFF' => 'Merma', 'NEGATIVE' => 'Ajuste (−)', 'POSITIVE' => 'Ajuste (+)'][$state] ?? $state)
+90:                     ->color(static fn (string $state): string => $state === 'POSITIVE' ? 'info' : 'warning'),
+91:                 TextColumn::make('product.sku')->label('SKU')->searchable()->description(static fn (StockAdjustmentRequest $record): ?string => $record->product?->name),
+92:                 TextColumn::make('location_code')->label('Ubicación'),
+93:                 TextColumn::make('quantity')->label('Cantidad')->alignEnd()
+94:                     ->formatStateUsing(static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0'),
+95:                 TextColumn::make('reason_name')->label('Motivo')->wrap(),
+96:                 TextColumn::make('notes')->label('Explicación')->limit(40)->tooltip(static fn (StockAdjustmentRequest $record): string => (string) $record->getAttribute('notes'))->toggleable(),
+97:                 TextColumn::make('requester.name')->label('Solicitó'),
+98:                 TextColumn::make('status')->label('Estado')->badge()
+99:                     ->formatStateUsing(static fn (string $state): string => ['PENDING' => 'Pendiente', 'APPROVED' => 'Aprobada', 'REJECTED' => 'Rechazada'][$state] ?? $state)
+100:                     ->color(static fn (string $state): string => ['PENDING' => 'warning', 'APPROVED' => 'success', 'REJECTED' => 'danger'][$state] ?? 'gray'),
+101:                 TextColumn::make('created_at')->label('Solicitada')->dateTime('d/m/Y H:i', 'America/Lima')->sortable(),
+102:             ])
+103:             ->filters([
+104:                 SelectFilter::make('status')->label('Estado')->options(['PENDING' => 'Pendiente', 'APPROVED' => 'Aprobada', 'REJECTED' => 'Rechazada']),
+105:                 SelectFilter::make('kind')->label('Tipo')->options(['WRITE_OFF' => 'Merma', 'NEGATIVE' => 'Ajuste (−)', 'POSITIVE' => 'Ajuste (+)']),
+106:             ])
+107:             ->recordActions([
+108:                 Action::make('approve')->label('Aprobar')->icon('heroicon-o-check-circle')->color('success')
+109:                     ->modalHeading('Aprobar solicitud')
+110:                     ->modalDescription('Al aprobar, el stock cambia en ese momento y queda en el historial.')
+111:                     ->schema([Textarea::make('notes')->label('Comentario (opcional)')->maxLength(500)])
+112:                     ->visible(static fn (StockAdjustmentRequest $record): bool => $record->status === 'PENDING'
+113:                         && (auth()->user()?->can('inventory.adjust.approve') ?? false)
+114:                         && (int) $record->requested_by !== (int) auth()->id())
+115:                     ->action(static function (array $data, StockAdjustmentRequest $record): void {
+116:                         try {
+117:                             app(ApproveAdjustment::class)((int) $record->id, (int) auth()->id(), ($data['notes'] ?? null) ?: null);
+118:                             Notification::make()->title('Solicitud aprobada: el stock fue actualizado')->success()->send();
+119:                         } catch (OperationsException $e) {
+120:                             Notification::make()->title('No se pudo aprobar')->body($e->getMessage())->danger()->send();
+121:                         }
+122:                     }),
+123:                 Action::make('reject')->label('Rechazar')->icon('heroicon-o-x-circle')->color('danger')
+124:                     ->modalHeading('Rechazar solicitud')
+125:                     ->schema([Textarea::make('notes')->label('Motivo del rechazo')->required()->minLength(5)->maxLength(500)])
+126:                     ->visible(static fn (StockAdjustmentRequest $record): bool => $record->status === 'PENDING'
+127:                         && (auth()->user()?->can('inventory.adjust.approve') ?? false)
+128:                         && (int) $record->requested_by !== (int) auth()->id())
+129:                     ->action(static function (array $data, StockAdjustmentRequest $record): void {
+130:                         try {
+131:                             app(RejectAdjustment::class)((int) $record->id, (int) auth()->id(), (string) ($data['notes'] ?? ''));
+132:                             Notification::make()->title('Solicitud rechazada')->success()->send();
+133:                         } catch (OperationsException $e) {
+134:                             Notification::make()->title('No se pudo rechazar')->body($e->getMessage())->danger()->send();
+135:                         }
+136:                     }),
+137:             ])
+138:             ->defaultSort('created_at', 'desc')
+139:             ->emptyStateHeading('No hay solicitudes')
+140:             ->emptyStateDescription('Las mermas y ajustes que pida el personal aparecerán aquí para su aprobación.');
+141:     }
+142: 
+143:     public static function getEloquentQuery(): Builder
+144:     {
+145:         return parent::getEloquentQuery()
+146:             ->select('stock_adjustment_requests.*')
+147:             ->addSelect([
+148:                 'location_code' => DB::table('locations')->select('code')->whereColumn('locations.id', 'stock_adjustment_requests.location_id'),
+149:                 'reason_name' => DB::table('movement_reasons')->select('name')->whereColumn('movement_reasons.id', 'stock_adjustment_requests.reason_id'),
+150:             ])
+151:             ->with(['product', 'requester']);
+152:     }
+153: 
+154:     public static function getPages(): array
+155:     {
+156:         return [
+157:             'index' => ListAdjustments::route('/'),
+158:             'create' => CreateAdjustment::route('/create'),
+159:         ];
+160:     }
+161: }
+
+
+FILE app\Filament\Resources\Audit\AuditResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Audit;
+6: 
+7: use App\Filament\Resources\Audit\Pages\ListAuditLogs;
+8: use App\Models\AuditLog;
+9: use BackedEnum;
+10: use Filament\Actions\Action;
+11: use Filament\Forms\Components\DatePicker;
+12: use Filament\Resources\Resource;
+13: use Filament\Schemas\Schema;
+14: use Filament\Tables\Columns\TextColumn;
+15: use Filament\Tables\Filters\Filter;
+16: use Filament\Tables\Filters\SelectFilter;
+17: use Filament\Tables\Table;
+18: use Illuminate\Contracts\View\View;
+19: use Illuminate\Database\Eloquent\Builder;
+20: use Illuminate\Support\Facades\DB;
+21: use UnitEnum;
+22: 
+23: class AuditResource extends Resource
+24: {
+25:     /** Nombres legibles de las acciones más frecuentes (las demás se muestran con su código). */
+26:     public const ACTION_LABELS = [
+27:         'product.created' => 'Producto creado', 'product.updated' => 'Producto editado', 'product.deactivated' => 'Producto dado de baja',
+28:         'category.created' => 'Categoría creada', 'category.updated' => 'Categoría editada', 'brand.created' => 'Marca creada', 'brand.updated' => 'Marca editada',
+29:         'user.created' => 'Usuario creado', 'user.deactivated' => 'Usuario desactivado', 'user.activated' => 'Usuario reactivado',
+30:         'user.password_reset' => 'Contraseña restablecida', 'user.password_reset_cli' => 'Contraseña restablecida (consola)',
+31:         'user.login_failed' => 'Intento de acceso fallido', 'user.locked' => 'Cuenta bloqueada',
+32:         'receipt.confirmed' => 'Recepción confirmada', 'receipt.cancelled' => 'Recepción anulada',
+33:         'transfer.completed' => 'Transferencia completada', 'transfer.cancelled' => 'Transferencia anulada',
+34:         'adjustment.requested' => 'Ajuste solicitado', 'adjustment.approved' => 'Ajuste aprobado', 'adjustment.rejected' => 'Ajuste rechazado',
+35:         'count.started' => 'Conteo iniciado', 'count.submitted' => 'Conteo enviado a revisión', 'count.closed' => 'Conteo cerrado', 'count.cancelled' => 'Conteo anulado',
+36:         'pos.imported' => 'Ventas del POS importadas', 'pos.simulated' => 'Ventas del POS simuladas',
+37:         'location.frozen_bulk' => 'Ubicaciones congeladas', 'location.unfrozen_bulk' => 'Ubicaciones descongeladas',
+38:         'supplier.created' => 'Proveedor creado', 'supplier.updated' => 'Proveedor editado',
+39:     ];
+40: 
+41:     protected static ?string $model = AuditLog::class;
+42: 
+43:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
+44: 
+45:     protected static string|UnitEnum|null $navigationGroup = 'Administración';
+46: 
+47:     protected static ?int $navigationSort = 9;
+48: 
+49:     protected static ?string $navigationLabel = 'Auditoría';
+50: 
+51:     protected static ?string $modelLabel = 'registro';
+52: 
+53:     protected static ?string $pluralModelLabel = 'auditoría del sistema';
+54: 
+55:     public static function form(Schema $schema): Schema
+56:     {
+57:         return $schema;
+58:     }
+59: 
+60:     public static function table(Table $table): Table
+61:     {
+62:         return $table
+63:             ->columns([
+64:                 TextColumn::make('created_at')->label('Fecha')->dateTime('d/m/Y H:i:s', 'America/Lima')->sortable(),
+65:                 TextColumn::make('actor.name')->label('Quién')->placeholder('Sistema')->searchable(),
+66:                 TextColumn::make('action')->label('Qué')->searchable()
+67:                     ->formatStateUsing(static fn (string $state): string => self::ACTION_LABELS[$state] ?? $state)
+68:                     ->description(static fn (AuditLog $record): string => $record->action),
+69:                 TextColumn::make('entity_type')->label('Sobre')->formatStateUsing(static fn (string $state, AuditLog $record): string => $state.($record->entity_id !== null ? " #{$record->entity_id}" : '')),
+70:                 TextColumn::make('ip')->label('IP')->toggleable(isToggledHiddenByDefault: true),
+71:             ])
+72:             ->filters([
+73:                 SelectFilter::make('action')->label('Acción')->searchable()
+74:                     ->options(static fn (): array => DB::table('audit_logs')->distinct()->orderBy('action')->pluck('action')
+75:                         ->mapWithKeys(static fn ($a): array => [(string) $a => self::ACTION_LABELS[(string) $a] ?? (string) $a])->all()),
+76:                 SelectFilter::make('actor_id')->label('Persona')->searchable()
+77:                     ->options(static fn (): array => DB::table('users')->orderBy('name')->pluck('name', 'id')->map(static fn ($n): string => (string) $n)->all()),
+78:                 Filter::make('period')->label('Período')
+79:                     ->schema([DatePicker::make('from')->label('Desde'), DatePicker::make('until')->label('Hasta')])
+80:                     ->query(static fn (Builder $query, array $data): Builder => $query
+81:                         ->when($data['from'] ?? null, static fn (Builder $q, $d): Builder => $q->where('created_at', '>=', $d.' 00:00:00-05'))
+82:                         ->when($data['until'] ?? null, static fn (Builder $q, $d): Builder => $q->where('created_at', '<=', $d.' 23:59:59-05'))),
+83:             ])
+84:             ->recordActions([
+85:                 Action::make('detail')->label('Ver detalle')->icon('heroicon-o-eye')->color('gray')
+86:                     ->modalHeading(static fn (AuditLog $record): string => self::ACTION_LABELS[$record->action] ?? $record->action)
+87:                     ->modalWidth('4xl')->modalSubmitAction(false)->modalCancelActionLabel('Cerrar')
+88:                     ->modalContent(static fn (AuditLog $record): View => view('filament.audit-detail', ['log' => $record])),
+89:             ])
+90:             ->defaultSort('created_at', 'desc')
+91:             ->emptyStateHeading('Aún no hay registros');
+92:     }
+93: 
+94:     public static function getEloquentQuery(): Builder
+95:     {
+96:         return parent::getEloquentQuery()->with('actor');
+97:     }
+98: 
+99:     public static function getPages(): array
+100:     {
+101:         return ['index' => ListAuditLogs::route('/')];
+102:     }
+103: }
+
+
+FILE app\Filament\Resources\Brands\BrandResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Brands;
+6: 
+7: use App\Filament\Resources\Brands\Pages\ManageBrands;
+8: use App\Models\Brand;
+9: use BackedEnum;
+10: use Filament\Actions\EditAction;
+11: use Filament\Forms\Components\TextInput;
+12: use Filament\Resources\Resource;
+13: use Filament\Schemas\Schema;
+14: use Filament\Tables\Columns\TextColumn;
+15: use Filament\Tables\Table;
+16: use UnitEnum;
+17: 
+18: class BrandResource extends Resource
+19: {
+20:     protected static ?string $model = Brand::class;
+21: 
+22:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bookmark';
+23: 
+24:     protected static string|UnitEnum|null $navigationGroup = 'Catálogo';
+25: 
+26:     protected static ?int $navigationSort = 3;
+27: 
+28:     protected static ?string $modelLabel = 'marca';
+29: 
+30:     protected static ?string $pluralModelLabel = 'marcas';
+31: 
+32:     protected static ?string $recordTitleAttribute = 'name';
+33: 
+34:     public static function form(Schema $schema): Schema
+35:     {
+36:         return $schema->components([
+37:             TextInput::make('name')->label('Nombre')->required()->maxLength(80)->unique(ignoreRecord: true),
+38:         ]);
+39:     }
+40: 
+41:     public static function table(Table $table): Table
+42:     {
+43:         return $table
+44:             ->columns([TextColumn::make('name')->label('Nombre')->searchable()->sortable()])
+45:             ->defaultSort('name')
+46:             ->recordActions([EditAction::make()->label('Editar')]);
+47:     }
+48: 
+49:     public static function getPages(): array
+50:     {
+51:         return ['index' => ManageBrands::route('/')];
+52:     }
+53: }
+
+
+FILE app\Filament\Resources\Categories\CategoryResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Categories;
+6: 
+7: use App\Filament\Resources\Categories\Pages\ManageCategories;
+8: use App\Models\Category;
+9: use BackedEnum;
+10: use Filament\Actions\EditAction;
+11: use Filament\Forms\Components\Select;
+12: use Filament\Forms\Components\TextInput;
+13: use Filament\Forms\Components\Toggle;
+14: use Filament\Resources\Resource;
+15: use Filament\Schemas\Schema;
+16: use Filament\Tables\Columns\IconColumn;
+17: use Filament\Tables\Columns\TextColumn;
+18: use Filament\Tables\Table;
+19: use Illuminate\Support\Facades\DB;
+20: use UnitEnum;
+21: 
+22: class CategoryResource extends Resource
+23: {
+24:     protected static ?string $model = Category::class;
+25: 
+26:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-tag';
+27: 
+28:     protected static string|UnitEnum|null $navigationGroup = 'Catálogo';
+29: 
+30:     protected static ?int $navigationSort = 2;
+31: 
+32:     protected static ?string $modelLabel = 'categoría';
+33: 
+34:     protected static ?string $pluralModelLabel = 'categorías';
+35: 
+36:     protected static ?string $recordTitleAttribute = 'name';
+37: 
+38:     public static function form(Schema $schema): Schema
+39:     {
+40:         return $schema->components([
+41:             Select::make('parent_id')->label('Categoría padre')
+42:                 ->options(static function (): array {
+43:                     $options = [];
+44:                     foreach (DB::table('categories')->where('depth', '<', 3)->orderBy('name')->get(['id', 'name']) as $c) {
+45:                         $options[(int) $c->id] = (string) $c->name;
+46:                     }
+47: 
+48:                     return $options;
+49:                 })
+50:                 ->placeholder('Ninguna (categoría de primer nivel)')
+51:                 ->helperText('Se permiten hasta 3 niveles. No se puede cambiar después de crearla.')
+52:                 ->disabled(static fn (string $operation): bool => $operation === 'edit')
+53:                 ->dehydrated(static fn (string $operation): bool => $operation === 'create'),
+54:             TextInput::make('name')->label('Nombre')->required()->maxLength(80),
+55:             TextInput::make('code')->label('Código (prefijo del SKU)')->maxLength(4)
+56:                 ->helperText('Obligatorio en las de primer nivel: 2 a 4 letras o números (por ejemplo LIB).')
+57:                 ->disabled(static fn (string $operation): bool => $operation === 'edit')
+58:                 ->dehydrated(static fn (string $operation): bool => $operation === 'create'),
+59:             Toggle::make('is_active')->label('Activa')->default(true),
+60:         ]);
+61:     }
+62: 
+63:     public static function table(Table $table): Table
+64:     {
+65:         return $table
+66:             ->columns([
+67:                 TextColumn::make('name')->label('Nombre')->searchable()->sortable(),
+68:                 TextColumn::make('code')->label('Código')->badge(),
+69:                 TextColumn::make('parent.name')->label('Padre')->placeholder('—'),
+70:                 TextColumn::make('depth')->label('Nivel')->sortable(),
+71:                 IconColumn::make('is_active')->label('Activa')->boolean(),
+72:             ])
+73:             ->defaultSort('depth')
+74:             ->recordActions([
+75:                 EditAction::make()->label('Editar'),
+76:             ]);
+77:     }
+78: 
+79:     public static function getPages(): array
+80:     {
+81:         return ['index' => ManageCategories::route('/')];
+82:     }
+83: }
+
+
+FILE app\Filament\Resources\Counts\CountResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Counts;
+6: 
+7: use App\Filament\Resources\Counts\Pages\ListCounts;
+8: use App\Filament\Support\SearchOptions;
+9: use App\Models\StockCount;
+10: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+11: use App\Modules\Inventory\Domain\Quantity;
+12: use App\Modules\Operations\Application\CancelCount;
+13: use App\Modules\Operations\Application\CloseCount;
+14: use App\Modules\Operations\Application\RecordCount;
+15: use App\Modules\Operations\Application\SubmitCountForReview;
+16: use App\Modules\Operations\Domain\OperationsException;
+17: use BackedEnum;
+18: use Filament\Actions\Action;
+19: use Filament\Forms\Components\Select;
+20: use Filament\Forms\Components\TextInput;
+21: use Filament\Notifications\Notification;
+22: use Filament\Resources\Resource;
+23: use Filament\Schemas\Schema;
+24: use Filament\Tables\Columns\TextColumn;
+25: use Filament\Tables\Filters\SelectFilter;
+26: use Filament\Tables\Table;
+27: use Illuminate\Contracts\View\View;
+28: use Illuminate\Database\Eloquent\Builder;
+29: use Illuminate\Support\Facades\DB;
+30: use UnitEnum;
+31: 
+32: class CountResource extends Resource
+33: {
+34:     protected static ?string $model = StockCount::class;
+35: 
+36:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
+37: 
+38:     protected static string|UnitEnum|null $navigationGroup = 'Almacén';
+39: 
+40:     protected static ?int $navigationSort = 5;
+41: 
+42:     protected static ?string $navigationLabel = 'Conteos';
+43: 
+44:     protected static ?string $modelLabel = 'conteo';
+45: 
+46:     protected static ?string $pluralModelLabel = 'conteos de inventario';
+47: 
+48:     protected static ?string $recordTitleAttribute = 'code';
+49: 
+50:     public static function form(Schema $schema): Schema
+51:     {
+52:         return $schema;
+53:     }
+54: 
+55:     public static function table(Table $table): Table
+56:     {
+57:         return $table
+58:             ->columns([
+59:                 TextColumn::make('code')->label('Código')->searchable()->sortable(),
+60:                 TextColumn::make('warehouse_name')->label('Almacén'),
+61:                 TextColumn::make('scope_type')->label('Alcance')
+62:                     ->formatStateUsing(static fn (string $state, StockCount $record): string => (['FULL' => 'Almacén completo', 'ZONE' => 'Zona', 'LOCATION' => 'Ubicación', 'CATEGORY' => 'Categoría', 'ABC_A' => 'Clase A'][$state] ?? $state).($record->scope_value !== null ? " {$record->scope_value}" : '')),
+63:                 TextColumn::make('status')->label('Estado')->badge()
+64:                     ->formatStateUsing(static fn (string $state): string => ['OPEN' => 'Abierto', 'COUNTING' => 'Contando', 'REVIEW' => 'En revisión', 'CLOSED' => 'Cerrado', 'CANCELLED' => 'Anulado'][$state] ?? $state)
+65:                     ->color(static fn (string $state): string => ['COUNTING' => 'warning', 'REVIEW' => 'info', 'CLOSED' => 'success', 'CANCELLED' => 'gray'][$state] ?? 'gray'),
+66:                 TextColumn::make('lines_counted')->label('Contadas')->alignEnd()
+67:                     ->formatStateUsing(static fn ($state, StockCount $record): string => $state.' / '.$record->getAttribute('lines_total')),
+68:                 TextColumn::make('lines_diff')->label('Con diferencia')->alignEnd()->badge()
+69:                     ->color(static fn ($state): string => (int) $state > 0 ? 'warning' : 'success'),
+70:                 TextColumn::make('recounts_pending')->label('Reconteos pendientes')->alignEnd(),
+71:                 TextColumn::make('opener.name')->label('Inició'),
+72:                 TextColumn::make('created_at')->label('Fecha')->dateTime('d/m/Y H:i', 'America/Lima')->sortable(),
+73:             ])
+74:             ->filters([
+75:                 SelectFilter::make('status')->label('Estado')
+76:                     ->options(['COUNTING' => 'Contando', 'REVIEW' => 'En revisión', 'CLOSED' => 'Cerrado', 'CANCELLED' => 'Anulado']),
+77:             ])
+78:             ->recordActions([
+79:                 Action::make('detail')->label('Ver líneas')->icon('heroicon-o-list-bullet')->color('gray')
+80:                     ->modalHeading(static fn (StockCount $record): string => 'Conteo '.$record->code)
+81:                     ->modalWidth('7xl')->modalSubmitAction(false)->modalCancelActionLabel('Cerrar')
+82:                     ->modalContent(static fn (StockCount $record): View => view('filament.count-lines', [
+83:                         'count' => $record,
+84:                         'showExpected' => auth()->user()?->can('counts.close') ?? false,
+85:                         'lines' => DB::select(
+86:                             'SELECT l.id, l.expected_qty::text AS expected, l.counted_qty::text AS counted, l.difference::text AS difference, l.recount_requested,
+87:                                     p.sku, p.name, loc.code AS location_code
+88:                                FROM stock_count_lines l
+89:                                JOIN products p ON p.id = l.product_id
+90:                                JOIN locations loc ON loc.id = l.location_id
+91:                               WHERE l.count_id = ?
+92:                               ORDER BY loc.code, p.sku',
+93:                             [$record->id],
+94:                         ),
+95:                     ])),
+96:                 Action::make('count')->label('Contar')->icon('heroicon-o-calculator')->color('primary')
+97:                     ->modalHeading('Registrar lo contado')
+98:                     ->modalDescription('Cuente el producto en esa ubicación. Si lo vuelve a contar, se reemplaza el valor. Si no hay nada, ponga 0.')
+99:                     ->visible(static fn (StockCount $record): bool => in_array($record->status, ['COUNTING', 'REVIEW'], true) && (auth()->user()?->can('counts.run') ?? false))
+100:                     ->schema([
+101:                         Select::make('product_id')->label('Producto (SKU, nombre o código de barras)')->required()->searchable()
+102:                             ->getSearchResultsUsing(fn (string $search): array => SearchOptions::products($search))
+103:                             ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::productLabel($value)),
+104:                         Select::make('location_id')->label('Ubicación')->required()->searchable()
+105:                             ->getSearchResultsUsing(fn (string $search): array => SearchOptions::locations($search))
+106:                             ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::locationLabel($value)),
+107:                         TextInput::make('quantity')->label('Cantidad contada')->numeric()->minValue(0)->required(),
+108:                     ])
+109:                     ->action(static function (array $data, StockCount $record): void {
+110:                         try {
+111:                             app(RecordCount::class)((int) $record->id, (int) $data['product_id'], (int) $data['location_id'], Quantity::of((string) $data['quantity']), (int) auth()->id());
+112:                             Notification::make()->title('Conteo registrado')->success()->send();
+113:                         } catch (OperationsException|InventoryException $e) {
+114:                             Notification::make()->title('No se pudo registrar')->body($e->getMessage())->danger()->send();
+115:                         }
+116:                     }),
+117:                 Action::make('submit')->label('Enviar a revisión')->icon('heroicon-o-paper-airplane')->color('info')
+118:                     ->requiresConfirmation()
+119:                     ->modalDescription('Todas las líneas deben estar contadas (no contar NO significa cero). Las que tengan diferencia quedarán marcadas para reconteo.')
+120:                     ->visible(static fn (StockCount $record): bool => $record->status === 'COUNTING' && (auth()->user()?->can('counts.run') ?? false))
+121:                     ->action(static function (StockCount $record): void {
+122:                         try {
+123:                             $r = app(SubmitCountForReview::class)((int) $record->id, (int) auth()->id());
+124:                             Notification::make()->title('Enviado a revisión')->body("Líneas: {$r['lines']}. Con diferencia (a recontar): {$r['withDifference']}.")->success()->send();
+125:                         } catch (OperationsException $e) {
+126:                             Notification::make()->title('No se pudo enviar')->body($e->getMessage())->danger()->send();
+127:                         }
+128:                     }),
+129:                 Action::make('close')->label('Cerrar y ajustar')->icon('heroicon-o-lock-closed')->color('success')
+130:                     ->requiresConfirmation()
+131:                     ->modalHeading('Cerrar el conteo')
+132:                     ->modalDescription('Se aplicarán las diferencias al stock, se descongelarán las ubicaciones y se calculará la exactitud del inventario. Quien contó las diferencias no puede cerrarlo.')
+133:                     ->visible(static fn (StockCount $record): bool => $record->status === 'REVIEW' && (auth()->user()?->can('counts.close') ?? false))
+134:                     ->action(static function (StockCount $record): void {
+135:                         try {
+136:                             $r = app(CloseCount::class)((int) $record->id, (int) auth()->id());
+137:                             Notification::make()->title('Conteo cerrado')->body("Ajustes aplicados: {$r['adjustments']}. Exactitud del inventario: {$r['accuracyPct']} %.")->success()->persistent()->send();
+138:                         } catch (OperationsException $e) {
+139:                             Notification::make()->title('No se pudo cerrar')->body($e->getMessage())->danger()->send();
+140:                         }
+141:                     }),
+142:                 Action::make('cancel')->label('Anular')->icon('heroicon-o-x-circle')->color('danger')
+143:                     ->requiresConfirmation()
+144:                     ->modalDescription('Se descongelan las ubicaciones y no se ajusta nada.')
+145:                     ->visible(static fn (StockCount $record): bool => in_array($record->status, ['COUNTING', 'REVIEW'], true) && (auth()->user()?->can('counts.close') ?? false))
+146:                     ->action(static function (StockCount $record): void {
+147:                         try {
+148:                             app(CancelCount::class)((int) $record->id, (int) auth()->id());
+149:                             Notification::make()->title('Conteo anulado')->success()->send();
+150:                         } catch (OperationsException $e) {
+151:                             Notification::make()->title('No se pudo anular')->body($e->getMessage())->danger()->send();
+152:                         }
+153:                     }),
+154:             ])
+155:             ->defaultSort('created_at', 'desc')
+156:             ->emptyStateHeading('Aún no hay conteos')
+157:             ->emptyStateDescription('Inicie uno con "Iniciar conteo": se congela la zona y se fija el stock esperado.');
+158:     }
+159: 
+160:     public static function getEloquentQuery(): Builder
+161:     {
+162:         return parent::getEloquentQuery()
+163:             ->select('stock_counts.*')
+164:             ->addSelect([
+165:                 'warehouse_name' => DB::table('warehouses')->select('name')->whereColumn('warehouses.id', 'stock_counts.warehouse_id'),
+166:                 'lines_total' => DB::table('stock_count_lines')->selectRaw('COUNT(*)')->whereColumn('stock_count_lines.count_id', 'stock_counts.id'),
+167:                 'lines_counted' => DB::table('stock_count_lines')->selectRaw('COUNT(*)')->whereColumn('stock_count_lines.count_id', 'stock_counts.id')->whereNotNull('counted_qty'),
+168:                 'lines_diff' => DB::table('stock_count_lines')->selectRaw('COUNT(*)')->whereColumn('stock_count_lines.count_id', 'stock_counts.id')->whereRaw('counted_qty IS NOT NULL AND counted_qty <> expected_qty'),
+169:                 'recounts_pending' => DB::table('stock_count_lines')->selectRaw('COUNT(*)')->whereColumn('stock_count_lines.count_id', 'stock_counts.id')->where('recount_requested', true),
+170:             ])
+171:             ->with('opener');
+172:     }
+173: 
+174:     public static function getPages(): array
+175:     {
+176:         return ['index' => ListCounts::route('/')];
+177:     }
+178: }
+
+
+FILE app\Filament\Resources\Imports\ImportResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Imports;
+6: 
+7: use App\Filament\Resources\Imports\Pages\ListImports;
+8: use App\Models\ImportJob;
+9: use BackedEnum;
+10: use Filament\Actions\Action;
+11: use Filament\Resources\Resource;
+12: use Filament\Schemas\Schema;
+13: use Filament\Tables\Columns\TextColumn;
+14: use Filament\Tables\Table;
+15: use Illuminate\Database\Eloquent\Builder;
+16: use Illuminate\Support\Facades\Storage;
+17: use UnitEnum;
+18: 
+19: class ImportResource extends Resource
+20: {
+21:     protected static ?string $model = ImportJob::class;
+22: 
+23:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrow-up-tray';
+24: 
+25:     protected static string|UnitEnum|null $navigationGroup = 'Almacén';
+26: 
+27:     protected static ?int $navigationSort = 6;
+28: 
+29:     protected static ?string $navigationLabel = 'Ventas del POS';
+30: 
+31:     protected static ?string $modelLabel = 'importación';
+32: 
+33:     protected static ?string $pluralModelLabel = 'importaciones de ventas';
+34: 
+35:     public static function form(Schema $schema): Schema
+36:     {
+37:         return $schema;
+38:     }
+39: 
+40:     public static function table(Table $table): Table
+41:     {
+42:         return $table
+43:             ->columns([
+44:                 TextColumn::make('created_at')->label('Fecha')->dateTime('d/m/Y H:i', 'America/Lima')->sortable(),
+45:                 TextColumn::make('file_path')->label('Archivo')->searchable(),
+46:                 TextColumn::make('mode')->label('Tipo')->badge()
+47:                     ->formatStateUsing(static fn (string $state): string => $state === 'COMMIT' ? 'Confirmada' : 'Simulación')
+48:                     ->color(static fn (string $state): string => $state === 'COMMIT' ? 'success' : 'gray'),
+49:                 TextColumn::make('total_rows')->label('Filas')->alignEnd(),
+50:                 TextColumn::make('ok_rows')->label('Productos aplicados')->alignEnd(),
+51:                 TextColumn::make('error_rows')->label('Errores')->alignEnd()->badge()
+52:                     ->color(static fn ($state): string => (int) $state > 0 ? 'danger' : 'success'),
+53:                 TextColumn::make('creator.name')->label('Subió'),
+54:             ])
+55:             ->recordActions([
+56:                 Action::make('errors')->label('Descargar errores')->icon('heroicon-o-arrow-down-tray')->color('danger')
+57:                     ->visible(static fn (ImportJob $record): bool => $record->error_report_path !== null)
+58:                     ->action(static fn (ImportJob $record) => Storage::disk('local')->download((string) $record->error_report_path, 'errores-ventas-'.$record->id.'.csv')),
+59:             ])
+60:             ->defaultSort('created_at', 'desc')
+61:             ->emptyStateHeading('Aún no se han importado ventas')
+62:             ->emptyStateDescription('Suba el CSV de ventas del día que exporta la caja (columnas sku y cantidad). Primero "Simular", luego "Confirmar".');
+63:     }
+64: 
+65:     public static function getEloquentQuery(): Builder
+66:     {
+67:         return parent::getEloquentQuery()->where('import_jobs.kind', 'POS_SALES')->with('creator');
+68:     }
+69: 
+70:     public static function getPages(): array
+71:     {
+72:         return ['index' => ListImports::route('/')];
+73:     }
+74: }
+
+
+FILE app\Filament\Resources\Locations\LocationResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Locations;
+6: 
+7: use App\Filament\Resources\Locations\Pages\ListLocations;
+8: use App\Models\Location;
+9: use App\Modules\Locations\Application\ChangeLocationState;
+10: use App\Modules\Locations\Domain\LocationException;
+11: use BackedEnum;
+12: use Filament\Actions\Action;
+13: use Filament\Notifications\Notification;
+14: use Filament\Resources\Resource;
+15: use Filament\Schemas\Schema;
+16: use Filament\Tables\Columns\TextColumn;
+17: use Filament\Tables\Filters\Filter;
+18: use Filament\Tables\Filters\SelectFilter;
+19: use Filament\Tables\Filters\TernaryFilter;
+20: use Filament\Tables\Table;
+21: use Illuminate\Database\Eloquent\Builder;
+22: use Illuminate\Support\Facades\DB;
+23: use UnitEnum;
+24: 
+25: class LocationResource extends Resource
+26: {
+27:     protected static ?string $model = Location::class;
+28: 
+29:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';
+30: 
+31:     protected static string|UnitEnum|null $navigationGroup = 'Almacén';
+32: 
+33:     protected static ?int $navigationSort = 4;
+34: 
+35:     protected static ?string $navigationLabel = 'Ubicaciones';
+36: 
+37:     protected static ?string $modelLabel = 'ubicación';
+38: 
+39:     protected static ?string $pluralModelLabel = 'ubicaciones';
+40: 
+41:     protected static ?string $recordTitleAttribute = 'code';
+42: 
+43:     public static function form(Schema $schema): Schema
+44:     {
+45:         return $schema; // las ubicaciones se crean en lote con la acción "Generar ubicaciones"
+46:     }
+47: 
+48:     public static function table(Table $table): Table
+49:     {
+50:         return $table
+51:             ->columns([
+52:                 TextColumn::make('code')->label('Código')->searchable()->sortable()->copyable(),
+53:                 TextColumn::make('warehouse_name')->label('Almacén'),
+54:                 TextColumn::make('zone')->label('Zona')->sortable(),
+55:                 TextColumn::make('aisle')->label('Pasillo'),
+56:                 TextColumn::make('rack')->label('Anaquel'),
+57:                 TextColumn::make('level')->label('Nivel'),
+58:                 TextColumn::make('stock_total')->label('Unidades')->alignEnd()->sortable()
+59:                     ->formatStateUsing(static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0'),
+60:                 TextColumn::make('is_active')->label('Estado')->badge()
+61:                     ->formatStateUsing(static fn ($state, Location $record): string => ! $record->is_active ? 'Desactivada' : ($record->is_frozen ? 'En conteo' : ($record->is_staging ? 'Recepción' : 'Activa')))
+62:                     ->color(static fn ($state, Location $record): string => ! $record->is_active ? 'gray' : ($record->is_frozen ? 'warning' : 'success')),
+63:             ])
+64:             ->filters([
+65:                 SelectFilter::make('warehouse_id')->label('Almacén')
+66:                     ->options(static fn (): array => DB::table('warehouses')->orderBy('name')->pluck('name', 'id')->map(static fn ($n): string => (string) $n)->all()),
+67:                 TernaryFilter::make('is_active')->label('Activa'),
+68:                 TernaryFilter::make('is_frozen')->label('En conteo'),
+69:                 Filter::make('with_stock')->label('Con stock')
+70:                     ->query(static fn (Builder $query): Builder => $query->whereRaw('EXISTS (SELECT 1 FROM stock_balances sb WHERE sb.location_id = locations.id AND sb.quantity > 0)')),
+71:             ])
+72:             ->recordActions([
+73:                 Action::make('deactivate')->label('Desactivar')->icon('heroicon-o-no-symbol')->color('danger')
+74:                     ->requiresConfirmation()
+75:                     ->modalDescription('Solo se pueden desactivar ubicaciones vacías, que no estén en conteo ni sean de recepción.')
+76:                     ->visible(static fn (Location $record): bool => $record->is_active && ! $record->is_staging && (auth()->user()?->can('locations.manage') ?? false))
+77:                     ->action(static fn (Location $record) => self::run(static fn () => app(ChangeLocationState::class)->deactivate((int) $record->id, (int) auth()->id()), 'Ubicación desactivada')),
+78:                 Action::make('activate')->label('Reactivar')->icon('heroicon-o-check-circle')->color('success')
+79:                     ->requiresConfirmation()
+80:                     ->visible(static fn (Location $record): bool => ! $record->is_active && (auth()->user()?->can('locations.manage') ?? false))
+81:                     ->action(static fn (Location $record) => self::run(static fn () => app(ChangeLocationState::class)->activate((int) $record->id, (int) auth()->id()), 'Ubicación reactivada')),
+82:                 Action::make('unfreeze')->label('Descongelar')->icon('heroicon-o-lock-open')->color('warning')
+83:                     ->requiresConfirmation()
+84:                     ->modalDescription('Úselo solo si un conteo se quedó sin cerrar por error: mientras la ubicación está congelada no admite movimientos.')
+85:                     ->visible(static fn (Location $record): bool => $record->is_frozen && (auth()->user()?->can('counts.close') ?? false))
+86:                     ->action(static fn (Location $record) => self::run(static fn () => app(ChangeLocationState::class)->unfreeze((int) $record->id, (int) auth()->id()), 'Ubicación descongelada')),
+87:             ])
+88:             ->defaultSort('code')
+89:             ->emptyStateHeading('Aún no hay ubicaciones')
+90:             ->emptyStateDescription('Cree anaqueles en lote con "Generar ubicaciones" (por ejemplo, pasillos 1 al 10 × anaqueles 1 al 8 × niveles 1 al 4).');
+91:     }
+92: 
+93:     public static function run(callable $operation, string $successTitle): void
+94:     {
+95:         try {
+96:             $operation();
+97:             Notification::make()->title($successTitle)->success()->send();
+98:         } catch (LocationException $e) {
+99:             Notification::make()->title('No se pudo completar')->body($e->getMessage())->danger()->send();
+100:         }
+101:     }
+102: 
+103:     public static function getEloquentQuery(): Builder
+104:     {
+105:         return parent::getEloquentQuery()
+106:             ->select('locations.*')
+107:             ->addSelect([
+108:                 'warehouse_name' => DB::table('warehouses')->select('name')->whereColumn('warehouses.id', 'locations.warehouse_id'),
+109:                 'stock_total' => DB::table('stock_balances')->selectRaw('COALESCE(SUM(quantity), 0)')->whereColumn('stock_balances.location_id', 'locations.id'),
+110:             ]);
+111:     }
+112: 
+113:     public static function getPages(): array
+114:     {
+115:         return ['index' => ListLocations::route('/')];
+116:     }
+117: }
+
+
+FILE app\Filament\Resources\Products\CatalogOptions.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products;
+6: 
+7: use Illuminate\Support\Facades\DB;
+8: 
+9: /** Opciones para los selectores del formulario (tablas pequeñas: se leen directo). */
+10: final class CatalogOptions
+11: {
+12:     /** @return array<int, string> "Librería › Cuadernos › Rayados" (solo activas) */
+13:     public static function categories(): array
+14:     {
+15:         $rows = DB::table('categories')->orderBy('depth')->orderBy('name')->get(['id', 'parent_id', 'name', 'is_active']);
+16: 
+17:         $paths = [];
+18:         foreach ($rows as $row) {
+19:             $parent = $row->parent_id === null ? null : ($paths[(int) $row->parent_id] ?? null);
+20:             $paths[(int) $row->id] = $parent === null ? (string) $row->name : $parent.' › '.$row->name;
+21:         }
+22: 
+23:         $options = [];
+24:         foreach ($rows as $row) {
+25:             if (filter_var($row->is_active, FILTER_VALIDATE_BOOLEAN)) {
+26:                 $options[(int) $row->id] = $paths[(int) $row->id];
+27:             }
+28:         }
+29:         asort($options);
+30: 
+31:         return $options;
+32:     }
+33: 
+34:     /** @return array<int, string> */
+35:     public static function units(): array
+36:     {
+37:         $options = [];
+38:         foreach (DB::table('units')->orderBy('name')->get(['id', 'name', 'code']) as $u) {
+39:             $options[(int) $u->id] = $u->name.' ('.$u->code.')';
+40:         }
+41: 
+42:         return $options;
+43:     }
+44: 
+45:     /** @return array<int, string> */
+46:     public static function brands(): array
+47:     {
+48:         $options = [];
+49:         foreach (DB::table('brands')->orderBy('name')->get(['id', 'name']) as $b) {
+50:             $options[(int) $b->id] = (string) $b->name;
+51:         }
+52: 
+53:         return $options;
+54:     }
+55: 
+56:     /** @return array<int, string> */
+57:     public static function warehouses(): array
+58:     {
+59:         $options = [];
+60:         foreach (DB::table('warehouses')->where('is_active', true)->orderBy('name')->get(['id', 'name']) as $w) {
+61:             $options[(int) $w->id] = (string) $w->name;
+62:         }
+63: 
+64:         return $options;
+65:     }
+66: 
+67:     /** @return array<int, string> proveedores activos */
+68:     public static function suppliers(): array
+69:     {
+70:         $options = [];
+71:         foreach (DB::table('suppliers')->where('is_active', true)->orderBy('business_name')->get(['id', 'business_name']) as $s) {
+72:             $options[(int) $s->id] = (string) $s->business_name;
+73:         }
+74: 
+75:         return $options;
+76:     }
+77: 
+78:     /**
+79:      * Motivos de ajuste/merma del tipo indicado (AJUSTE_POSITIVO, AJUSTE_NEGATIVO o MERMA).
+80:      *
+81:      * @return array<int, string>
+82:      */
+83:     public static function reasons(string $movementType): array
+84:     {
+85:         $options = [];
+86:         foreach (DB::table('movement_reasons')->where('is_active', true)->where('movement_type', $movementType)->orderBy('name')->get(['id', 'name']) as $r) {
+87:             $options[(int) $r->id] = (string) $r->name;
+88:         }
+89: 
+90:         return $options;
+91:     }
+92: }
+
+
+FILE app\Filament\Resources\Products\ProductFormMapper.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products;
+6: 
+7: use App\Modules\Catalog\Domain\Barcode;
+8: use App\Modules\Catalog\Domain\BarcodeInput;
+9: use App\Modules\Catalog\Domain\CatalogException;
+10: use App\Modules\Catalog\Domain\Factor;
+11: use App\Modules\Catalog\Domain\NewProduct;
+12: use App\Modules\Catalog\Domain\PresentationInput;
+13: use App\Modules\Catalog\Domain\ProductChanges;
+14: use App\Modules\Catalog\Domain\StockPolicy;
+15: use App\Modules\Catalog\Domain\Symbology;
+16: 
+17: /** Traduce los datos del formulario del panel a objetos del dominio (donde viven las reglas). */
+18: final class ProductFormMapper
+19: {
+20:     /** @param array<string, mixed> $data */
+21:     public static function toNewProduct(array $data, ?int $actorId): NewProduct
+22:     {
+23:         return new NewProduct(
+24:             name: self::string($data['name'] ?? null),
+25:             categoryId: self::requiredInt($data['category_id'] ?? null, 'la categoría'),
+26:             baseUnitId: self::requiredInt($data['base_unit_id'] ?? null, 'la unidad base'),
+27:             actorId: $actorId,
+28:             description: self::nullableString($data['description'] ?? null),
+29:             brandId: self::nullableInt($data['brand_id'] ?? null),
+30:             referencePrice: self::price($data['reference_price'] ?? null),
+31:             presentations: array_map(
+32:                 static fn (array $row): PresentationInput => new PresentationInput(
+33:                     self::requiredInt($row['unit_id'] ?? null, 'la unidad de la presentación'),
+34:                     Factor::of(self::string($row['factor'] ?? null)),
+35:                     (bool) ($row['is_purchase_default'] ?? false),
+36:                 ),
+37:                 self::rows($data['presentations'] ?? null),
+38:             ),
+39:             barcodes: array_map(
+40:                 static function (array $row): BarcodeInput {
+41:                     $symbology = Symbology::tryFrom(self::string($row['symbology'] ?? null))
+42:                         ?? throw CatalogException::invalid('Seleccione el tipo de código de barras.');
+43: 
+44:                     return new BarcodeInput(
+45:                         Barcode::of(self::string($row['barcode'] ?? null), $symbology),
+46:                         self::nullableInt($row['presentation_unit_id'] ?? null),
+47:                         (bool) ($row['is_primary'] ?? false),
+48:                     );
+49:                 },
+50:                 self::rows($data['barcodes'] ?? null),
+51:             ),
+52:             policies: array_map(
+53:                 static fn (array $row): StockPolicy => new StockPolicy(
+54:                     self::requiredInt($row['warehouse_id'] ?? null, 'el almacén de la política'),
+55:                     self::nullableString($row['min_qty'] ?? null) ?? '0',
+56:                     self::nullableString($row['max_qty'] ?? null),
+57:                     self::nullableString($row['reorder_qty'] ?? null),
+58:                 ),
+59:                 self::rows($data['policies'] ?? null),
+60:             ),
+61:         );
+62:     }
+63: 
+64:     /** @param array<string, mixed> $data */
+65:     public static function toChanges(array $data, ?int $actorId): ProductChanges
+66:     {
+67:         return new ProductChanges(
+68:             expectedVersion: self::requiredInt($data['version'] ?? null, 'la versión del producto'),
+69:             actorId: $actorId,
+70:             name: self::nullableString($data['name'] ?? null),
+71:             description: self::nullableString($data['description'] ?? null),
+72:             categoryId: self::nullableInt($data['category_id'] ?? null),
+73:             brandId: self::nullableInt($data['brand_id'] ?? null),
+74:             referencePrice: self::price($data['reference_price'] ?? null),
+75:         );
+76:     }
+77: 
+78:     /** @return list<array<string, mixed>> */
+79:     private static function rows(mixed $value): array
+80:     {
+81:         return is_array($value) ? array_values(array_filter($value, 'is_array')) : [];
+82:     }
+83: 
+84:     private static function string(mixed $value): string
+85:     {
+86:         return is_scalar($value) ? trim((string) $value) : '';
+87:     }
+88: 
+89:     private static function nullableString(mixed $value): ?string
+90:     {
+91:         $s = self::string($value);
+92: 
+93:         return $s === '' ? null : $s;
+94:     }
+95: 
+96:     private static function nullableInt(mixed $value): ?int
+97:     {
+98:         $s = self::string($value);
+99: 
+100:         return $s === '' ? null : (int) $s;
+101:     }
+102: 
+103:     private static function requiredInt(mixed $value, string $label): int
+104:     {
+105:         return self::nullableInt($value) ?? throw CatalogException::invalid("Falta seleccionar {$label}.");
+106:     }
+107: 
+108:     private static function price(mixed $value): ?string
+109:     {
+110:         $s = self::string($value);
+111: 
+112:         if ($s === '') {
+113:             return null;
+114:         }
+115:         if (! is_numeric($s) || (float) $s < 0) {
+116:             throw CatalogException::invalid('El precio referencial no es válido.');
+117:         }
+118: 
+119:         return number_format((float) $s, 2, '.', '');
+120:     }
+121: }
+
+
+FILE app\Filament\Resources\Products\ProductResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products;
+6: 
+7: use App\Filament\Resources\Products\Pages\CreateProduct;
+8: use App\Filament\Resources\Products\Pages\EditProduct;
+9: use App\Filament\Resources\Products\Pages\ListProducts;
+10: use App\Filament\Resources\Products\Schemas\ProductForm;
+11: use App\Filament\Resources\Products\Tables\ProductsTable;
+12: use App\Models\Product;
+13: use BackedEnum;
+14: use Filament\Resources\Resource;
+15: use Filament\Schemas\Schema;
+16: use Filament\Tables\Table;
+17: use Illuminate\Database\Eloquent\Builder;
+18: use Illuminate\Support\Facades\DB;
+19: use UnitEnum;
+20: 
+21: class ProductResource extends Resource
+22: {
+23:     protected static ?string $model = Product::class;
+24: 
+25:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
+26: 
+27:     protected static string|UnitEnum|null $navigationGroup = 'Catálogo';
+28: 
+29:     protected static ?int $navigationSort = 1;
+30: 
+31:     protected static ?string $modelLabel = 'producto';
+32: 
+33:     protected static ?string $pluralModelLabel = 'productos';
+34: 
+35:     protected static ?string $recordTitleAttribute = 'name';
+36: 
+37:     public static function form(Schema $schema): Schema
+38:     {
+39:         return ProductForm::configure($schema);
+40:     }
+41: 
+42:     public static function table(Table $table): Table
+43:     {
+44:         return ProductsTable::configure($table);
+45:     }
+46: 
+47:     public static function getEloquentQuery(): Builder
+48:     {
+49:         return parent::getEloquentQuery()
+50:             ->select('products.*')
+51:             ->addSelect([
+52:                 'stock_total' => DB::table('stock_balances')->selectRaw('COALESCE(SUM(quantity), 0)')
+53:                     ->whereColumn('stock_balances.product_id', 'products.id'),
+54:                 'primary_barcode' => DB::table('product_barcodes')->select('barcode')
+55:                     ->whereColumn('product_barcodes.product_id', 'products.id')->where('is_primary', true)->limit(1),
+56:             ]);
+57:     }
+58: 
+59:     public static function getPages(): array
+60:     {
+61:         return [
+62:             'index' => ListProducts::route('/'),
+63:             'create' => CreateProduct::route('/create'),
+64:             'edit' => EditProduct::route('/{record}/edit'),
+65:         ];
+66:     }
+67: }
+
+
+FILE app\Filament\Resources\Receipts\ReceiptFormMapper.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Receipts;
+6: 
+7: use App\Filament\Support\FormInput;
+8: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+9: use App\Modules\Inventory\Domain\Quantity;
+10: use App\Modules\Inventory\Domain\UnitCost;
+11: use App\Modules\Operations\Domain\DocumentType;
+12: use App\Modules\Operations\Domain\NewReceipt;
+13: use App\Modules\Operations\Domain\OperationsException;
+14: use App\Modules\Operations\Domain\ReceiptLine;
+15: 
+16: final class ReceiptFormMapper
+17: {
+18:     /** @param array<string, mixed> $data */
+19:     public static function toNewReceipt(array $data, int $userId): NewReceipt
+20:     {
+21:         try {
+22:             $lines = array_map(static fn (array $row): ReceiptLine => new ReceiptLine(
+23:                 FormInput::requiredInt($row['product_id'] ?? null, 'el producto'),
+24:                 FormInput::requiredInt($row['location_id'] ?? null, 'la ubicación'),
+25:                 Quantity::of(FormInput::requiredDecimal($row['qty_received'] ?? null, 'la cantidad recibida')),
+26:                 UnitCost::of(FormInput::requiredDecimal($row['unit_cost'] ?? null, 'el costo unitario')),
+27:                 FormInput::nullableString($row['qty_expected'] ?? null) === null ? null : Quantity::of(FormInput::string($row['qty_expected'])),
+28:             ), FormInput::rows($data['lines'] ?? null));
+29: 
+30:             return new NewReceipt(
+31:                 supplierId: FormInput::requiredInt($data['supplier_id'] ?? null, 'el proveedor'),
+32:                 warehouseId: FormInput::requiredInt($data['warehouse_id'] ?? null, 'el almacén'),
+33:                 docType: DocumentType::tryFrom(FormInput::string($data['doc_type'] ?? null)) ?? throw OperationsException::invalid('Seleccione el tipo de documento.'),
+34:                 docNumber: FormInput::string($data['doc_number'] ?? null),
+35:                 docDate: substr(FormInput::string($data['doc_date'] ?? null), 0, 10),
+36:                 receivedBy: $userId,
+37:                 lines: $lines,
+38:                 notes: FormInput::nullableString($data['notes'] ?? null),
+39:             );
+40:         } catch (InventoryException $e) {
+41:             throw OperationsException::invalid($e->getMessage());
+42:         }
+43:     }
+44: }
+
+
+FILE app\Filament\Resources\Receipts\ReceiptResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Receipts;
+6: 
+7: use App\Filament\Resources\Products\CatalogOptions;
+8: use App\Filament\Resources\Receipts\Pages\CreateReceipt;
+9: use App\Filament\Resources\Receipts\Pages\ListReceipts;
+10: use App\Filament\Support\SearchOptions;
+11: use App\Models\PurchaseReceipt;
+12: use App\Modules\Operations\Application\CancelReceipt;
+13: use App\Modules\Operations\Application\ConfirmReceipt;
+14: use App\Modules\Operations\Domain\OperationsException;
+15: use BackedEnum;
+16: use Filament\Actions\Action;
+17: use Filament\Forms\Components\DatePicker;
+18: use Filament\Forms\Components\Repeater;
+19: use Filament\Forms\Components\Select;
+20: use Filament\Forms\Components\Textarea;
+21: use Filament\Forms\Components\TextInput;
+22: use Filament\Notifications\Notification;
+23: use Filament\Resources\Resource;
+24: use Filament\Schemas\Components\Section;
+25: use Filament\Schemas\Schema;
+26: use Filament\Tables\Columns\TextColumn;
+27: use Filament\Tables\Filters\SelectFilter;
+28: use Filament\Tables\Table;
+29: use Illuminate\Database\Eloquent\Builder;
+30: use Illuminate\Support\Facades\DB;
+31: use UnitEnum;
+32: 
+33: class ReceiptResource extends Resource
+34: {
+35:     protected static ?string $model = PurchaseReceipt::class;
+36: 
+37:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-inbox-arrow-down';
+38: 
+39:     protected static string|UnitEnum|null $navigationGroup = 'Almacén';
+40: 
+41:     protected static ?int $navigationSort = 1;
+42: 
+43:     protected static ?string $navigationLabel = 'Recepciones';
+44: 
+45:     protected static ?string $modelLabel = 'recepción';
+46: 
+47:     protected static ?string $pluralModelLabel = 'recepciones';
+48: 
+49:     protected static ?string $recordTitleAttribute = 'code';
+50: 
+51:     public static function form(Schema $schema): Schema
+52:     {
+53:         return $schema->components([
+54:             Section::make('Documento del proveedor')->schema([
+55:                 Select::make('supplier_id')->label('Proveedor')->options(fn (): array => CatalogOptions::suppliers())->searchable()->required(),
+56:                 Select::make('warehouse_id')->label('Almacén de destino')->options(fn (): array => CatalogOptions::warehouses())->required(),
+57:                 Select::make('doc_type')->label('Tipo de documento')->required()->default('FACTURA')
+58:                     ->options(['FACTURA' => 'Factura', 'GUIA_REMISION' => 'Guía de remisión', 'BOLETA' => 'Boleta', 'OTRO' => 'Otro']),
+59:                 TextInput::make('doc_number')->label('Número')->required()->maxLength(30)->placeholder('F001-000234'),
+60:                 DatePicker::make('doc_date')->label('Fecha del documento')->required()->default(now('America/Lima')),
+61:                 Textarea::make('notes')->label('Observaciones')->rows(2)->maxLength(500),
+62:             ])->columns(2),
+63: 
+64:             Section::make('Mercadería recibida')
+65:                 ->description('Cantidades en unidad base. La ubicación debe pertenecer al almacén elegido (use "BOD-REC" si aún no la ubica). El costo es por unidad, sin IGV.')
+66:                 ->schema([
+67:                     Repeater::make('lines')->hiddenLabel()->defaultItems(1)->minItems(1)->maxItems(500)->addActionLabel('Agregar línea')
+68:                         ->schema([
+69:                             Select::make('product_id')->label('Producto')->required()->searchable()
+70:                                 ->getSearchResultsUsing(fn (string $search): array => SearchOptions::products($search))
+71:                                 ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::productLabel($value)),
+72:                             Select::make('location_id')->label('Ubicación')->required()->searchable()
+73:                                 ->getSearchResultsUsing(fn (string $search): array => SearchOptions::locations($search))
+74:                                 ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::locationLabel($value)),
+75:                             TextInput::make('qty_expected')->label('Esperado')->numeric()->minValue(0),
+76:                             TextInput::make('qty_received')->label('Recibido')->numeric()->minValue(0)->required(),
+77:                             TextInput::make('unit_cost')->label('Costo unitario')->numeric()->minValue(0)->prefix('S/')->required(),
+78:                         ])->columns(5),
+79:                 ]),
+80:         ]);
+81:     }
+82: 
+83:     public static function table(Table $table): Table
+84:     {
+85:         return $table
+86:             ->columns([
+87:                 TextColumn::make('code')->label('Código')->searchable()->sortable(),
+88:                 TextColumn::make('supplier.business_name')->label('Proveedor')->searchable(),
+89:                 TextColumn::make('doc_number')->label('Documento')->searchable()
+90:                     ->description(static fn (PurchaseReceipt $record): string => match ($record->doc_type) {
+91:                         'FACTURA' => 'Factura', 'GUIA_REMISION' => 'Guía de remisión', 'BOLETA' => 'Boleta', default => 'Otro',
+92:                     }),
+93:                 TextColumn::make('doc_date')->label('Fecha doc.')->date('d/m/Y')->sortable(),
+94:                 TextColumn::make('items_count')->label('Líneas')->alignEnd(),
+95:                 TextColumn::make('total_cost')->label('Valor (sin IGV)')->alignEnd()
+96:                     ->formatStateUsing(static fn ($state): string => 'S/ '.number_format((float) $state, 2, '.', ',')),
+97:                 TextColumn::make('status')->label('Estado')->badge()
+98:                     ->formatStateUsing(static fn (string $state): string => ['DRAFT' => 'Borrador', 'CONFIRMED' => 'Confirmada', 'CANCELLED' => 'Anulada'][$state] ?? $state)
+99:                     ->color(static fn (string $state): string => ['DRAFT' => 'gray', 'CONFIRMED' => 'success', 'CANCELLED' => 'danger'][$state] ?? 'gray'),
+100:                 TextColumn::make('created_at')->label('Creada')->dateTime('d/m/Y H:i', 'America/Lima')->sortable()->toggleable(isToggledHiddenByDefault: true),
+101:             ])
+102:             ->filters([
+103:                 SelectFilter::make('status')->label('Estado')->options(['DRAFT' => 'Borrador', 'CONFIRMED' => 'Confirmada', 'CANCELLED' => 'Anulada']),
+104:             ])
+105:             ->recordActions([
+106:                 Action::make('confirm')->label('Confirmar')->icon('heroicon-o-check-circle')->color('success')
+107:                     ->requiresConfirmation()
+108:                     ->modalHeading('Confirmar recepción')
+109:                     ->modalDescription('Se registrarán todas las entradas en el stock. No se puede deshacer: un error se corrige con un ajuste.')
+110:                     ->visible(static fn (PurchaseReceipt $record): bool => $record->status === 'DRAFT' && (auth()->user()?->can('inventory.receive') ?? false))
+111:                     ->action(static function (PurchaseReceipt $record): void {
+112:                         try {
+113:                             $result = app(ConfirmReceipt::class)((int) $record->id, (int) auth()->id());
+114:                             Notification::make()->title('Recepción confirmada')
+115:                                 ->body("Entradas registradas: {$result['movements']}.".($result['discrepancies'] > 0 ? " Líneas con diferencia contra lo esperado: {$result['discrepancies']}." : ''))
+116:                                 ->success()->send();
+117:                         } catch (OperationsException $e) {
+118:                             Notification::make()->title('No se pudo confirmar')->body($e->getMessage())->danger()->send();
+119:                         }
+120:                     }),
+121:                 Action::make('cancel')->label('Anular')->icon('heroicon-o-x-circle')->color('danger')
+122:                     ->requiresConfirmation()
+123:                     ->modalHeading('Anular borrador')
+124:                     ->modalDescription('Solo se anulan borradores. Una recepción confirmada se corrige con un ajuste.')
+125:                     ->visible(static fn (PurchaseReceipt $record): bool => $record->status === 'DRAFT' && (auth()->user()?->can('inventory.receive') ?? false))
+126:                     ->action(static function (PurchaseReceipt $record): void {
+127:                         try {
+128:                             app(CancelReceipt::class)((int) $record->id, (int) auth()->id());
+129:                             Notification::make()->title('Borrador anulado')->success()->send();
+130:                         } catch (OperationsException $e) {
+131:                             Notification::make()->title('No se pudo anular')->body($e->getMessage())->danger()->send();
+132:                         }
+133:                     }),
+134:             ])
+135:             ->defaultSort('created_at', 'desc')
+136:             ->emptyStateHeading('Aún no hay recepciones')
+137:             ->emptyStateDescription('Registre la mercadería que llega con el botón "Nueva recepción".');
+138:     }
+139: 
+140:     public static function getEloquentQuery(): Builder
+141:     {
+142:         return parent::getEloquentQuery()
+143:             ->select('purchase_receipts.*')
+144:             ->addSelect([
+145:                 'items_count' => DB::table('purchase_receipt_items')->selectRaw('COUNT(*)')->whereColumn('purchase_receipt_items.receipt_id', 'purchase_receipts.id'),
+146:                 'total_cost' => DB::table('purchase_receipt_items')->selectRaw('COALESCE(SUM(qty_received * unit_cost), 0)')->whereColumn('purchase_receipt_items.receipt_id', 'purchase_receipts.id'),
+147:             ])
+148:             ->with('supplier');
+149:     }
+150: 
+151:     public static function getPages(): array
+152:     {
+153:         return [
+154:             'index' => ListReceipts::route('/'),
+155:             'create' => CreateReceipt::route('/create'),
+156:         ];
+157:     }
+158: }
+
+
+FILE app\Filament\Resources\Replenishment\ReplenishmentResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Replenishment;
+6: 
+7: use App\Filament\Resources\Replenishment\Pages\ListReplenishment;
+8: use App\Models\ReplenishmentSuggestion;
+9: use BackedEnum;
+10: use Filament\Resources\Resource;
+11: use Filament\Schemas\Schema;
+12: use Filament\Tables\Columns\TextColumn;
+13: use Filament\Tables\Filters\Filter;
+14: use Filament\Tables\Filters\SelectFilter;
+15: use Filament\Tables\Table;
+16: use Illuminate\Database\Eloquent\Builder;
+17: use Illuminate\Support\Facades\DB;
+18: use UnitEnum;
+19: 
+20: class ReplenishmentResource extends Resource
+21: {
+22:     public const STATUS_LABELS = ['OUT' => 'Agotado', 'LOW' => 'Bajo el mínimo', 'NEAR' => 'Cerca del mínimo', 'OVER' => 'Sobrestock', 'OK' => 'Normal'];
+23: 
+24:     protected static ?string $model = ReplenishmentSuggestion::class;
+25: 
+26:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-exclamation-triangle';
+27: 
+28:     protected static string|UnitEnum|null $navigationGroup = 'Compras';
+29: 
+30:     protected static ?int $navigationSort = 2;
+31: 
+32:     protected static ?string $navigationLabel = 'Reposición y alertas';
+33: 
+34:     protected static ?string $modelLabel = 'producto';
+35: 
+36:     protected static ?string $pluralModelLabel = 'reposición y alertas de stock';
+37: 
+38:     public static function form(Schema $schema): Schema
+39:     {
+40:         return $schema;
+41:     }
+42: 
+43:     public static function table(Table $table): Table
+44:     {
+45:         $qty = static fn ($state): string => $state === null ? '—' : (rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0');
+46: 
+47:         return $table
+48:             ->columns([
+49:                 TextColumn::make('sku')->label('SKU')->searchable()->sortable(),
+50:                 TextColumn::make('product_name')->label('Producto')->searchable()->wrap(),
+51:                 TextColumn::make('warehouse_name')->label('Almacén')->toggleable(),
+52:                 TextColumn::make('status')->label('Estado')->badge()
+53:                     ->formatStateUsing(static fn (string $state): string => self::STATUS_LABELS[$state] ?? $state)
+54:                     ->color(static fn (string $state): string => ['OUT' => 'danger', 'LOW' => 'warning', 'NEAR' => 'info', 'OVER' => 'gray', 'OK' => 'success'][$state] ?? 'gray'),
+55:                 TextColumn::make('stock')->label('Stock')->alignEnd()->sortable()->formatStateUsing($qty),
+56:                 TextColumn::make('min_qty')->label('Mínimo')->alignEnd()->formatStateUsing($qty),
+57:                 TextColumn::make('max_qty')->label('Máximo')->alignEnd()->formatStateUsing($qty),
+58:                 TextColumn::make('suggested_qty')->label('Pedir (sugerido)')->alignEnd()->sortable()->weight('bold')->formatStateUsing($qty),
+59:                 TextColumn::make('sold_30d')->label('Vendido 30 d')->alignEnd()->formatStateUsing($qty)->toggleable(),
+60:                 TextColumn::make('cover')->label('Cobertura (días)')->alignEnd()->toggleable()
+61:                     ->state(static fn (ReplenishmentSuggestion $r): string => (float) $r->getAttribute('sold_30d') > 0
+62:                         ? (string) (int) round((float) $r->getAttribute('stock') / ((float) $r->getAttribute('sold_30d') / 30))
+63:                         : '—'),
+64:                 TextColumn::make('supplier_name')->label('Proveedor preferido')->placeholder('Sin proveedor')->toggleable(),
+65:                 TextColumn::make('lead_time_days')->label('Plazo (días)')->alignEnd()->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+66:             ])
+67:             ->filters([
+68:                 Filter::make('attention')->label('Solo lo que requiere atención')->default()
+69:                     ->query(static fn (Builder $query): Builder => $query->whereIn('status', ['OUT', 'LOW', 'NEAR'])),
+70:                 SelectFilter::make('status')->label('Estado')->options(self::STATUS_LABELS),
+71:                 SelectFilter::make('warehouse_id')->label('Almacén')
+72:                     ->options(static fn (): array => DB::table('warehouses')->orderBy('name')->pluck('name', 'id')->map(static fn ($n): string => (string) $n)->all()),
+73:             ])
+74:             ->defaultSort('suggested_qty', 'desc')
+75:             ->emptyStateHeading('Todo en orden')
+76:             ->emptyStateDescription('Ningún producto con política de stock está agotado, bajo el mínimo o cerca de él.');
+77:     }
+78: 
+79:     public static function getPages(): array
+80:     {
+81:         return ['index' => ListReplenishment::route('/')];
+82:     }
+83: }
+
+
+FILE app\Filament\Resources\Suppliers\SupplierFormMapper.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Suppliers;
+6: 
+7: use App\Filament\Support\FormInput;
+8: use App\Modules\Suppliers\Domain\NewSupplier;
+9: use App\Modules\Suppliers\Domain\Ruc;
+10: use App\Modules\Suppliers\Domain\SupplierChanges;
+11: use App\Modules\Suppliers\Domain\SupplierException;
+12: 
+13: final class SupplierFormMapper
+14: {
+15:     /** @param array<string, mixed> $data */
+16:     public static function toNewSupplier(array $data, int $actorId): NewSupplier
+17:     {
+18:         return new NewSupplier(
+19:             Ruc::of(FormInput::string($data['ruc'] ?? null)),
+20:             FormInput::string($data['business_name'] ?? null),
+21:             FormInput::nullableString($data['contact_name'] ?? null),
+22:             FormInput::nullableString($data['phone'] ?? null),
+23:             FormInput::nullableString($data['email'] ?? null),
+24:             FormInput::nullableString($data['address'] ?? null),
+25:             self::leadTime($data['lead_time_days'] ?? null),
+26:             $actorId,
+27:         );
+28:     }
+29: 
+30:     /** @param array<string, mixed> $data */
+31:     public static function toChanges(array $data, int $actorId): SupplierChanges
+32:     {
+33:         return new SupplierChanges(
+34:             FormInput::nullableString($data['business_name'] ?? null),
+35:             FormInput::nullableString($data['contact_name'] ?? null),
+36:             FormInput::nullableString($data['phone'] ?? null),
+37:             FormInput::nullableString($data['email'] ?? null),
+38:             FormInput::nullableString($data['address'] ?? null),
+39:             self::leadTime($data['lead_time_days'] ?? null),
+40:             $actorId,
+41:         );
+42:     }
+43: 
+44:     private static function leadTime(mixed $value): ?int
+45:     {
+46:         $s = FormInput::string($value);
+47: 
+48:         if ($s === '') {
+49:             return null;
+50:         }
+51:         if (! ctype_digit($s)) {
+52:             throw SupplierException::invalid('El plazo de entrega debe ser un número entero de días.');
+53:         }
+54: 
+55:         return (int) $s;
+56:     }
+57: }
+
+
+FILE app\Filament\Resources\Suppliers\SupplierResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Suppliers;
+6: 
+7: use App\Filament\Resources\Suppliers\Pages\CreateSupplier;
+8: use App\Filament\Resources\Suppliers\Pages\EditSupplier;
+9: use App\Filament\Resources\Suppliers\Pages\ListSuppliers;
+10: use App\Models\Supplier;
+11: use App\Modules\Suppliers\Application\ChangeSupplierState;
+12: use App\Modules\Suppliers\Domain\SupplierException;
+13: use BackedEnum;
+14: use Filament\Actions\Action;
+15: use Filament\Actions\EditAction;
+16: use Filament\Forms\Components\TextInput;
+17: use Filament\Notifications\Notification;
+18: use Filament\Resources\Resource;
+19: use Filament\Schemas\Components\Section;
+20: use Filament\Schemas\Schema;
+21: use Filament\Tables\Columns\IconColumn;
+22: use Filament\Tables\Columns\TextColumn;
+23: use Filament\Tables\Filters\TernaryFilter;
+24: use Filament\Tables\Table;
+25: use UnitEnum;
+26: 
+27: class SupplierResource extends Resource
+28: {
+29:     protected static ?string $model = Supplier::class;
+30: 
+31:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-truck';
+32: 
+33:     protected static string|UnitEnum|null $navigationGroup = 'Compras';
+34: 
+35:     protected static ?int $navigationSort = 1;
+36: 
+37:     protected static ?string $navigationLabel = 'Proveedores';
+38: 
+39:     protected static ?string $modelLabel = 'proveedor';
+40: 
+41:     protected static ?string $pluralModelLabel = 'proveedores';
+42: 
+43:     protected static ?string $recordTitleAttribute = 'business_name';
+44: 
+45:     public static function form(Schema $schema): Schema
+46:     {
+47:         return $schema->components([
+48:             Section::make('Datos del proveedor')->schema([
+49:                 TextInput::make('ruc')->label('RUC')->required()->length(11)->regex('/^\d{11}$/')
+50:                     ->disabled(static fn (string $operation): bool => $operation === 'edit')
+51:                     ->dehydrated(static fn (string $operation): bool => $operation === 'create')
+52:                     ->helperText('11 dígitos; se valida con su dígito verificador. No se cambia después.'),
+53:                 TextInput::make('business_name')->label('Razón social')->required()->maxLength(160),
+54:                 TextInput::make('contact_name')->label('Persona de contacto')->maxLength(120),
+55:                 TextInput::make('phone')->label('Teléfono')->tel()->maxLength(30),
+56:                 TextInput::make('email')->label('Correo')->email()->maxLength(160),
+57:                 TextInput::make('lead_time_days')->label('Plazo de entrega (días)')->numeric()->minValue(0)->maxValue(365)
+58:                     ->helperText('Sirve para calcular cuándo conviene pedir.'),
+59:                 TextInput::make('address')->label('Dirección')->maxLength(255)->columnSpanFull(),
+60:             ])->columns(2),
+61:         ]);
+62:     }
+63: 
+64:     public static function table(Table $table): Table
+65:     {
+66:         return $table
+67:             ->columns([
+68:                 TextColumn::make('ruc')->label('RUC')->searchable()->copyable(),
+69:                 TextColumn::make('business_name')->label('Razón social')->searchable()->sortable()->wrap(),
+70:                 TextColumn::make('contact_name')->label('Contacto')->searchable()->toggleable(),
+71:                 TextColumn::make('phone')->label('Teléfono')->toggleable(),
+72:                 TextColumn::make('lead_time_days')->label('Plazo (días)')->alignEnd()->placeholder('—'),
+73:                 IconColumn::make('is_active')->label('Activo')->boolean(),
+74:             ])
+75:             ->filters([TernaryFilter::make('is_active')->label('Activo')->trueLabel('Activos')->falseLabel('Desactivados')])
+76:             ->recordActions([
+77:                 EditAction::make('edit')->label('Editar'),
+78:                 Action::make('deactivate')->label('Desactivar')->icon('heroicon-o-no-symbol')->color('danger')
+79:                     ->requiresConfirmation()
+80:                     ->modalDescription('No podrá usarse en nuevas recepciones. Su historial se conserva.')
+81:                     ->visible(static fn (Supplier $record): bool => $record->is_active)
+82:                     ->action(static fn (Supplier $record) => self::run(static fn () => app(ChangeSupplierState::class)->deactivate((int) $record->id, (int) auth()->id()), 'Proveedor desactivado')),
+83:                 Action::make('activate')->label('Reactivar')->icon('heroicon-o-check-circle')->color('success')
+84:                     ->requiresConfirmation()
+85:                     ->visible(static fn (Supplier $record): bool => ! $record->is_active)
+86:                     ->action(static fn (Supplier $record) => self::run(static fn () => app(ChangeSupplierState::class)->activate((int) $record->id, (int) auth()->id()), 'Proveedor reactivado')),
+87:             ])
+88:             ->defaultSort('business_name')
+89:             ->emptyStateHeading('Aún no hay proveedores');
+90:     }
+91: 
+92:     public static function run(callable $operation, string $successTitle): void
+93:     {
+94:         try {
+95:             $operation();
+96:             Notification::make()->title($successTitle)->success()->send();
+97:         } catch (SupplierException $e) {
+98:             Notification::make()->title('No se pudo completar')->body($e->getMessage())->danger()->send();
+99:         }
+100:     }
+101: 
+102:     public static function getPages(): array
+103:     {
+104:         return [
+105:             'index' => ListSuppliers::route('/'),
+106:             'create' => CreateSupplier::route('/create'),
+107:             'edit' => EditSupplier::route('/{record}/edit'),
+108:         ];
+109:     }
+110: }
+
+
+FILE app\Filament\Resources\Transfers\TransferFormMapper.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Transfers;
+6: 
+7: use App\Filament\Support\FormInput;
+8: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+9: use App\Modules\Inventory\Domain\Quantity;
+10: use App\Modules\Operations\Domain\NewTransfer;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use App\Modules\Operations\Domain\TransferLine;
+13: 
+14: final class TransferFormMapper
+15: {
+16:     /** @param array<string, mixed> $data */
+17:     public static function toNewTransfer(array $data, int $userId): NewTransfer
+18:     {
+19:         try {
+20:             return new NewTransfer(
+21:                 $userId,
+22:                 array_map(static fn (array $row): TransferLine => new TransferLine(
+23:                     FormInput::requiredInt($row['product_id'] ?? null, 'el producto'),
+24:                     FormInput::requiredInt($row['from_location_id'] ?? null, 'la ubicación de origen'),
+25:                     FormInput::requiredInt($row['to_location_id'] ?? null, 'la ubicación de destino'),
+26:                     Quantity::of(FormInput::requiredDecimal($row['quantity'] ?? null, 'la cantidad')),
+27:                 ), FormInput::rows($data['lines'] ?? null)),
+28:                 FormInput::nullableString($data['notes'] ?? null),
+29:             );
+30:         } catch (InventoryException $e) {
+31:             throw OperationsException::invalid($e->getMessage());
+32:         }
+33:     }
+34: }
+
+
+FILE app\Filament\Resources\Transfers\TransferResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Transfers;
+6: 
+7: use App\Filament\Resources\Transfers\Pages\CreateTransfer;
+8: use App\Filament\Resources\Transfers\Pages\ListTransfers;
+9: use App\Filament\Support\SearchOptions;
+10: use App\Models\TransferOrder;
+11: use App\Modules\Operations\Application\CancelTransfer;
+12: use App\Modules\Operations\Application\CompleteTransfer;
+13: use App\Modules\Operations\Domain\OperationsException;
+14: use BackedEnum;
+15: use Filament\Actions\Action;
+16: use Filament\Forms\Components\Repeater;
+17: use Filament\Forms\Components\Select;
+18: use Filament\Forms\Components\Textarea;
+19: use Filament\Forms\Components\TextInput;
+20: use Filament\Notifications\Notification;
+21: use Filament\Resources\Resource;
+22: use Filament\Schemas\Components\Section;
+23: use Filament\Schemas\Schema;
+24: use Filament\Tables\Columns\TextColumn;
+25: use Filament\Tables\Filters\SelectFilter;
+26: use Filament\Tables\Table;
+27: use Illuminate\Database\Eloquent\Builder;
+28: use Illuminate\Support\Facades\DB;
+29: use UnitEnum;
+30: 
+31: class TransferResource extends Resource
+32: {
+33:     protected static ?string $model = TransferOrder::class;
+34: 
+35:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
+36: 
+37:     protected static string|UnitEnum|null $navigationGroup = 'Almacén';
+38: 
+39:     protected static ?int $navigationSort = 2;
+40: 
+41:     protected static ?string $navigationLabel = 'Transferencias';
+42: 
+43:     protected static ?string $modelLabel = 'transferencia';
+44: 
+45:     protected static ?string $pluralModelLabel = 'transferencias';
+46: 
+47:     protected static ?string $recordTitleAttribute = 'code';
+48: 
+49:     public static function form(Schema $schema): Schema
+50:     {
+51:         return $schema->components([
+52:             Section::make('Productos a mover')
+53:                 ->description('Bodega → piso de venta, o de un anaquel a otro. Si una línea no tiene stock suficiente, no se mueve ninguna.')
+54:                 ->schema([
+55:                     Repeater::make('lines')->hiddenLabel()->defaultItems(1)->minItems(1)->maxItems(500)->addActionLabel('Agregar línea')
+56:                         ->schema([
+57:                             Select::make('product_id')->label('Producto')->required()->searchable()
+58:                                 ->getSearchResultsUsing(fn (string $search): array => SearchOptions::products($search))
+59:                                 ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::productLabel($value)),
+60:                             Select::make('from_location_id')->label('Desde')->required()->searchable()
+61:                                 ->getSearchResultsUsing(fn (string $search): array => SearchOptions::locations($search))
+62:                                 ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::locationLabel($value)),
+63:                             Select::make('to_location_id')->label('Hacia')->required()->searchable()
+64:                                 ->getSearchResultsUsing(fn (string $search): array => SearchOptions::locations($search))
+65:                                 ->getOptionLabelUsing(fn ($value): ?string => SearchOptions::locationLabel($value)),
+66:                             TextInput::make('quantity')->label('Cantidad')->numeric()->minValue(0.001)->required(),
+67:                         ])->columns(4),
+68:                     Textarea::make('notes')->label('Observaciones')->rows(2)->maxLength(500),
+69:                 ]),
+70:         ]);
+71:     }
+72: 
+73:     public static function table(Table $table): Table
+74:     {
+75:         return $table
+76:             ->columns([
+77:                 TextColumn::make('code')->label('Código')->searchable()->sortable(),
+78:                 TextColumn::make('requester.name')->label('Solicitada por'),
+79:                 TextColumn::make('lines_count')->label('Líneas')->alignEnd(),
+80:                 TextColumn::make('units_total')->label('Unidades')->alignEnd()
+81:                     ->formatStateUsing(static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0'),
+82:                 TextColumn::make('status')->label('Estado')->badge()
+83:                     ->formatStateUsing(static fn (string $state): string => ['DRAFT' => 'Borrador', 'COMPLETED' => 'Completada', 'CANCELLED' => 'Anulada'][$state] ?? $state)
+84:                     ->color(static fn (string $state): string => ['DRAFT' => 'gray', 'COMPLETED' => 'success', 'CANCELLED' => 'danger'][$state] ?? 'gray'),
+85:                 TextColumn::make('created_at')->label('Creada')->dateTime('d/m/Y H:i', 'America/Lima')->sortable(),
+86:             ])
+87:             ->filters([
+88:                 SelectFilter::make('status')->label('Estado')->options(['DRAFT' => 'Borrador', 'COMPLETED' => 'Completada', 'CANCELLED' => 'Anulada']),
+89:             ])
+90:             ->recordActions([
+91:                 Action::make('complete')->label('Completar')->icon('heroicon-o-check-circle')->color('success')
+92:                     ->requiresConfirmation()
+93:                     ->modalHeading('Completar transferencia')
+94:                     ->modalDescription('Se moverá el stock de todas las líneas. Si alguna no tiene stock suficiente, no se mueve ninguna.')
+95:                     ->visible(static fn (TransferOrder $record): bool => $record->status === 'DRAFT' && (auth()->user()?->can('inventory.transfer') ?? false))
+96:                     ->action(static function (TransferOrder $record): void {
+97:                         try {
+98:                             $result = app(CompleteTransfer::class)((int) $record->id, (int) auth()->id());
+99:                             Notification::make()->title('Transferencia completada')->body("Movimientos registrados: {$result['movements']}.")->success()->send();
+100:                         } catch (OperationsException $e) {
+101:                             Notification::make()->title('No se pudo completar')->body($e->getMessage())->danger()->send();
+102:                         }
+103:                     }),
+104:                 Action::make('cancel')->label('Anular')->icon('heroicon-o-x-circle')->color('danger')
+105:                     ->requiresConfirmation()
+106:                     ->visible(static fn (TransferOrder $record): bool => $record->status === 'DRAFT' && (auth()->user()?->can('inventory.transfer') ?? false))
+107:                     ->action(static function (TransferOrder $record): void {
+108:                         try {
+109:                             app(CancelTransfer::class)((int) $record->id, (int) auth()->id());
+110:                             Notification::make()->title('Borrador anulado')->success()->send();
+111:                         } catch (OperationsException $e) {
+112:                             Notification::make()->title('No se pudo anular')->body($e->getMessage())->danger()->send();
+113:                         }
+114:                     }),
+115:             ])
+116:             ->defaultSort('created_at', 'desc')
+117:             ->emptyStateHeading('Aún no hay transferencias');
+118:     }
+119: 
+120:     public static function getEloquentQuery(): Builder
+121:     {
+122:         return parent::getEloquentQuery()
+123:             ->select('transfer_orders.*')
+124:             ->addSelect([
+125:                 'lines_count' => DB::table('transfer_order_items')->selectRaw('COUNT(*)')->whereColumn('transfer_order_items.order_id', 'transfer_orders.id'),
+126:                 'units_total' => DB::table('transfer_order_items')->selectRaw('COALESCE(SUM(quantity), 0)')->whereColumn('transfer_order_items.order_id', 'transfer_orders.id'),
+127:             ])
+128:             ->with('requester');
+129:     }
+130: 
+131:     public static function getPages(): array
+132:     {
+133:         return [
+134:             'index' => ListTransfers::route('/'),
+135:             'create' => CreateTransfer::route('/create'),
+136:         ];
+137:     }
+138: }
+
+
+FILE app\Filament\Resources\Users\UserResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Users;
+6: 
+7: use App\Filament\Resources\Products\CatalogOptions;
+8: use App\Filament\Resources\Users\Pages\CreateUser;
+9: use App\Filament\Resources\Users\Pages\ListUsers;
+10: use App\Models\User;
+11: use App\Modules\Iam\Application\ActivateUser;
+12: use App\Modules\Iam\Application\DeactivateUser;
+13: use App\Modules\Iam\Application\ResetUserPassword;
+14: use App\Modules\Iam\Domain\IamException;
+15: use App\Modules\Iam\Domain\RoleName;
+16: use BackedEnum;
+17: use Filament\Actions\Action;
+18: use Filament\Forms\Components\Select;
+19: use Filament\Forms\Components\TextInput;
+20: use Filament\Notifications\Notification;
+21: use Filament\Resources\Resource;
+22: use Filament\Schemas\Schema;
+23: use Filament\Tables\Columns\IconColumn;
+24: use Filament\Tables\Columns\TextColumn;
+25: use Filament\Tables\Filters\TernaryFilter;
+26: use Filament\Tables\Table;
+27: use UnitEnum;
+28: 
+29: class UserResource extends Resource
+30: {
+31:     protected static ?string $model = User::class;
+32: 
+33:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
+34: 
+35:     protected static string|UnitEnum|null $navigationGroup = 'Administración';
+36: 
+37:     protected static ?int $navigationSort = 1;
+38: 
+39:     protected static ?string $modelLabel = 'usuario';
+40: 
+41:     protected static ?string $pluralModelLabel = 'usuarios';
+42: 
+43:     protected static ?string $recordTitleAttribute = 'name';
+44: 
+45:     /** @return array<string, string> */
+46:     public static function roleOptions(): array
+47:     {
+48:         return [
+49:             RoleName::Admin->value => 'Administrador',
+50:             RoleName::Supervisor->value => 'Supervisor',
+51:             RoleName::Almacenero->value => 'Almacenero',
+52:             RoleName::Compras->value => 'Compras',
+53:             RoleName::Lectura->value => 'Solo lectura',
+54:         ];
+55:     }
+56: 
+57:     public static function form(Schema $schema): Schema
+58:     {
+59:         return $schema->components([
+60:             TextInput::make('name')->label('Nombre completo')->required()->maxLength(120),
+61:             TextInput::make('username')->label('Usuario')->required()->minLength(3)->maxLength(40)
+62:                 ->regex('/^[a-z0-9._-]+$/')->helperText('Minúsculas, números, punto, guion o guion bajo.')
+63:                 ->unique(table: 'users', column: 'username'),
+64:             TextInput::make('email')->label('Correo')->email()->required()->maxLength(160)->unique(table: 'users', column: 'email'),
+65:             TextInput::make('password')->label('Contraseña inicial')->password()->revealable()->required()->minLength(12)
+66:                 ->helperText('Mínimo 12 caracteres. No puede contener el usuario ni el correo.'),
+67:             Select::make('role')->label('Rol')->options(self::roleOptions())->required(),
+68:             Select::make('default_warehouse_id')->label('Almacén habitual')->options(fn (): array => CatalogOptions::warehouses())
+69:                 ->placeholder('Sin almacén por defecto'),
+70:         ]);
+71:     }
+72: 
+73:     public static function table(Table $table): Table
+74:     {
+75:         return $table
+76:             ->columns([
+77:                 TextColumn::make('name')->label('Nombre')->searchable()->sortable(),
+78:                 TextColumn::make('username')->label('Usuario')->searchable()->sortable(),
+79:                 TextColumn::make('email')->label('Correo')->searchable()->toggleable(),
+80:                 TextColumn::make('roles.name')->label('Rol')->badge()
+81:                     ->formatStateUsing(static fn (string $state): string => self::roleOptions()[$state] ?? $state),
+82:                 IconColumn::make('is_active')->label('Activo')->boolean(),
+83:                 TextColumn::make('last_login_at')->label('Último acceso')->dateTime('d/m/Y H:i', 'America/Lima')->placeholder('Nunca')->sortable(),
+84:             ])
+85:             ->filters([TernaryFilter::make('is_active')->label('Estado')->trueLabel('Activos')->falseLabel('Desactivados')])
+86:             ->recordActions([
+87:                 Action::make('deactivate')->label('Desactivar')->icon('heroicon-o-no-symbol')->color('danger')
+88:                     ->requiresConfirmation()
+89:                     ->modalDescription('La persona no podrá volver a entrar. Su historial se conserva.')
+90:                     ->visible(static fn (User $record): bool => $record->is_active && $record->getKey() !== auth()->id())
+91:                     ->action(static fn (User $record) => self::run(
+92:                         static fn () => app(DeactivateUser::class)((int) $record->getKey(), (int) auth()->id()),
+93:                         'Usuario desactivado',
+94:                     )),
+95:                 Action::make('activate')->label('Reactivar')->icon('heroicon-o-check-circle')->color('success')
+96:                     ->requiresConfirmation()
+97:                     ->visible(static fn (User $record): bool => ! $record->is_active)
+98:                     ->action(static fn (User $record) => self::run(
+99:                         static fn () => app(ActivateUser::class)((int) $record->getKey(), (int) auth()->id()),
+100:                         'Usuario reactivado',
+101:                     )),
+102:                 Action::make('resetPassword')->label('Restablecer contraseña')->icon('heroicon-o-key')->color('warning')
+103:                     ->modalHeading('Restablecer contraseña')
+104:                     ->modalDescription('Fije una contraseña temporal y entréguela en persona. También desbloquea la cuenta. Pídale que la cambie desde su perfil.')
+105:                     ->schema([
+106:                         TextInput::make('password')->label('Contraseña nueva')->password()->revealable()->required()->minLength(12)
+107:                             ->helperText('Mínimo 12 caracteres. No puede contener el usuario ni el correo.'),
+108:                         TextInput::make('password_confirmation')->label('Repita la contraseña')->password()->required()->same('password'),
+109:                     ])
+110:                     ->visible(static fn (User $record): bool => $record->getKey() !== auth()->id())
+111:                     ->action(static fn (array $data, User $record) => self::run(
+112:                         static fn () => app(ResetUserPassword::class)((int) $record->getKey(), (string) $data['password'], (int) auth()->id()),
+113:                         'Contraseña restablecida',
+114:                     )),
+115:             ])
+116:             ->defaultSort('name');
+117:     }
+118: 
+119:     private static function run(callable $operation, string $successTitle): void
+120:     {
+121:         try {
+122:             $operation();
+123:             Notification::make()->title($successTitle)->success()->send();
+124:         } catch (IamException $e) {
+125:             Notification::make()->title('No se pudo completar')->body($e->getMessage())->danger()->send();
+126:         }
+127:     }
+128: 
+129:     public static function getPages(): array
+130:     {
+131:         return [
+132:             'index' => ListUsers::route('/'),
+133:             'create' => CreateUser::route('/create'),
+134:         ];
+135:     }
+136: }
+
+
+FILE app\Filament\Resources\Adjustments\Pages\CreateAdjustment.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Adjustments\Pages;
+6: 
+7: use App\Filament\Resources\Adjustments\AdjustmentFormMapper;
+8: use App\Filament\Resources\Adjustments\AdjustmentResource;
+9: use App\Models\StockAdjustmentRequest;
+10: use App\Modules\Operations\Application\RequestAdjustment;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use Filament\Notifications\Notification;
+13: use Filament\Resources\Pages\CreateRecord;
+14: use Illuminate\Database\Eloquent\Model;
+15: 
+16: class CreateAdjustment extends CreateRecord
+17: {
+18:     protected static string $resource = AdjustmentResource::class;
+19: 
+20:     protected static bool $canCreateAnother = false;
+21: 
+22:     /** @param array<string, mixed> $data */
+23:     protected function handleRecordCreation(array $data): Model
+24:     {
+25:         try {
+26:             $created = app(RequestAdjustment::class)(AdjustmentFormMapper::toNewAdjustment($data, (int) auth()->id()));
+27:         } catch (OperationsException $e) {
+28:             Notification::make()->title('No se pudo enviar la solicitud')->body($e->getMessage())->danger()->send();
+29:             $this->halt();
+30: 
+31:             throw $e;
+32:         }
+33: 
+34:         return StockAdjustmentRequest::query()->findOrFail($created['id']);
+35:     }
+36: 
+37:     protected function getCreatedNotificationTitle(): ?string
+38:     {
+39:         return 'Solicitud enviada. Un supervisor debe aprobarla para que el stock cambie.';
+40:     }
+41: 
+42:     protected function getRedirectUrl(): string
+43:     {
+44:         return AdjustmentResource::getUrl('index');
+45:     }
+46: }
+
+
+FILE app\Filament\Resources\Adjustments\Pages\ListAdjustments.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Adjustments\Pages;
+6: 
+7: use App\Filament\Resources\Adjustments\AdjustmentResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ListRecords;
+10: 
+11: class ListAdjustments extends ListRecords
+12: {
+13:     protected static string $resource = AdjustmentResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Solicitar ajuste o merma')];
+18:     }
+19: }
+
+
+FILE app\Filament\Resources\Audit\Pages\ListAuditLogs.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Audit\Pages;
+6: 
+7: use App\Filament\Resources\Audit\AuditResource;
+8: use Filament\Resources\Pages\ListRecords;
+9: 
+10: class ListAuditLogs extends ListRecords
+11: {
+12:     protected static string $resource = AuditResource::class;
+13: }
+
+
+FILE app\Filament\Resources\Brands\Pages\ManageBrands.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Brands\Pages;
+6: 
+7: use App\Filament\Resources\Brands\BrandResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ManageRecords;
+10: 
+11: class ManageBrands extends ManageRecords
+12: {
+13:     protected static string $resource = BrandResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Nueva marca')];
+18:     }
+19: }
+
+
+FILE app\Filament\Resources\Categories\Pages\ManageCategories.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Categories\Pages;
+6: 
+7: use App\Filament\Resources\Categories\CategoryResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ManageRecords;
+10: 
+11: class ManageCategories extends ManageRecords
+12: {
+13:     protected static string $resource = CategoryResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Nueva categoría')];
+18:     }
+19: }
+
+
+FILE app\Filament\Resources\Counts\Pages\ListCounts.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Counts\Pages;
+6: 
+7: use App\Filament\Resources\Counts\CountResource;
+8: use App\Filament\Resources\Products\CatalogOptions;
+9: use App\Modules\Operations\Application\StartCount;
+10: use App\Modules\Operations\Domain\CountScopeType;
+11: use App\Modules\Operations\Domain\NewCount;
+12: use App\Modules\Operations\Domain\OperationsException;
+13: use Filament\Actions\Action;
+14: use Filament\Forms\Components\Select;
+15: use Filament\Forms\Components\TextInput;
+16: use Filament\Notifications\Notification;
+17: use Filament\Resources\Pages\ListRecords;
+18: use Filament\Schemas\Components\Utilities\Get;
+19: 
+20: class ListCounts extends ListRecords
+21: {
+22:     protected static string $resource = CountResource::class;
+23: 
+24:     protected function getHeaderActions(): array
+25:     {
+26:         return [
+27:             Action::make('start')->label('Iniciar conteo')->icon('heroicon-o-play')
+28:                 ->visible(static fn (): bool => auth()->user()?->can('counts.close') ?? false)
+29:                 ->modalHeading('Iniciar conteo de inventario')
+30:                 ->modalDescription('Se fija el stock esperado y se CONGELAN las ubicaciones del alcance: no admitirán movimientos hasta cerrar o anular el conteo.')
+31:                 ->schema([
+32:                     Select::make('warehouse_id')->label('Almacén')->options(fn (): array => CatalogOptions::warehouses())->required(),
+33:                     Select::make('scope_type')->label('Qué contar')->required()->live()
+34:                         ->options([
+35:                             'ZONE' => 'Una zona (por ejemplo Z1)',
+36:                             'LOCATION' => 'Una ubicación (por ejemplo BOD-Z1-P03-A02-N2)',
+37:                             'CATEGORY' => 'Una categoría (con sus subcategorías)',
+38:                             'ABC_A' => 'Productos de clase A (los que más se venden)',
+39:                             'FULL' => 'Todo el almacén',
+40:                         ]),
+41:                     TextInput::make('scope_value')->label('Zona, código de ubicación o número de categoría')->maxLength(40)
+42:                         ->visible(static fn (Get $get): bool => in_array((string) $get('scope_type'), ['ZONE', 'LOCATION', 'CATEGORY'], true))
+43:                         ->required(static fn (Get $get): bool => in_array((string) $get('scope_type'), ['ZONE', 'LOCATION', 'CATEGORY'], true))
+44:                         ->helperText('Zona: "Z1" o solo "1". Categoría: el número que aparece en la lista de categorías.'),
+45:                 ])
+46:                 ->action(static function (array $data): void {
+47:                     try {
+48:                         $scope = CountScopeType::tryFrom((string) ($data['scope_type'] ?? '')) ?? throw OperationsException::invalid('Seleccione qué contar.');
+49:                         $result = app(StartCount::class)(new NewCount(
+50:                             (int) $data['warehouse_id'], $scope, ($data['scope_value'] ?? null) === null ? null : (string) $data['scope_value'], (int) auth()->id(),
+51:                         ));
+52:                         Notification::make()->title('Conteo iniciado: '.$result['code'])
+53:                             ->body("Ubicaciones congeladas: {$result['locations']}. Líneas a contar: {$result['lines']}.")->success()->send();
+54:                     } catch (OperationsException $e) {
+55:                         Notification::make()->title('No se pudo iniciar')->body($e->getMessage())->danger()->send();
+56:                     }
+57:                 }),
+58:         ];
+59:     }
+60: }
+
+
+FILE app\Filament\Resources\Imports\Pages\ListImports.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Imports\Pages;
+6: 
+7: use App\Filament\Resources\Imports\ImportResource;
+8: use App\Modules\Operations\Application\ImportPosSales;
+9: use App\Modules\Operations\Domain\OperationsException;
+10: use Filament\Actions\Action;
+11: use Filament\Forms\Components\DatePicker;
+12: use Filament\Forms\Components\FileUpload;
+13: use Filament\Notifications\Notification;
+14: use Filament\Resources\Pages\ListRecords;
+15: use Illuminate\Support\Facades\DB;
+16: use Illuminate\Support\Facades\Storage;
+17: 
+18: class ListImports extends ListRecords
+19: {
+20:     protected static string $resource = ImportResource::class;
+21: 
+22:     protected function getHeaderActions(): array
+23:     {
+24:         return [
+25:             $this->importAction('simulate', 'Simular', false, 'heroicon-o-eye', 'gray'),
+26:             $this->importAction('commit', 'Confirmar importación', true, 'heroicon-o-check-circle', 'success'),
+27:         ];
+28:     }
+29: 
+30:     private function importAction(string $name, string $label, bool $commit, string $icon, string $color): Action
+31:     {
+32:         return Action::make($name)->label($label)->icon($icon)->color($color)
+33:             ->visible(static fn (): bool => auth()->user()?->can('pos.import') ?? false)
+34:             ->modalHeading($commit ? 'Confirmar importación de ventas' : 'Simular importación de ventas')
+35:             ->modalDescription($commit
+36:                 ? 'Se descontará del piso de venta lo vendido. El mismo archivo no se puede confirmar dos veces. Las filas con error no se aplican y quedan en un reporte.'
+37:                 : 'Calcula todo SIN tocar el stock, para revisar los errores antes de confirmar.')
+38:             ->schema([
+39:                 FileUpload::make('file')->label('Archivo CSV de la caja (columnas: sku y cantidad)')->required()
+40:                     ->disk('local')->directory('imports/tmp')->maxSize(10240)->storeFileNamesIn('original_name'),
+41:                 DatePicker::make('business_date')->label('Fecha de las ventas')->required()->default(now('America/Lima')),
+42:             ])
+43:             ->action(static function (array $data) use ($commit): void {
+44:                 $path = (string) ($data['file'] ?? '');
+45: 
+46:                 try {
+47:                     $csv = Storage::disk('local')->get($path) ?? '';
+48:                     $csv = mb_check_encoding($csv, 'UTF-8') ? $csv : (string) mb_convert_encoding($csv, 'UTF-8', 'ISO-8859-1'); // Excel en Windows
+49: 
+50:                     $result = app(ImportPosSales::class)(
+51:                         $csv,
+52:                         (string) ($data['original_name'] ?? basename($path)),
+53:                         substr((string) ($data['business_date'] ?? ''), 0, 10),
+54:                         (int) auth()->id(),
+55:                         $commit,
+56:                     );
+57: 
+58:                     if ($result->errors !== []) {
+59:                         $report = 'imports/errors/pos-'.$result->importId.'.csv';
+60:                         Storage::disk('local')->put($report, $result->errorReportCsv());
+61:                         DB::table('import_jobs')->where('id', $result->importId)->update(['error_report_path' => $report]);
+62:                     }
+63: 
+64:                     Notification::make()
+65:                         ->title(($commit ? 'Importación confirmada' : 'Simulación lista').': '.$result->okRows.' producto(s)')
+66:                         ->body("Filas leídas: {$result->totalRows}. Unidades: {$result->units}. Con error: ".count($result->errors).($result->errors !== [] ? '. Descargue el reporte desde la lista.' : '.'))
+67:                         ->color($result->errors === [] ? 'success' : 'warning')->persistent()->send();
+68:                 } catch (OperationsException $e) {
+69:                     Notification::make()->title('No se pudo importar')->body($e->getMessage())->danger()->send();
+70:                 } finally {
+71:                     if ($path !== '') {
+72:                         Storage::disk('local')->delete($path);
+73:                     }
+74:                 }
+75:             });
+76:     }
+77: }
+
+
+FILE app\Filament\Resources\Locations\Pages\ListLocations.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Locations\Pages;
+6: 
+7: use App\Filament\Resources\Locations\LocationResource;
+8: use App\Filament\Resources\Products\CatalogOptions;
+9: use App\Modules\Locations\Application\GenerateLocations;
+10: use App\Modules\Locations\Domain\LocationBatch;
+11: use App\Modules\Locations\Domain\LocationException;
+12: use Filament\Actions\Action;
+13: use Filament\Forms\Components\Select;
+14: use Filament\Forms\Components\TextInput;
+15: use Filament\Notifications\Notification;
+16: use Filament\Resources\Pages\ListRecords;
+17: 
+18: class ListLocations extends ListRecords
+19: {
+20:     protected static string $resource = LocationResource::class;
+21: 
+22:     protected function getHeaderActions(): array
+23:     {
+24:         return [
+25:             Action::make('generate')->label('Generar ubicaciones')->icon('heroicon-o-squares-plus')
+26:                 ->visible(static fn (): bool => auth()->user()?->can('locations.manage') ?? false)
+27:                 ->modalHeading('Generar ubicaciones en lote')
+28:                 ->modalDescription('Crea zona × pasillos × anaqueles × niveles (máximo 2000 por lote). Si repite el lote, solo se crean las que faltan. Código resultante: BOD-Z1-P03-A02-N2.')
+29:                 ->schema([
+30:                     Select::make('warehouse_id')->label('Almacén')->options(fn (): array => CatalogOptions::warehouses())->required(),
+31:                     TextInput::make('zone')->label('Zona (número)')->numeric()->minValue(1)->maxValue(99)->default(1)->required(),
+32:                     TextInput::make('aisle_from')->label('Pasillo desde')->numeric()->minValue(1)->maxValue(99)->default(1)->required(),
+33:                     TextInput::make('aisle_to')->label('Pasillo hasta')->numeric()->minValue(1)->maxValue(99)->default(1)->required(),
+34:                     TextInput::make('rack_from')->label('Anaquel desde')->numeric()->minValue(1)->maxValue(99)->default(1)->required(),
+35:                     TextInput::make('rack_to')->label('Anaquel hasta')->numeric()->minValue(1)->maxValue(99)->default(1)->required(),
+36:                     TextInput::make('level_from')->label('Nivel desde')->numeric()->minValue(1)->maxValue(9)->default(1)->required(),
+37:                     TextInput::make('level_to')->label('Nivel hasta')->numeric()->minValue(1)->maxValue(9)->default(1)->required(),
+38:                     TextInput::make('max_capacity')->label('Capacidad máxima por ubicación (opcional)')->numeric()->minValue(0.001),
+39:                 ])
+40:                 ->action(static function (array $data): void {
+41:                     try {
+42:                         $result = app(GenerateLocations::class)(new LocationBatch(
+43:                             (int) $data['warehouse_id'], (int) $data['zone'],
+44:                             (int) $data['aisle_from'], (int) $data['aisle_to'],
+45:                             (int) $data['rack_from'], (int) $data['rack_to'],
+46:                             (int) $data['level_from'], (int) $data['level_to'],
+47:                             (int) auth()->id(),
+48:                             ($data['max_capacity'] ?? null) === null || $data['max_capacity'] === '' ? null : (string) $data['max_capacity'],
+49:                         ));
+50:                         Notification::make()->title('Ubicaciones generadas')
+51:                             ->body("Creadas: {$result['created']}. Ya existían: {$result['skipped']}.")->success()->send();
+52:                     } catch (LocationException $e) {
+53:                         Notification::make()->title('No se pudo generar')->body($e->getMessage())->danger()->send();
+54:                     }
+55:                 }),
+56:         ];
+57:     }
+58: }
+
+
+FILE app\Filament\Resources\Products\Pages\CreateProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products\Pages;
+6: 
+7: use App\Filament\Resources\Products\ProductFormMapper;
+8: use App\Filament\Resources\Products\ProductResource;
+9: use App\Models\Product;
+10: use App\Modules\Catalog\Application\CreateProduct as CreateProductUseCase;
+11: use App\Modules\Catalog\Domain\CatalogException;
+12: use Filament\Notifications\Notification;
+13: use Filament\Resources\Pages\CreateRecord;
+14: use Illuminate\Database\Eloquent\Model;
+15: 
+16: class CreateProduct extends CreateRecord
+17: {
+18:     protected static string $resource = ProductResource::class;
+19: 
+20:     protected static bool $canCreateAnother = false;
+21: 
+22:     /** @param array<string, mixed> $data */
+23:     protected function handleRecordCreation(array $data): Model
+24:     {
+25:         try {
+26:             $created = app(CreateProductUseCase::class)(
+27:                 ProductFormMapper::toNewProduct($data, auth()->id() === null ? null : (int) auth()->id()),
+28:             );
+29:         } catch (CatalogException $e) {
+30:             Notification::make()->title('No se pudo crear el producto')->body($e->getMessage())->danger()->send();
+31:             $this->halt();
+32: 
+33:             throw $e;
+34:         }
+35: 
+36:         return Product::query()->findOrFail($created['id']);
+37:     }
+38: 
+39:     protected function getCreatedNotificationTitle(): ?string
+40:     {
+41:         return 'Producto creado';
+42:     }
+43: }
+
+
+FILE app\Filament\Resources\Products\Pages\EditProduct.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products\Pages;
+6: 
+7: use App\Filament\Resources\Products\ProductFormMapper;
+8: use App\Filament\Resources\Products\ProductResource;
+9: use App\Modules\Catalog\Application\UpdateProduct;
+10: use App\Modules\Catalog\Domain\CatalogException;
+11: use Filament\Notifications\Notification;
+12: use Filament\Resources\Pages\EditRecord;
+13: use Illuminate\Database\Eloquent\Model;
+14: 
+15: class EditProduct extends EditRecord
+16: {
+17:     protected static string $resource = ProductResource::class;
+18: 
+19:     /** @param array<string, mixed> $data */
+20:     protected function handleRecordUpdate(Model $record, array $data): Model
+21:     {
+22:         try {
+23:             app(UpdateProduct::class)(
+24:                 (int) $record->getKey(),
+25:                 ProductFormMapper::toChanges($data, auth()->id() === null ? null : (int) auth()->id()),
+26:             );
+27:         } catch (CatalogException $e) {
+28:             // Incluye el aviso "fue modificado por otra persona" (control de versión).
+29:             Notification::make()->title('No se pudo guardar')->body($e->getMessage())->danger()->send();
+30:             $this->halt();
+31: 
+32:             throw $e;
+33:         }
+34: 
+35:         return $record->refresh();
+36:     }
+37: 
+38:     protected function afterSave(): void
+39:     {
+40:         $this->refreshFormData(['version', 'name']); // mantiene al día el número de versión del formulario
+41:     }
+42: 
+43:     protected function getSavedNotificationTitle(): ?string
+44:     {
+45:         return 'Producto actualizado';
+46:     }
+47: }
+
+
+FILE app\Filament\Resources\Products\Pages\ListProducts.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products\Pages;
+6: 
+7: use App\Filament\Resources\Products\ProductResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ListRecords;
+10: 
+11: class ListProducts extends ListRecords
+12: {
+13:     protected static string $resource = ProductResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Nuevo producto')];
+18:     }
+19: }
+
+
+FILE app\Filament\Resources\Products\Schemas\ProductForm.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products\Schemas;
+6: 
+7: use App\Filament\Resources\Products\CatalogOptions;
+8: use App\Modules\Catalog\Domain\Symbology;
+9: use Filament\Forms\Components\Hidden;
+10: use Filament\Forms\Components\Repeater;
+11: use Filament\Forms\Components\Select;
+12: use Filament\Forms\Components\Textarea;
+13: use Filament\Forms\Components\TextInput;
+14: use Filament\Forms\Components\Toggle;
+15: use Filament\Schemas\Components\Section;
+16: use Filament\Schemas\Schema;
+17: use Filament\Support\Enums\Operation;
+18: 
+19: final class ProductForm
+20: {
+21:     public static function configure(Schema $schema): Schema
+22:     {
+23:         $symbologies = [];
+24:         foreach (Symbology::cases() as $s) {
+25:             $symbologies[$s->value] = $s->value;
+26:         }
+27: 
+28:         return $schema->components([
+29:             Section::make('Datos del producto')
+30:                 ->description('El SKU se genera solo al guardar (por ejemplo LIB-000231) y no se puede cambiar.')
+31:                 ->schema([
+32:                     TextInput::make('sku')->label('SKU')->disabled()->dehydrated(false)->visibleOn(Operation::Edit),
+33:                     TextInput::make('name')->label('Nombre')->required()->minLength(2)->maxLength(200)->columnSpanFull(),
+34:                     Select::make('category_id')->label('Categoría')->options(fn (): array => CatalogOptions::categories())->searchable()->required(),
+35:                     Select::make('brand_id')->label('Marca')->options(fn (): array => CatalogOptions::brands())->searchable(),
+36:                     Select::make('base_unit_id')->label('Unidad base')->options(fn (): array => CatalogOptions::units())->required()
+37:                         ->disabled(static fn (string $operation): bool => $operation === 'edit')
+38:                         ->dehydrated(static fn (string $operation): bool => $operation === 'create')
+39:                         ->helperText('La unidad en la que se cuenta el stock (por ejemplo, Unidad). No se cambia después.'),
+40:                     TextInput::make('reference_price')->label('Precio referencial')->numeric()->minValue(0)->prefix('S/'),
+41:                     Textarea::make('description')->label('Descripción')->rows(3)->maxLength(2000)->columnSpanFull(),
+42:                     Hidden::make('version'),
+43:                 ])->columns(2),
+44: 
+45:             Section::make('Presentaciones')
+46:                 ->description('Además de la unidad base, puede vender o comprar por docena, caja, paquete, etc. El factor indica cuántas unidades base trae.')
+47:                 ->schema([
+48:                     Repeater::make('presentations')->hiddenLabel()
+49:                         ->schema([
+50:                             Select::make('unit_id')->label('Unidad')->options(fn (): array => CatalogOptions::units())->required(),
+51:                             TextInput::make('factor')->label('Unidades base que trae')->numeric()->minValue(0.001)->required(),
+52:                             Toggle::make('is_purchase_default')->label('Presentación de compra'),
+53:                         ])->columns(3)->defaultItems(0)->addActionLabel('Agregar presentación'),
+54:                 ])->visibleOn(Operation::Create),
+55: 
+56:             Section::make('Códigos de barras')
+57:                 ->description('Cada código es único en todo el catálogo. El código de una caja o docena identifica esa presentación.')
+58:                 ->schema([
+59:                     Repeater::make('barcodes')->hiddenLabel()
+60:                         ->schema([
+61:                             Select::make('symbology')->label('Tipo')->options($symbologies)->required(),
+62:                             TextInput::make('barcode')->label('Código')->required()->maxLength(40),
+63:                             Select::make('presentation_unit_id')->label('Presentación')->options(fn (): array => CatalogOptions::units())
+64:                                 ->placeholder('Unidad base'),
+65:                             Toggle::make('is_primary')->label('Principal'),
+66:                         ])->columns(4)->defaultItems(0)->addActionLabel('Agregar código'),
+67:                 ])->visibleOn(Operation::Create),
+68: 
+69:             Section::make('Política de stock')
+70:                 ->description('Mínimo, máximo y cantidad de reposición por almacén. Con esto el sistema avisará cuando haga falta reponer.')
+71:                 ->schema([
+72:                     Repeater::make('policies')->hiddenLabel()
+73:                         ->schema([
+74:                             Select::make('warehouse_id')->label('Almacén')->options(fn (): array => CatalogOptions::warehouses())->required(),
+75:                             TextInput::make('min_qty')->label('Mínimo')->numeric()->minValue(0)->default(0)->required(),
+76:                             TextInput::make('max_qty')->label('Máximo')->numeric()->minValue(0),
+77:                             TextInput::make('reorder_qty')->label('Cantidad a reponer')->numeric()->minValue(0.001),
+78:                         ])->columns(4)->defaultItems(0)->addActionLabel('Agregar política'),
+79:                 ])->visibleOn(Operation::Create),
+80:         ]);
+81:     }
+82: }
+
+
+FILE app\Filament\Resources\Products\Tables\ProductsTable.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Products\Tables;
+6: 
+7: use App\Models\Product;
+8: use App\Modules\Catalog\Application\DeactivateProduct;
+9: use App\Modules\Catalog\Application\LookupProduct;
+10: use App\Modules\Catalog\Domain\CatalogException;
+11: use App\Modules\Inventory\Application\GetKardex;
+12: use App\Modules\Inventory\Domain\KardexQuery;
+13: use Filament\Actions\Action;
+14: use Filament\Actions\EditAction;
+15: use Filament\Notifications\Notification;
+16: use Filament\Tables\Columns\TextColumn;
+17: use Filament\Tables\Filters\Filter;
+18: use Filament\Tables\Filters\SelectFilter;
+19: use Filament\Tables\Table;
+20: use Illuminate\Contracts\View\View;
+21: use Illuminate\Database\Eloquent\Builder;
+22: use Illuminate\Support\Facades\DB;
+23: 
+24: final class ProductsTable
+25: {
+26:     public static function configure(Table $table): Table
+27:     {
+28:         return $table
+29:             ->columns([
+30:                 TextColumn::make('sku')->label('SKU')->sortable()->copyable()
+31:                     ->searchable(query: static fn (Builder $query, string $search): Builder => $query
+32:                         ->orWhere('products.sku', 'ilike', "%{$search}%")
+33:                         // también se encuentra escaneando/digitando el código de barras exacto
+34:                         ->orWhereExists(static fn ($q) => $q->select(DB::raw(1))->from('product_barcodes')
+35:                             ->whereColumn('product_barcodes.product_id', 'products.id')->where('product_barcodes.barcode', $search))),
+36:                 TextColumn::make('name')->label('Nombre')->searchable()->sortable()->wrap(),
+37:                 TextColumn::make('category.name')->label('Categoría')->sortable(),
+38:                 TextColumn::make('brand.name')->label('Marca')->toggleable(isToggledHiddenByDefault: true),
+39:                 TextColumn::make('primary_barcode')->label('Código principal')->toggleable(),
+40:                 TextColumn::make('stock_total')->label('Stock total')->sortable()->badge()->alignEnd()
+41:                     ->color(static fn ($state): string => (float) $state <= 0 ? 'danger' : 'success')
+42:                     ->formatStateUsing(static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0'),
+43:                 TextColumn::make('cost_avg')->label('Costo promedio')->alignEnd()->toggleable()
+44:                     ->formatStateUsing(static fn ($state): string => 'S/ '.number_format((float) $state, 2, '.', ',')),
+45:                 TextColumn::make('status')->label('Estado')->badge()
+46:                     ->formatStateUsing(static fn (string $state): string => match ($state) {
+47:                         'ACTIVE' => 'Activo', 'INACTIVE' => 'De baja', default => 'Descontinuado',
+48:                     })
+49:                     ->color(static fn (string $state): string => match ($state) {
+50:                         'ACTIVE' => 'success', 'INACTIVE' => 'gray', default => 'warning',
+51:                     }),
+52:                 TextColumn::make('updated_at')->label('Modificado')->dateTime('d/m/Y H:i', 'America/Lima')->sortable()->toggleable(isToggledHiddenByDefault: true),
+53:             ])
+54:             ->filters([
+55:                 SelectFilter::make('category_id')->label('Categoría')->relationship('category', 'name'),
+56:                 SelectFilter::make('status')->label('Estado')->options(['ACTIVE' => 'Activo', 'INACTIVE' => 'De baja', 'DISCONTINUED' => 'Descontinuado']),
+57:                 Filter::make('out_of_stock')->label('Sin stock')
+58:                     ->query(static fn (Builder $query): Builder => $query->whereRaw(
+59:                         '(SELECT COALESCE(SUM(sb.quantity), 0) FROM stock_balances sb WHERE sb.product_id = products.id) <= 0',
+60:                     )),
+61:             ])
+62:             ->recordActions([
+63:                 Action::make('kardex')->label('Kardex')->icon('heroicon-o-clipboard-document-list')->color('gray')
+64:                     ->visible(static fn (): bool => auth()->user()?->can('inventory.view') ?? false)
+65:                     ->modalHeading(static fn (Product $record): string => 'Kardex · '.$record->sku)
+66:                     ->modalWidth('7xl')
+67:                     ->modalSubmitAction(false)
+68:                     ->modalCancelActionLabel('Cerrar')
+69:                     ->modalContent(static fn (Product $record): View => view('filament.kardex', [
+70:                         'lookup' => app(LookupProduct::class)((string) $record->sku),
+71:                         'kardex' => app(GetKardex::class)(new KardexQuery((int) $record->id, limit: 500)),
+72:                         'product' => $record,
+73:                     ])),
+74:                 EditAction::make('edit')->label('Editar'),
+75:                 Action::make('deactivate')->label('Dar de baja')->icon('heroicon-o-archive-box-x-mark')->color('danger')
+76:                     ->requiresConfirmation()
+77:                     ->modalHeading('Dar de baja el producto')
+78:                     ->modalDescription('El producto dejará de poder operarse. Solo es posible si su stock es cero. El historial se conserva.')
+79:                     ->visible(static fn (Product $record): bool => $record->status === 'ACTIVE' && (auth()->user()?->can('catalog.write') ?? false))
+80:                     ->action(static function (Product $record): void {
+81:                         try {
+82:                             app(DeactivateProduct::class)($record->id, auth()->id() === null ? null : (int) auth()->id());
+83:                             Notification::make()->title('Producto dado de baja')->success()->send();
+84:                         } catch (CatalogException $e) {
+85:                             Notification::make()->title('No se pudo dar de baja')->body($e->getMessage())->danger()->send();
+86:                         }
+87:                     }),
+88:             ])
+89:             ->defaultSort('created_at', 'desc')
+90:             ->emptyStateHeading('Aún no hay productos')
+91:             ->emptyStateDescription('Cree el primero con el botón "Nuevo producto".');
+92:     }
+93: }
+
+
+FILE app\Filament\Resources\Receipts\Pages\CreateReceipt.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Receipts\Pages;
+6: 
+7: use App\Filament\Resources\Receipts\ReceiptFormMapper;
+8: use App\Filament\Resources\Receipts\ReceiptResource;
+9: use App\Models\PurchaseReceipt;
+10: use App\Modules\Operations\Application\CreateReceiptDraft;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use Filament\Notifications\Notification;
+13: use Filament\Resources\Pages\CreateRecord;
+14: use Illuminate\Database\Eloquent\Model;
+15: 
+16: class CreateReceipt extends CreateRecord
+17: {
+18:     protected static string $resource = ReceiptResource::class;
+19: 
+20:     protected static bool $canCreateAnother = false;
+21: 
+22:     /** @param array<string, mixed> $data */
+23:     protected function handleRecordCreation(array $data): Model
+24:     {
+25:         try {
+26:             $created = app(CreateReceiptDraft::class)(ReceiptFormMapper::toNewReceipt($data, (int) auth()->id()));
+27:         } catch (OperationsException $e) {
+28:             Notification::make()->title('No se pudo guardar la recepción')->body($e->getMessage())->danger()->send();
+29:             $this->halt();
+30: 
+31:             throw $e;
+32:         }
+33: 
+34:         return PurchaseReceipt::query()->findOrFail($created['id']);
+35:     }
+36: 
+37:     protected function getCreatedNotificationTitle(): ?string
+38:     {
+39:         return 'Recepción guardada como borrador. Confírmela desde la lista para ingresar el stock.';
+40:     }
+41: 
+42:     protected function getRedirectUrl(): string
+43:     {
+44:         return ReceiptResource::getUrl('index');
+45:     }
+46: }
+
+
+FILE app\Filament\Resources\Receipts\Pages\ListReceipts.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Receipts\Pages;
+6: 
+7: use App\Filament\Resources\Receipts\ReceiptResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ListRecords;
+10: 
+11: class ListReceipts extends ListRecords
+12: {
+13:     protected static string $resource = ReceiptResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Nueva recepción')];
+18:     }
+19: }
+
+
+FILE app\Filament\Resources\Replenishment\Pages\ListReplenishment.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Replenishment\Pages;
+6: 
+7: use App\Filament\Resources\Replenishment\ReplenishmentResource;
+8: use Filament\Actions\Action;
+9: use Filament\Resources\Pages\ListRecords;
+10: use Illuminate\Support\Facades\DB;
+11: 
+12: class ListReplenishment extends ListRecords
+13: {
+14:     protected static string $resource = ReplenishmentResource::class;
+15: 
+16:     protected function getHeaderActions(): array
+17:     {
+18:         return [
+19:             Action::make('export')->label('Descargar pedido sugerido (CSV)')->icon('heroicon-o-arrow-down-tray')
+20:                 ->action(static fn () => response()->streamDownload(static function (): void {
+21:                     $out = fopen('php://output', 'w');
+22:                     if ($out === false) {
+23:                         return;
+24:                     }
+25:                     fwrite($out, "\xEF\xBB\xBF"); // para que Excel abra bien los acentos
+26:                     fputcsv($out, ['Proveedor', 'SKU', 'Producto', 'Almacén', 'Stock', 'Mínimo', 'Máximo', 'Pedir', 'Plazo (días)'], ';', '"', '');
+27: 
+28:                     $rows = DB::table('v_replenishment')->where('suggested_qty', '>', 0)->orderBy('supplier_name')->orderBy('product_name')->cursor();
+29:                     foreach ($rows as $r) {
+30:                         fputcsv($out, [$r->supplier_name ?? 'Sin proveedor', $r->sku, $r->product_name, $r->warehouse_name, $r->stock, $r->min_qty, $r->max_qty, $r->suggested_qty, $r->lead_time_days], ';', '"', '');
+31:                     }
+32:                     fclose($out);
+33:                 }, 'pedido-sugerido-'.now('America/Lima')->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8'])),
+34:         ];
+35:     }
+36: }
+
+
+FILE app\Filament\Resources\Reports\Abc\AbcResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Reports\Abc;
+6: 
+7: use App\Filament\Resources\Reports\Abc\Pages\ListAbc;
+8: use App\Models\AbcRow;
+9: use BackedEnum;
+10: use Filament\Resources\Resource;
+11: use Filament\Schemas\Schema;
+12: use Filament\Tables\Columns\TextColumn;
+13: use Filament\Tables\Filters\Filter;
+14: use Filament\Tables\Filters\SelectFilter;
+15: use Filament\Tables\Table;
+16: use Illuminate\Database\Eloquent\Builder;
+17: use UnitEnum;
+18: 
+19: class AbcResource extends Resource
+20: {
+21:     public const CLASS_LABELS = ['A' => 'A · los que más rotan', 'B' => 'B · rotación media', 'C' => 'C · poca rotación', 'SIN_VENTAS' => 'Sin ventas en 90 días'];
+22: 
+23:     protected static ?string $model = AbcRow::class;
+24: 
+25:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+26: 
+27:     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
+28: 
+29:     protected static ?int $navigationSort = 2;
+30: 
+31:     protected static ?string $navigationLabel = 'Rotación y clase ABC';
+32: 
+33:     protected static ?string $modelLabel = 'producto';
+34: 
+35:     protected static ?string $pluralModelLabel = 'rotación y clasificación ABC (90 días)';
+36: 
+37:     public static function form(Schema $schema): Schema
+38:     {
+39:         return $schema;
+40:     }
+41: 
+42:     public static function table(Table $table): Table
+43:     {
+44:         $money = static fn ($state): string => 'S/ '.number_format((float) $state, 2, '.', ',');
+45:         $qty = static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0';
+46: 
+47:         return $table
+48:             ->columns([
+49:                 TextColumn::make('abc_class')->label('Clase')->badge()
+50:                     ->formatStateUsing(static fn (string $state): string => $state === 'SIN_VENTAS' ? 'Sin ventas' : $state)
+51:                     ->color(static fn (string $state): string => ['A' => 'success', 'B' => 'info', 'C' => 'warning', 'SIN_VENTAS' => 'danger'][$state] ?? 'gray'),
+52:                 TextColumn::make('sku')->label('SKU')->searchable()->sortable(),
+53:                 TextColumn::make('product_name')->label('Producto')->searchable()->wrap(),
+54:                 TextColumn::make('category_name')->label('Categoría')->toggleable(),
+55:                 TextColumn::make('qty_90d')->label('Vendido 90 d')->alignEnd()->sortable()->formatStateUsing($qty),
+56:                 TextColumn::make('value_90d')->label('Valor vendido (costo)')->alignEnd()->sortable()->formatStateUsing($money),
+57:                 TextColumn::make('share_pct')->label('% del total')->alignEnd()->placeholder('—')->formatStateUsing(static fn ($state): string => number_format((float) $state, 2).' %'),
+58:                 TextColumn::make('stock')->label('Stock')->alignEnd()->sortable()->formatStateUsing($qty),
+59:                 TextColumn::make('cover_days')->label('Cobertura (días)')->alignEnd()->sortable()->placeholder('—'),
+60:             ])
+61:             ->filters([
+62:                 SelectFilter::make('abc_class')->label('Clase')->options(self::CLASS_LABELS),
+63:                 Filter::make('dead_stock')->label('Con stock pero sin ventas (capital parado)')
+64:                     ->query(static fn (Builder $query): Builder => $query->where('abc_class', 'SIN_VENTAS')->where('stock', '>', 0)),
+65:             ])
+66:             ->defaultSort('value_90d', 'desc')
+67:             ->emptyStateHeading('Aún no hay ventas registradas en los últimos 90 días');
+68:     }
+69: 
+70:     public static function getPages(): array
+71:     {
+72:         return ['index' => ListAbc::route('/')];
+73:     }
+74: }
+
+
+FILE app\Filament\Resources\Reports\ValuedStock\ValuedStockResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Reports\ValuedStock;
+6: 
+7: use App\Filament\Resources\Reports\ValuedStock\Pages\ListValuedStock;
+8: use App\Models\ValuedStockRow;
+9: use BackedEnum;
+10: use Filament\Resources\Resource;
+11: use Filament\Schemas\Schema;
+12: use Filament\Tables\Columns\Summarizers\Sum;
+13: use Filament\Tables\Columns\TextColumn;
+14: use Filament\Tables\Filters\SelectFilter;
+15: use Filament\Tables\Table;
+16: use Illuminate\Support\Facades\DB;
+17: use UnitEnum;
+18: 
+19: class ValuedStockResource extends Resource
+20: {
+21:     protected static ?string $model = ValuedStockRow::class;
+22: 
+23:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+24: 
+25:     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
+26: 
+27:     protected static ?int $navigationSort = 1;
+28: 
+29:     protected static ?string $navigationLabel = 'Inventario valorizado';
+30: 
+31:     protected static ?string $modelLabel = 'producto';
+32: 
+33:     protected static ?string $pluralModelLabel = 'inventario valorizado';
+34: 
+35:     public static function form(Schema $schema): Schema
+36:     {
+37:         return $schema;
+38:     }
+39: 
+40:     public static function table(Table $table): Table
+41:     {
+42:         $money = static fn ($state): string => 'S/ '.number_format((float) $state, 2, '.', ',');
+43:         $qty = static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0';
+44: 
+45:         return $table
+46:             ->columns([
+47:                 TextColumn::make('sku')->label('SKU')->searchable()->sortable(),
+48:                 TextColumn::make('product_name')->label('Producto')->searchable()->wrap(),
+49:                 TextColumn::make('category_name')->label('Categoría')->toggleable(),
+50:                 TextColumn::make('warehouse_name')->label('Almacén'),
+51:                 TextColumn::make('qty')->label('Unidades')->alignEnd()->sortable()->formatStateUsing($qty)
+52:                     ->summarize(Sum::make()->label('Total')->formatStateUsing($qty)),
+53:                 TextColumn::make('cost_avg')->label('Costo prom.')->alignEnd()->formatStateUsing($money),
+54:                 TextColumn::make('value')->label('Valor')->alignEnd()->sortable()->formatStateUsing($money)
+55:                     ->summarize(Sum::make()->label('Valor total')->formatStateUsing($money)),
+56:             ])
+57:             ->filters([
+58:                 SelectFilter::make('warehouse_id')->label('Almacén')
+59:                     ->options(static fn (): array => DB::table('warehouses')->orderBy('name')->pluck('name', 'id')->map(static fn ($n): string => (string) $n)->all()),
+60:                 SelectFilter::make('category_name')->label('Categoría')
+61:                     ->options(static fn (): array => DB::table('categories')->orderBy('name')->pluck('name', 'name')->map(static fn ($n): string => (string) $n)->all()),
+62:             ])
+63:             ->defaultSort('value', 'desc')
+64:             ->emptyStateHeading('No hay stock valorizado todavía');
+65:     }
+66: 
+67:     public static function getPages(): array
+68:     {
+69:         return ['index' => ListValuedStock::route('/')];
+70:     }
+71: }
+
+
+FILE app\Filament\Resources\Reports\Waste\WasteResource.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Reports\Waste;
+6: 
+7: use App\Filament\Resources\Reports\Waste\Pages\ListWaste;
+8: use App\Models\WasteRow;
+9: use BackedEnum;
+10: use Filament\Forms\Components\DatePicker;
+11: use Filament\Resources\Resource;
+12: use Filament\Schemas\Schema;
+13: use Filament\Tables\Columns\Summarizers\Sum;
+14: use Filament\Tables\Columns\TextColumn;
+15: use Filament\Tables\Filters\Filter;
+16: use Filament\Tables\Filters\SelectFilter;
+17: use Filament\Tables\Table;
+18: use Illuminate\Database\Eloquent\Builder;
+19: use Illuminate\Support\Facades\DB;
+20: use UnitEnum;
+21: 
+22: class WasteResource extends Resource
+23: {
+24:     protected static ?string $model = WasteRow::class;
+25: 
+26:     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-trash';
+27: 
+28:     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
+29: 
+30:     protected static ?int $navigationSort = 3;
+31: 
+32:     protected static ?string $navigationLabel = 'Mermas y ajustes negativos';
+33: 
+34:     protected static ?string $modelLabel = 'movimiento';
+35: 
+36:     protected static ?string $pluralModelLabel = 'mermas y ajustes negativos';
+37: 
+38:     public static function form(Schema $schema): Schema
+39:     {
+40:         return $schema;
+41:     }
+42: 
+43:     public static function table(Table $table): Table
+44:     {
+45:         $money = static fn ($state): string => 'S/ '.number_format((float) $state, 2, '.', ',');
+46:         $qty = static fn ($state): string => rtrim(rtrim(number_format((float) $state, 3, '.', ','), '0'), '.') ?: '0';
+47: 
+48:         return $table
+49:             ->columns([
+50:                 TextColumn::make('created_at')->label('Fecha')->dateTime('d/m/Y H:i', 'America/Lima')->sortable(),
+51:                 TextColumn::make('type')->label('Tipo')->badge()
+52:                     ->formatStateUsing(static fn (string $state): string => $state === 'MERMA' ? 'Merma' : 'Ajuste (−)')
+53:                     ->color(static fn (string $state): string => $state === 'MERMA' ? 'danger' : 'warning'),
+54:                 TextColumn::make('sku')->label('SKU')->searchable(),
+55:                 TextColumn::make('product_name')->label('Producto')->searchable()->wrap(),
+56:                 TextColumn::make('location_code')->label('Ubicación')->toggleable(),
+57:                 TextColumn::make('reason_name')->label('Motivo')->wrap(),
+58:                 TextColumn::make('quantity')->label('Cantidad')->alignEnd()->formatStateUsing($qty)
+59:                     ->summarize(Sum::make()->label('Unidades')->formatStateUsing($qty)),
+60:                 TextColumn::make('value')->label('Valor (costo)')->alignEnd()->sortable()->formatStateUsing($money)
+61:                     ->summarize(Sum::make()->label('Valor total')->formatStateUsing($money)),
+62:                 TextColumn::make('user_name')->label('Registró')->toggleable(),
+63:                 TextColumn::make('approver_name')->label('Aprobó')->placeholder('—')->toggleable(),
+64:                 TextColumn::make('notes')->label('Explicación')->limit(40)->toggleable(isToggledHiddenByDefault: true),
+65:             ])
+66:             ->filters([
+67:                 SelectFilter::make('type')->label('Tipo')->options(['MERMA' => 'Merma', 'AJUSTE_NEGATIVO' => 'Ajuste (−)']),
+68:                 SelectFilter::make('reason_name')->label('Motivo')
+69:                     ->options(static fn (): array => DB::table('movement_reasons')->whereIn('movement_type', ['MERMA', 'AJUSTE_NEGATIVO'])->orderBy('name')->pluck('name', 'name')->map(static fn ($n): string => (string) $n)->all()),
+70:                 Filter::make('period')->label('Período')
+71:                     ->schema([DatePicker::make('from')->label('Desde'), DatePicker::make('until')->label('Hasta')])
+72:                     ->query(static fn (Builder $query, array $data): Builder => $query
+73:                         ->when($data['from'] ?? null, static fn (Builder $q, $d): Builder => $q->where('created_at', '>=', $d.' 00:00:00-05'))
+74:                         ->when($data['until'] ?? null, static fn (Builder $q, $d): Builder => $q->where('created_at', '<=', $d.' 23:59:59-05'))),
+75:             ])
+76:             ->defaultSort('created_at', 'desc')
+77:             ->emptyStateHeading('No hay mermas ni ajustes negativos');
+78:     }
+79: 
+80:     public static function getPages(): array
+81:     {
+82:         return ['index' => ListWaste::route('/')];
+83:     }
+84: }
+
+
+FILE app\Filament\Resources\Reports\Abc\Pages\ListAbc.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Reports\Abc\Pages;
+6: 
+7: use App\Filament\Resources\Reports\Abc\AbcResource;
+8: use App\Filament\Support\CsvExport;
+9: use Filament\Actions\Action;
+10: use Filament\Resources\Pages\ListRecords;
+11: use Illuminate\Support\Facades\DB;
+12: 
+13: class ListAbc extends ListRecords
+14: {
+15:     protected static string $resource = AbcResource::class;
+16: 
+17:     protected function getHeaderActions(): array
+18:     {
+19:         return [
+20:             Action::make('export')->label('Descargar CSV')->icon('heroicon-o-arrow-down-tray')
+21:                 ->visible(static fn (): bool => auth()->user()?->can('reports.export') ?? false)
+22:                 ->action(static fn () => CsvExport::download(
+23:                     'rotacion-abc',
+24:                     ['Clase', 'SKU', 'Producto', 'Categoría', 'Vendido 90 d', 'Valor vendido', '% del total', 'Stock', 'Cobertura (días)'],
+25:                     DB::table('v_report_abc')->orderByDesc('value_90d')->orderBy('product_name')->cursor()
+26:                         ->map(static fn (object $r): array => [$r->abc_class, $r->sku, $r->product_name, $r->category_name, $r->qty_90d, round((float) $r->value_90d, 2), $r->share_pct, $r->stock, $r->cover_days]),
+27:                 )),
+28:         ];
+29:     }
+30: }
+
+
+FILE app\Filament\Resources\Reports\ValuedStock\Pages\ListValuedStock.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Reports\ValuedStock\Pages;
+6: 
+7: use App\Filament\Resources\Reports\ValuedStock\ValuedStockResource;
+8: use App\Filament\Support\CsvExport;
+9: use Filament\Actions\Action;
+10: use Filament\Resources\Pages\ListRecords;
+11: use Illuminate\Support\Facades\DB;
+12: 
+13: class ListValuedStock extends ListRecords
+14: {
+15:     protected static string $resource = ValuedStockResource::class;
+16: 
+17:     protected function getHeaderActions(): array
+18:     {
+19:         return [
+20:             Action::make('export')->label('Descargar CSV (todo el inventario)')->icon('heroicon-o-arrow-down-tray')
+21:                 ->visible(static fn (): bool => auth()->user()?->can('reports.export') ?? false)
+22:                 ->action(static fn () => CsvExport::download(
+23:                     'inventario-valorizado',
+24:                     ['SKU', 'Producto', 'Categoría', 'Almacén', 'Unidades', 'Costo promedio', 'Valor'],
+25:                     DB::table('v_report_valued_stock')->orderBy('product_name')->orderBy('warehouse_name')->cursor()
+26:                         ->map(static fn (object $r): array => [$r->sku, $r->product_name, $r->category_name, $r->warehouse_name, $r->qty, $r->cost_avg, round((float) $r->value, 2)]),
+27:                 )),
+28:         ];
+29:     }
+30: }
+
+
+FILE app\Filament\Resources\Reports\Waste\Pages\ListWaste.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Reports\Waste\Pages;
+6: 
+7: use App\Filament\Resources\Reports\Waste\WasteResource;
+8: use App\Filament\Support\CsvExport;
+9: use Filament\Actions\Action;
+10: use Filament\Forms\Components\DatePicker;
+11: use Filament\Resources\Pages\ListRecords;
+12: use Illuminate\Support\Facades\DB;
+13: 
+14: class ListWaste extends ListRecords
+15: {
+16:     protected static string $resource = WasteResource::class;
+17: 
+18:     protected function getHeaderActions(): array
+19:     {
+20:         return [
+21:             Action::make('export')->label('Descargar CSV')->icon('heroicon-o-arrow-down-tray')
+22:                 ->visible(static fn (): bool => auth()->user()?->can('reports.export') ?? false)
+23:                 ->modalHeading('Descargar mermas y ajustes negativos')
+24:                 ->schema([
+25:                     DatePicker::make('from')->label('Desde')->default(now('America/Lima')->startOfMonth())->required(),
+26:                     DatePicker::make('until')->label('Hasta')->default(now('America/Lima'))->required(),
+27:                 ])
+28:                 ->action(static fn (array $data) => CsvExport::download(
+29:                     'mermas',
+30:                     ['Fecha', 'Tipo', 'SKU', 'Producto', 'Ubicación', 'Motivo', 'Cantidad', 'Costo unit.', 'Valor', 'Registró', 'Aprobó', 'Documento', 'Explicación'],
+31:                     DB::table('v_report_waste')
+32:                         ->where('created_at', '>=', substr((string) $data['from'], 0, 10).' 00:00:00-05')
+33:                         ->where('created_at', '<=', substr((string) $data['until'], 0, 10).' 23:59:59-05')
+34:                         ->orderBy('created_at')->cursor()
+35:                         ->map(static fn (object $r): array => [
+36:                             substr((string) $r->created_at, 0, 16), $r->type === 'MERMA' ? 'Merma' : 'Ajuste (-)', $r->sku, $r->product_name, $r->location_code,
+37:                             $r->reason_name, $r->quantity, $r->unit_cost, round((float) $r->value, 2), $r->user_name, $r->approver_name, $r->document_ref, $r->notes,
+38:                         ]),
+39:                 )),
+40:         ];
+41:     }
+42: }
+
+
+FILE app\Filament\Resources\Suppliers\Pages\CreateSupplier.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Suppliers\Pages;
+6: 
+7: use App\Filament\Resources\Suppliers\SupplierFormMapper;
+8: use App\Filament\Resources\Suppliers\SupplierResource;
+9: use App\Models\Supplier;
+10: use App\Modules\Suppliers\Application\CreateSupplier as CreateSupplierUseCase;
+11: use App\Modules\Suppliers\Domain\SupplierException;
+12: use Filament\Notifications\Notification;
+13: use Filament\Resources\Pages\CreateRecord;
+14: use Illuminate\Database\Eloquent\Model;
+15: 
+16: class CreateSupplier extends CreateRecord
+17: {
+18:     protected static string $resource = SupplierResource::class;
+19: 
+20:     protected static bool $canCreateAnother = false;
+21: 
+22:     /** @param array<string, mixed> $data */
+23:     protected function handleRecordCreation(array $data): Model
+24:     {
+25:         try {
+26:             $id = app(CreateSupplierUseCase::class)(SupplierFormMapper::toNewSupplier($data, (int) auth()->id()));
+27:         } catch (SupplierException $e) {
+28:             Notification::make()->title('No se pudo crear el proveedor')->body($e->getMessage())->danger()->send();
+29:             $this->halt();
+30: 
+31:             throw $e;
+32:         }
+33: 
+34:         return Supplier::query()->findOrFail($id);
+35:     }
+36: 
+37:     protected function getCreatedNotificationTitle(): ?string
+38:     {
+39:         return 'Proveedor creado';
+40:     }
+41: }
+
+
+FILE app\Filament\Resources\Suppliers\Pages\EditSupplier.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Suppliers\Pages;
+6: 
+7: use App\Filament\Resources\Suppliers\SupplierFormMapper;
+8: use App\Filament\Resources\Suppliers\SupplierResource;
+9: use App\Modules\Suppliers\Application\UpdateSupplier;
+10: use App\Modules\Suppliers\Domain\SupplierException;
+11: use Filament\Notifications\Notification;
+12: use Filament\Resources\Pages\EditRecord;
+13: use Illuminate\Database\Eloquent\Model;
+14: 
+15: class EditSupplier extends EditRecord
+16: {
+17:     protected static string $resource = SupplierResource::class;
+18: 
+19:     /** @param array<string, mixed> $data */
+20:     protected function handleRecordUpdate(Model $record, array $data): Model
+21:     {
+22:         try {
+23:             app(UpdateSupplier::class)((int) $record->getKey(), SupplierFormMapper::toChanges($data, (int) auth()->id()));
+24:         } catch (SupplierException $e) {
+25:             Notification::make()->title('No se pudo guardar')->body($e->getMessage())->danger()->send();
+26:             $this->halt();
+27: 
+28:             throw $e;
+29:         }
+30: 
+31:         return $record->refresh();
+32:     }
+33: 
+34:     protected function getSavedNotificationTitle(): ?string
+35:     {
+36:         return 'Proveedor actualizado';
+37:     }
+38: }
+
+
+FILE app\Filament\Resources\Suppliers\Pages\ListSuppliers.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Suppliers\Pages;
+6: 
+7: use App\Filament\Resources\Suppliers\SupplierResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ListRecords;
+10: 
+11: class ListSuppliers extends ListRecords
+12: {
+13:     protected static string $resource = SupplierResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Nuevo proveedor')];
+18:     }
+19: }
+
+
+FILE app\Filament\Resources\Transfers\Pages\CreateTransfer.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Transfers\Pages;
+6: 
+7: use App\Filament\Resources\Transfers\TransferFormMapper;
+8: use App\Filament\Resources\Transfers\TransferResource;
+9: use App\Models\TransferOrder;
+10: use App\Modules\Operations\Application\CreateTransferDraft;
+11: use App\Modules\Operations\Domain\OperationsException;
+12: use Filament\Notifications\Notification;
+13: use Filament\Resources\Pages\CreateRecord;
+14: use Illuminate\Database\Eloquent\Model;
+15: 
+16: class CreateTransfer extends CreateRecord
+17: {
+18:     protected static string $resource = TransferResource::class;
+19: 
+20:     protected static bool $canCreateAnother = false;
+21: 
+22:     /** @param array<string, mixed> $data */
+23:     protected function handleRecordCreation(array $data): Model
+24:     {
+25:         try {
+26:             $created = app(CreateTransferDraft::class)(TransferFormMapper::toNewTransfer($data, (int) auth()->id()));
+27:         } catch (OperationsException $e) {
+28:             Notification::make()->title('No se pudo guardar la transferencia')->body($e->getMessage())->danger()->send();
+29:             $this->halt();
+30: 
+31:             throw $e;
+32:         }
+33: 
+34:         return TransferOrder::query()->findOrFail($created['id']);
+35:     }
+36: 
+37:     protected function getCreatedNotificationTitle(): ?string
+38:     {
+39:         return 'Transferencia guardada como borrador. Complétela desde la lista para mover el stock.';
+40:     }
+41: 
+42:     protected function getRedirectUrl(): string
+43:     {
+44:         return TransferResource::getUrl('index');
+45:     }
+46: }
+
+
+FILE app\Filament\Resources\Transfers\Pages\ListTransfers.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Transfers\Pages;
+6: 
+7: use App\Filament\Resources\Transfers\TransferResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ListRecords;
+10: 
+11: class ListTransfers extends ListRecords
+12: {
+13:     protected static string $resource = TransferResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Nueva transferencia')];
+18:     }
+19: }
+
+
+FILE app\Filament\Resources\Users\Pages\CreateUser.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Users\Pages;
+6: 
+7: use App\Filament\Resources\Users\UserResource;
+8: use App\Models\User;
+9: use App\Modules\Iam\Application\CreateUser as CreateUserUseCase;
+10: use App\Modules\Iam\Domain\IamException;
+11: use App\Modules\Iam\Domain\NewUser;
+12: use App\Modules\Iam\Domain\RoleName;
+13: use Filament\Notifications\Notification;
+14: use Filament\Resources\Pages\CreateRecord;
+15: use Illuminate\Database\Eloquent\Model;
+16: 
+17: class CreateUser extends CreateRecord
+18: {
+19:     protected static string $resource = UserResource::class;
+20: 
+21:     protected static bool $canCreateAnother = false;
+22: 
+23:     /** @param array<string, mixed> $data */
+24:     protected function handleRecordCreation(array $data): Model
+25:     {
+26:         try {
+27:             $id = app(CreateUserUseCase::class)(new NewUser(
+28:                 name: (string) ($data['name'] ?? ''),
+29:                 username: (string) ($data['username'] ?? ''),
+30:                 email: (string) ($data['email'] ?? ''),
+31:                 password: (string) ($data['password'] ?? ''),
+32:                 role: RoleName::tryFrom((string) ($data['role'] ?? '')) ?? RoleName::Lectura,
+33:                 defaultWarehouseId: ($data['default_warehouse_id'] ?? null) === null ? null : (int) $data['default_warehouse_id'],
+34:                 actorId: auth()->id() === null ? null : (int) auth()->id(),
+35:             ));
+36:         } catch (IamException $e) {
+37:             Notification::make()->title('No se pudo crear el usuario')->body($e->getMessage())->danger()->send();
+38:             $this->halt();
+39: 
+40:             throw $e;
+41:         }
+42: 
+43:         return User::query()->findOrFail($id);
+44:     }
+45: 
+46:     protected function getCreatedNotificationTitle(): ?string
+47:     {
+48:         return 'Usuario creado';
+49:     }
+50: }
+
+
+FILE app\Filament\Resources\Users\Pages\ListUsers.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Filament\Resources\Users\Pages;
+6: 
+7: use App\Filament\Resources\Users\UserResource;
+8: use Filament\Actions\CreateAction;
+9: use Filament\Resources\Pages\ListRecords;
+10: 
+11: class ListUsers extends ListRecords
+12: {
+13:     protected static string $resource = UserResource::class;
+14: 
+15:     protected function getHeaderActions(): array
+16:     {
+17:         return [CreateAction::make()->label('Nuevo usuario')];
+18:     }
+19: }
+
+
+FILE app\Policies\AbcRowPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\AbcRow;
+8: use App\Models\User;
+9: 
+10: final class AbcRowPolicy
+11: {
+12:     public function viewAny(User $user): bool
+13:     {
+14:         return $user->can('reports.view');
+15:     }
+16: 
+17:     public function view(User $user, AbcRow $record): bool
+18:     {
+19:         return $user->can('reports.view');
+20:     }
+21: 
+22:     public function create(User $user): bool
+23:     {
+24:         return false;
+25:     }
+26: 
+27:     public function update(User $user, AbcRow $record): bool
+28:     {
+29:         return false;
+30:     }
+31: 
+32:     public function delete(User $user, AbcRow $record): bool
+33:     {
+34:         return false;
+35:     }
+36: 
+37:     public function deleteAny(User $user): bool
+38:     {
+39:         return false;
+40:     }
+41: }
+
+
+FILE app\Policies\AuditLogPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\AuditLog;
+8: use App\Models\User;
+9: 
+10: final class AuditLogPolicy
+11: {
+12:     public function viewAny(User $user): bool
+13:     {
+14:         return $user->can('audit.view');
+15:     }
+16: 
+17:     public function view(User $user, AuditLog $record): bool
+18:     {
+19:         return $user->can('audit.view');
+20:     }
+21: 
+22:     public function create(User $user): bool
+23:     {
+24:         return false;
+25:     }
+26: 
+27:     public function update(User $user, AuditLog $record): bool
+28:     {
+29:         return false;
+30:     }
+31: 
+32:     public function delete(User $user, AuditLog $record): bool
+33:     {
+34:         return false;
+35:     }
+36: 
+37:     public function deleteAny(User $user): bool
+38:     {
+39:         return false;
+40:     }
+41: }
+
+
+FILE app\Policies\BrandPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\Brand;
+8: use App\Models\User;
+9: 
+10: /** Lectura: catalog.view. Escritura: catalog.write. Nunca se borra: se da de baja (los datos históricos se conservan). */
+11: final class BrandPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('catalog.view');
+16:     }
+17: 
+18:     public function view(User $user, Brand $record): bool
+19:     {
+20:         return $user->can('catalog.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('catalog.write');
+26:     }
+27: 
+28:     public function update(User $user, Brand $record): bool
+29:     {
+30:         return $user->can('catalog.write');
+31:     }
+32: 
+33:     public function delete(User $user, Brand $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\CategoryPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\Category;
+8: use App\Models\User;
+9: 
+10: /** Lectura: catalog.view. Escritura: catalog.write. Nunca se borra: se da de baja (los datos históricos se conservan). */
+11: final class CategoryPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('catalog.view');
+16:     }
+17: 
+18:     public function view(User $user, Category $record): bool
+19:     {
+20:         return $user->can('catalog.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('catalog.write');
+26:     }
+27: 
+28:     public function update(User $user, Category $record): bool
+29:     {
+30:         return $user->can('catalog.write');
+31:     }
+32: 
+33:     public function delete(User $user, Category $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\ImportJobPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\ImportJob;
+8: use App\Models\User;
+9: 
+10: /** Ver: pos.import. Crear/iniciar: pos.import. Los cambios de estado se controlan en cada acción. */
+11: final class ImportJobPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('pos.import');
+16:     }
+17: 
+18:     public function view(User $user, ImportJob $record): bool
+19:     {
+20:         return $user->can('pos.import');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('pos.import');
+26:     }
+27: 
+28:     public function update(User $user, ImportJob $record): bool
+29:     {
+30:         return false;
+31:     }
+32: 
+33:     public function delete(User $user, ImportJob $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\LocationPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\Location;
+8: use App\Models\User;
+9: 
+10: /** Ver: inventory.view. Crear/iniciar: locations.manage. Los cambios de estado se controlan en cada acción. */
+11: final class LocationPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('inventory.view');
+16:     }
+17: 
+18:     public function view(User $user, Location $record): bool
+19:     {
+20:         return $user->can('inventory.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('locations.manage');
+26:     }
+27: 
+28:     public function update(User $user, Location $record): bool
+29:     {
+30:         return false;
+31:     }
+32: 
+33:     public function delete(User $user, Location $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\ProductPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\Product;
+8: use App\Models\User;
+9: 
+10: /** Lectura: catalog.view. Escritura: catalog.write. Nunca se borra: se da de baja (los datos históricos se conservan). */
+11: final class ProductPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('catalog.view');
+16:     }
+17: 
+18:     public function view(User $user, Product $record): bool
+19:     {
+20:         return $user->can('catalog.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('catalog.write');
+26:     }
+27: 
+28:     public function update(User $user, Product $record): bool
+29:     {
+30:         return $user->can('catalog.write');
+31:     }
+32: 
+33:     public function delete(User $user, Product $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\PurchaseReceiptPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\PurchaseReceipt;
+8: use App\Models\User;
+9: 
+10: /** Ver: inventory.view. Crear: inventory.receive. Los cambios de estado (confirmar, anular, aprobar) se controlan en cada acción. */
+11: final class PurchaseReceiptPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('inventory.view');
+16:     }
+17: 
+18:     public function view(User $user, PurchaseReceipt $record): bool
+19:     {
+20:         return $user->can('inventory.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('inventory.receive');
+26:     }
+27: 
+28:     public function update(User $user, PurchaseReceipt $record): bool
+29:     {
+30:         return false;
+31:     }
+32: 
+33:     public function delete(User $user, PurchaseReceipt $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\ReplenishmentSuggestionPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\ReplenishmentSuggestion;
+8: use App\Models\User;
+9: 
+10: final class ReplenishmentSuggestionPolicy
+11: {
+12:     public function viewAny(User $user): bool
+13:     {
+14:         return $user->can('alerts.view');
+15:     }
+16: 
+17:     public function view(User $user, ReplenishmentSuggestion $record): bool
+18:     {
+19:         return $user->can('alerts.view');
+20:     }
+21: 
+22:     public function create(User $user): bool
+23:     {
+24:         return false;
+25:     }
+26: 
+27:     public function update(User $user, ReplenishmentSuggestion $record): bool
+28:     {
+29:         return false;
+30:     }
+31: 
+32:     public function delete(User $user, ReplenishmentSuggestion $record): bool
+33:     {
+34:         return false;
+35:     }
+36: 
+37:     public function deleteAny(User $user): bool
+38:     {
+39:         return false;
+40:     }
+41: }
+
+
+FILE app\Policies\StockAdjustmentRequestPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\StockAdjustmentRequest;
+8: use App\Models\User;
+9: 
+10: /** Ver: inventory.view. Crear: inventory.adjust.request. Los cambios de estado (confirmar, anular, aprobar) se controlan en cada acción. */
+11: final class StockAdjustmentRequestPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('inventory.view');
+16:     }
+17: 
+18:     public function view(User $user, StockAdjustmentRequest $record): bool
+19:     {
+20:         return $user->can('inventory.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('inventory.adjust.request');
+26:     }
+27: 
+28:     public function update(User $user, StockAdjustmentRequest $record): bool
+29:     {
+30:         return false;
+31:     }
+32: 
+33:     public function delete(User $user, StockAdjustmentRequest $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\StockCountPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\StockCount;
+8: use App\Models\User;
+9: 
+10: /** Ver: inventory.view. Crear/iniciar: counts.close. Los cambios de estado se controlan en cada acción. */
+11: final class StockCountPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('inventory.view');
+16:     }
+17: 
+18:     public function view(User $user, StockCount $record): bool
+19:     {
+20:         return $user->can('inventory.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('counts.close');
+26:     }
+27: 
+28:     public function update(User $user, StockCount $record): bool
+29:     {
+30:         return false;
+31:     }
+32: 
+33:     public function delete(User $user, StockCount $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\SupplierPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\Supplier;
+8: use App\Models\User;
+9: 
+10: /** Compras y administración gestionan proveedores (suppliers.manage). Nunca se borran: se desactivan. */
+11: final class SupplierPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('suppliers.manage');
+16:     }
+17: 
+18:     public function view(User $user, Supplier $record): bool
+19:     {
+20:         return $user->can('suppliers.manage');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('suppliers.manage');
+26:     }
+27: 
+28:     public function update(User $user, Supplier $record): bool
+29:     {
+30:         return $user->can('suppliers.manage');
+31:     }
+32: 
+33:     public function delete(User $user, Supplier $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\TransferOrderPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\TransferOrder;
+8: use App\Models\User;
+9: 
+10: /** Ver: inventory.view. Crear: inventory.transfer. Los cambios de estado (confirmar, anular, aprobar) se controlan en cada acción. */
+11: final class TransferOrderPolicy
+12: {
+13:     public function viewAny(User $user): bool
+14:     {
+15:         return $user->can('inventory.view');
+16:     }
+17: 
+18:     public function view(User $user, TransferOrder $record): bool
+19:     {
+20:         return $user->can('inventory.view');
+21:     }
+22: 
+23:     public function create(User $user): bool
+24:     {
+25:         return $user->can('inventory.transfer');
+26:     }
+27: 
+28:     public function update(User $user, TransferOrder $record): bool
+29:     {
+30:         return false;
+31:     }
+32: 
+33:     public function delete(User $user, TransferOrder $record): bool
+34:     {
+35:         return false;
+36:     }
+37: 
+38:     public function deleteAny(User $user): bool
+39:     {
+40:         return false;
+41:     }
+42: }
+
+
+FILE app\Policies\UserPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\User;
+8: 
+9: /** Solo quien tiene users.manage administra usuarios. No se editan ni se borran desde el panel: se activan/desactivan. */
+10: final class UserPolicy
+11: {
+12:     public function viewAny(User $user): bool
+13:     {
+14:         return $user->can('users.manage');
+15:     }
+16: 
+17:     public function view(User $user, User $record): bool
+18:     {
+19:         return $user->can('users.manage');
+20:     }
+21: 
+22:     public function create(User $user): bool
+23:     {
+24:         return $user->can('users.manage');
+25:     }
+26: 
+27:     public function update(User $user, User $record): bool
+28:     {
+29:         return false;
+30:     }
+31: 
+32:     public function delete(User $user, User $record): bool
+33:     {
+34:         return false;
+35:     }
+36: 
+37:     public function deleteAny(User $user): bool
+38:     {
+39:         return false;
+40:     }
+41: }
+
+
+FILE app\Policies\ValuedStockRowPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\User;
+8: use App\Models\ValuedStockRow;
+9: 
+10: final class ValuedStockRowPolicy
+11: {
+12:     public function viewAny(User $user): bool
+13:     {
+14:         return $user->can('reports.view');
+15:     }
+16: 
+17:     public function view(User $user, ValuedStockRow $record): bool
+18:     {
+19:         return $user->can('reports.view');
+20:     }
+21: 
+22:     public function create(User $user): bool
+23:     {
+24:         return false;
+25:     }
+26: 
+27:     public function update(User $user, ValuedStockRow $record): bool
+28:     {
+29:         return false;
+30:     }
+31: 
+32:     public function delete(User $user, ValuedStockRow $record): bool
+33:     {
+34:         return false;
+35:     }
+36: 
+37:     public function deleteAny(User $user): bool
+38:     {
+39:         return false;
+40:     }
+41: }
+
+
+FILE app\Policies\WasteRowPolicy.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: namespace App\Policies;
+6: 
+7: use App\Models\User;
+8: use App\Models\WasteRow;
+9: 
+10: final class WasteRowPolicy
+11: {
+12:     public function viewAny(User $user): bool
+13:     {
+14:         return $user->can('reports.view');
+15:     }
+16: 
+17:     public function view(User $user, WasteRow $record): bool
+18:     {
+19:         return $user->can('reports.view');
+20:     }
+21: 
+22:     public function create(User $user): bool
+23:     {
+24:         return false;
+25:     }
+26: 
+27:     public function update(User $user, WasteRow $record): bool
+28:     {
+29:         return false;
+30:     }
+31: 
+32:     public function delete(User $user, WasteRow $record): bool
+33:     {
+34:         return false;
+35:     }
+36: 
+37:     public function deleteAny(User $user): bool
+38:     {
+39:         return false;
+40:     }
+41: }

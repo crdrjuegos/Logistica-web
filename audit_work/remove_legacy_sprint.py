@@ -1,0 +1,12 @@
+from pathlib import Path
+p=Path('audit_work/build_workbook.mjs');s=p.read_text(encoding='utf-8')
+s=s.replace("sprint.getRange('B16:AF90').clear({applyTo:'contents'});", "sprint.getRange('B16:AP100').clear({applyTo:'all'});sprint.getRange('B16:AP100').formulas=Array.from({length:85},()=>Array(41).fill(null));sprint.getRange('B16:U90').format.font={name:'Arial',size:10};")
+s=s.replace("sprint.getRange('C16:D18').values=[['Duración del sprint',14],['Ventana de tendencia',5],['Tareas incluidas',st.length]];", "sprint.getRange('C16:D17').values=[['Duración del sprint',14],['Tareas incluidas',st.length]];w.names.getItem('TaskRows').delete();w.names.addRange('TaskRows',\"'Sprint 1'!$D$17\");")
+s=s.replace("sprint.getRange('F18').values=[[0]];", "sprint.getRange('F18').formulas=[['=COUNT($AI$9:$AI$22)']];")
+s=s.replace("sprint.getRange('F20').values=[[0]];", "sprint.getRange('F20').values=[[5]];")
+s=s.replace("const r=st[i];sprint.getRange(`B${22+i}:G${22+i}`).values=", "const r=st[i];sprint.getRange(`B${22+i}:G${22+i}`).format.fill=r.state==='Terminado'?'#E2F0D9':r.state==='En Progreso'?'#FFF2CC':'#FFFFFF';sprint.getRange(`B${22+i}:G${22+i}`).values=")
+s=s.replace("sprint.getRange('B21:G21').values=", "sprint.getRange('B21:U21').format={fill:'#FCE4D6',font:{name:'Arial',size:10,bold:true},rowHeight:30,wrapText:true,verticalAlignment:'center'};sprint.getRange('C16:G17').format.fill='#FCE4D6';sprint.getRange(`F22:F${sl}`).dataValidation={rule:{type:'list',values:['Terminado','En Progreso','Por Hacer']}};sprint.getRange('B21:G21').values=")
+s=s.replace("cron.getRange('G23:G27').clear({applyTo:'contents'});", "cron.getRange('G23:G27').clear({applyTo:'all'});cron.getRange('G23:G27').formulas=Array.from({length:5},()=>[null]);")
+p.write_text(s,encoding='utf-8')
+p=Path('audit_work/package_final.py');s=p.read_text(encoding='utf-8').replace("A=Path('audit_work');O=Path('outputs/avance2_2026_10_28');", "A=Path('audit_work');O=Path('outputs/avance2_2026_10_28').resolve();")
+p.write_text(s,encoding='utf-8')

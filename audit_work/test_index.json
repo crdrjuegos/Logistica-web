@@ -1,0 +1,1217 @@
+[
+  {
+    "file": "tests/Feature/Audit/AuditTrailTest.php",
+    "line": 11,
+    "test": "registra una entrada con valores antes y después"
+  },
+  {
+    "file": "tests/Feature/Audit/AuditTrailTest.php",
+    "line": 22,
+    "test": "la auditoría es inmutable: UPDATE y DELETE son rechazados por la BD"
+  },
+  {
+    "file": "tests/Feature/Catalog/CatalogDatabaseTest.php",
+    "line": 42,
+    "test": "crea producto con presentaciones, códigos y políticas en una sola transacción"
+  },
+  {
+    "file": "tests/Feature/Catalog/CatalogDatabaseTest.php",
+    "line": 63,
+    "test": "los SKU son correlativos por categoría raíz, también desde subcategorías"
+  },
+  {
+    "file": "tests/Feature/Catalog/CatalogDatabaseTest.php",
+    "line": 80,
+    "test": "rechaza un código de barras ya usado y no deja el producto a medias"
+  },
+  {
+    "file": "tests/Feature/Catalog/CatalogDatabaseTest.php",
+    "line": 91,
+    "test": "escanear devuelve producto, factor de la presentación y stock por ubicación"
+  },
+  {
+    "file": "tests/Feature/Catalog/CatalogDatabaseTest.php",
+    "line": 118,
+    "test": "detecta posibles duplicados por similitud de nombre"
+  },
+  {
+    "file": "tests/Feature/Catalog/CatalogDatabaseTest.php",
+    "line": 129,
+    "test": "actualiza con control optimista de versión"
+  },
+  {
+    "file": "tests/Feature/Catalog/CatalogDatabaseTest.php",
+    "line": 141,
+    "test": "no da de baja con stock; con stock en cero sí"
+  },
+  {
+    "file": "tests/Feature/Iam/AdminCommandsTest.php",
+    "line": 14,
+    "test": "wms:admin-reset crea al administrador si no existe"
+  },
+  {
+    "file": "tests/Feature/Iam/AdminCommandsTest.php",
+    "line": 25,
+    "test": "wms:admin-reset recupera una cuenta bloqueada o desactivada"
+  },
+  {
+    "file": "tests/Feature/Iam/AdminCommandsTest.php",
+    "line": 42,
+    "test": "wms:admin-reset rechaza contraseñas distintas o débiles"
+  },
+  {
+    "file": "tests/Feature/Iam/AdminCommandsTest.php",
+    "line": 56,
+    "test": "wms:users lista los usuarios con su estado"
+  },
+  {
+    "file": "tests/Feature/Iam/RolesAndPermissionsTest.php",
+    "line": 11,
+    "test": "el seeder crea los 5 roles con exactamente los permisos de la matriz"
+  },
+  {
+    "file": "tests/Feature/Iam/RolesAndPermissionsTest.php",
+    "line": 24,
+    "test": "el seeder es idempotente"
+  },
+  {
+    "file": "tests/Feature/Iam/UserManagementTest.php",
+    "line": 25,
+    "test": "crea el usuario con hash, rol y permisos efectivos"
+  },
+  {
+    "file": "tests/Feature/Iam/UserManagementTest.php",
+    "line": 36,
+    "test": "audita la creación sin guardar la contraseña"
+  },
+  {
+    "file": "tests/Feature/Iam/UserManagementTest.php",
+    "line": 46,
+    "test": "rechaza usuario repetido sin distinguir mayúsculas"
+  },
+  {
+    "file": "tests/Feature/Iam/UserManagementTest.php",
+    "line": 52,
+    "test": "protege al último administrador activo"
+  },
+  {
+    "file": "tests/Feature/Iam/UserManagementTest.php",
+    "line": 65,
+    "test": "bloquea la cuenta tras 5 intentos fallidos"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 13,
+    "test": "registra una compra, actualiza saldo y costo promedio en la BD real"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 27,
+    "test": "la transferencia es atómica y el ledger cuadra con los saldos"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 42,
+    "test": "rechaza stock insuficiente sin dejar rastro en el ledger"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 56,
+    "test": "es idempotente contra la BD real"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 72,
+    "test": "rechaza ubicaciones congeladas salvo ajustes de conteo"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 84,
+    "test": "el historial es inmutable: UPDATE y DELETE son rechazados por la BD"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 97,
+    "test": "la BD rechaza stock negativo aunque el código fallara"
+  },
+  {
+    "file": "tests/Feature/Inventory/PostgresLedgerTest.php",
+    "line": 106,
+    "test": "la BD rechaza movimientos mal formados y claves de idempotencia repetidas"
+  },
+  {
+    "file": "tests/Feature/Locations/LocationsDatabaseTest.php",
+    "line": 20,
+    "test": "genera ubicaciones en lote con zona, pasillo, anaquel y nivel"
+  },
+  {
+    "file": "tests/Feature/Locations/LocationsDatabaseTest.php",
+    "line": 33,
+    "test": "repetir el lote no duplica ubicaciones"
+  },
+  {
+    "file": "tests/Feature/Locations/LocationsDatabaseTest.php",
+    "line": 43,
+    "test": "una ubicación congelada rechaza movimientos hasta que se descongela"
+  },
+  {
+    "file": "tests/Feature/Locations/LocationsDatabaseTest.php",
+    "line": 59,
+    "test": "no se desactiva una ubicación con stock ni una de recepción"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 31,
+    "test": "conteo completo: congela, cuenta, recuenta, cierra con ajustes y deja el ledger cuadrado"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 79,
+    "test": "anular un conteo en curso descongela y no deja ajustes"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 94,
+    "test": "dos conteos no pueden congelar las mismas ubicaciones"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 104,
+    "test": "el conteo de clase A incluye solo los productos que explican el 80 % de lo vendido"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 122,
+    "test": "por categoría incluye los productos de sus subcategorías"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 155,
+    "test": "la importación descuenta del piso, acepta SKU o código de barras y registra el archivo"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 173,
+    "test": "el mismo archivo no se confirma dos veces y la simulación no toca el stock"
+  },
+  {
+    "file": "tests/Feature/Operations/CountsAndPosDatabaseTest.php",
+    "line": 188,
+    "test": "las filas con error van al reporte y las válidas se aplican"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 53,
+    "test": "la recepción confirmada deja stock, costo promedio, movimientos enlazados y documento"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 76,
+    "test": "confirmar dos veces no duplica movimientos ni stock"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 89,
+    "test": "una recepción por cajas guarda la presentación y entra en unidad base"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 109,
+    "test": "no se registra dos veces la misma factura del proveedor, salvo que se anule"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 123,
+    "test": "si una línea de la transferencia no tiene stock, no se mueve ninguna"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 145,
+    "test": "la transferencia completa mueve el stock y enlaza los movimientos"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 164,
+    "test": "una merma solicitada por un almacenero solo descuenta cuando otra persona la aprueba"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 187,
+    "test": "una merma sin stock suficiente no se aprueba y la solicitud queda pendiente"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 202,
+    "test": "el registro directo respeta el límite configurado"
+  },
+  {
+    "file": "tests/Feature/Operations/OperationsDatabaseTest.php",
+    "line": 220,
+    "test": "el kardex muestra saldo inicial, movimientos con saldo corrido y saldo final"
+  },
+  {
+    "file": "tests/Feature/Panel/AlmacenPagesTest.php",
+    "line": 54,
+    "test": "cada rol ve en el menú solo lo que le corresponde"
+  },
+  {
+    "file": "tests/Feature/Panel/AlmacenPagesTest.php",
+    "line": 76,
+    "test": "el almacenero abre las pantallas para registrar su trabajo"
+  },
+  {
+    "file": "tests/Feature/Panel/AlmacenPagesTest.php",
+    "line": 85,
+    "test": "solo lectura ve las listas pero no puede abrir las pantallas de registro"
+  },
+  {
+    "file": "tests/Feature/Panel/AlmacenPagesTest.php",
+    "line": 96,
+    "test": "confirmar una recepción desde la lista ingresa el stock"
+  },
+  {
+    "file": "tests/Feature/Panel/AlmacenPagesTest.php",
+    "line": 115,
+    "test": "completar una transferencia desde la lista mueve el stock"
+  },
+  {
+    "file": "tests/Feature/Panel/AlmacenPagesTest.php",
+    "line": 130,
+    "test": "el supervisor aprueba la merma que pidió el almacenero; el almacenero no ve el botón"
+  },
+  {
+    "file": "tests/Feature/Panel/AlmacenPagesTest.php",
+    "line": 151,
+    "test": "el kardex de un producto muestra el stock actual y los movimientos"
+  },
+  {
+    "file": "tests/Feature/Panel/CatalogModelsTest.php",
+    "line": 10,
+    "test": "una categoría de primer nivel exige código único y queda en nivel 1"
+  },
+  {
+    "file": "tests/Feature/Panel/CatalogModelsTest.php",
+    "line": 19,
+    "test": "las subcategorías heredan el nivel y se limitan a 3 niveles"
+  },
+  {
+    "file": "tests/Feature/Panel/CatalogModelsTest.php",
+    "line": 30,
+    "test": "categorías y marcas dejan rastro de auditoría con antes y después"
+  },
+  {
+    "file": "tests/Feature/Panel/ComprasPagesTest.php",
+    "line": 35,
+    "test": "los proveedores los gestionan compras y administración; las alertas las ven todos"
+  },
+  {
+    "file": "tests/Feature/Panel/ComprasPagesTest.php",
+    "line": 50,
+    "test": "compras crea, edita y desactiva un proveedor desde las pantallas"
+  },
+  {
+    "file": "tests/Feature/Panel/ComprasPagesTest.php",
+    "line": 73,
+    "test": "la vista de reposición clasifica cada producto y sugiere cuánto pedir"
+  },
+  {
+    "file": "tests/Feature/Panel/ComprasPagesTest.php",
+    "line": 95,
+    "test": "la pantalla de reposición y el tablero abren para quien ve alertas"
+  },
+  {
+    "file": "tests/Feature/Panel/PanelAccessTest.php",
+    "line": 18,
+    "test": "cada rol con cuenta activa puede entrar al panel"
+  },
+  {
+    "file": "tests/Feature/Panel/PanelAccessTest.php",
+    "line": 26,
+    "test": "no entran las cuentas desactivadas, bloqueadas o sin rol"
+  },
+  {
+    "file": "tests/Feature/Panel/PanelAccessTest.php",
+    "line": 42,
+    "test": "5 intentos fallidos bloquean la cuenta y un acierto durante el bloqueo no la libera"
+  },
+  {
+    "file": "tests/Feature/Panel/PanelAccessTest.php",
+    "line": 57,
+    "test": "un acceso correcto registra el último ingreso"
+  },
+  {
+    "file": "tests/Feature/Panel/PoliciesTest.php",
+    "line": 17,
+    "test": "el catálogo se ve con catalog.view y se escribe solo con catalog.write"
+  },
+  {
+    "file": "tests/Feature/Panel/PoliciesTest.php",
+    "line": 29,
+    "test": "nadie puede borrar productos: se dan de baja"
+  },
+  {
+    "file": "tests/Feature/Panel/PoliciesTest.php",
+    "line": 37,
+    "test": "solo el administrador gestiona usuarios y nadie los edita ni borra desde el panel"
+  },
+  {
+    "file": "tests/Feature/Panel/ReportesPagesTest.php",
+    "line": 30,
+    "test": "las vistas de reportes calculan valor, clase ABC y mermas"
+  },
+  {
+    "file": "tests/Feature/Panel/ReportesPagesTest.php",
+    "line": 67,
+    "test": "las pantallas de reportes abren y el administrador puede descargar"
+  },
+  {
+    "file": "tests/Feature/Panel/ReportesPagesTest.php",
+    "line": 75,
+    "test": "solo lectura puede ver los reportes"
+  },
+  {
+    "file": "tests/Feature/Panel/ResourcePagesTest.php",
+    "line": 23,
+    "test": "el administrador ve el listado de productos"
+  },
+  {
+    "file": "tests/Feature/Panel/ResourcePagesTest.php",
+    "line": 36,
+    "test": "el almacenero ve los productos pero no puede crearlos"
+  },
+  {
+    "file": "tests/Feature/Panel/ResourcePagesTest.php",
+    "line": 43,
+    "test": "solo el administrador entra a la lista de usuarios"
+  },
+  {
+    "file": "tests/Feature/Panel/ResourcePagesTest.php",
+    "line": 51,
+    "test": "crear un producto desde el formulario pasa por el caso de uso y genera el SKU"
+  },
+  {
+    "file": "tests/Feature/Panel/SeguridadTest.php",
+    "line": 31,
+    "test": "el administrador restablece la contraseña de otra persona desde la lista y se desbloquea"
+  },
+  {
+    "file": "tests/Feature/Panel/SeguridadTest.php",
+    "line": 49,
+    "test": "la auditoría solo la ve quien tiene el permiso y la lista abre"
+  },
+  {
+    "file": "tests/Feature/Panel/SeguridadTest.php",
+    "line": 58,
+    "test": "con la exigencia activa, admin y supervisor sin verificación en dos pasos solo ven su perfil"
+  },
+  {
+    "file": "tests/Feature/Panel/SeguridadTest.php",
+    "line": 70,
+    "test": "no afecta a otros roles, a quien ya la configuró ni cuando la exigencia está apagada"
+  },
+  {
+    "file": "tests/Feature/Panel/SupervisorPagesTest.php",
+    "line": 30,
+    "test": "cada rol ve en el menú solo lo que le corresponde (ubicaciones, conteos, ventas)"
+  },
+  {
+    "file": "tests/Feature/Panel/SupervisorPagesTest.php",
+    "line": 48,
+    "test": "el supervisor genera ubicaciones en lote desde la lista"
+  },
+  {
+    "file": "tests/Feature/Panel/SupervisorPagesTest.php",
+    "line": 64,
+    "test": "conteo completo desde las pantallas: iniciar, contar, enviar y cerrar"
+  },
+  {
+    "file": "tests/Feature/Panel/SupervisorPagesTest.php",
+    "line": 97,
+    "test": "el supervisor ve la pantalla de ventas del POS con sus dos acciones; el almacenero no entra"
+  },
+  {
+    "file": "tests/Feature/Suppliers/SuppliersDatabaseTest.php",
+    "line": 16,
+    "test": "crea el proveedor, rechaza el RUC repetido y audita"
+  },
+  {
+    "file": "tests/Feature/Suppliers/SuppliersDatabaseTest.php",
+    "line": 29,
+    "test": "actualiza y desactiva sin borrar el proveedor"
+  },
+  {
+    "file": "tests/Feature/Suppliers/SuppliersDatabaseTest.php",
+    "line": 43,
+    "test": "vincula productos, deja un solo proveedor preferido y conserva el último costo"
+  },
+  {
+    "file": "tests/Feature/Suppliers/SuppliersDatabaseTest.php",
+    "line": 62,
+    "test": "no vincula con proveedores inactivos ni productos inexistentes"
+  },
+  {
+    "file": "tests/Unit/Catalog/BarcodeTest.php",
+    "line": 9,
+    "test": "acepta códigos GS1 válidos"
+  },
+  {
+    "file": "tests/Unit/Catalog/BarcodeTest.php",
+    "line": 15,
+    "test": "rechaza dígito verificador incorrecto"
+  },
+  {
+    "file": "tests/Unit/Catalog/BarcodeTest.php",
+    "line": 20,
+    "test": "rechaza longitud o caracteres incorrectos"
+  },
+  {
+    "file": "tests/Unit/Catalog/BarcodeTest.php",
+    "line": 25,
+    "test": "acepta códigos internos y Code128 imprimibles sin espacios"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 46,
+    "test": "crea el producto con SKU correlativo por categoría raíz y audita"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 61,
+    "test": "rechaza categoría inexistente o desactivada, marca, unidad y almacén inexistentes"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 71,
+    "test": "rechaza un código de barras que ya pertenece a otro producto"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 80,
+    "test": "actualiza con control de versión y audita solo los campos que cambiaron"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 94,
+    "test": "rechaza editar con una versión vieja (otra persona ya lo cambió)"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 103,
+    "test": "no incrementa la versión si no hay cambios reales"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 113,
+    "test": "valida categoría y marca al actualizar"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 122,
+    "test": "no da de baja un producto con stock, y es idempotente"
+  },
+  {
+    "file": "tests/Unit/Catalog/CatalogUseCasesTest.php",
+    "line": 139,
+    "test": "busca duplicados con el nombre normalizado"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 27,
+    "test": "normaliza el nombre (espacios) y valida su largo"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 32,
+    "test": "siempre incluye la presentación base con factor 1, primera"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 41,
+    "test": "exige factor 1 para la unidad base y rechaza unidades repetidas"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 47,
+    "test": "rechaza factores inválidos"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 53,
+    "test": "marca como principal el primer código si ninguno lo es"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 60,
+    "test": "rechaza dos códigos principales, códigos repetidos y presentaciones inexistentes"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 69,
+    "test": "valida políticas de stock"
+  },
+  {
+    "file": "tests/Unit/Catalog/NewProductTest.php",
+    "line": 76,
+    "test": "valida el precio referencial"
+  },
+  {
+    "file": "tests/Unit/Catalog/ProductFormMapperTest.php",
+    "line": 26,
+    "test": "convierte el formulario en un producto del dominio"
+  },
+  {
+    "file": "tests/Unit/Catalog/ProductFormMapperTest.php",
+    "line": 42,
+    "test": "acepta un formulario mínimo (sin presentaciones, códigos ni políticas)"
+  },
+  {
+    "file": "tests/Unit/Catalog/ProductFormMapperTest.php",
+    "line": 51,
+    "test": "el mínimo vacío de una política se toma como cero"
+  },
+  {
+    "file": "tests/Unit/Catalog/ProductFormMapperTest.php",
+    "line": 57,
+    "test": "rechaza datos incompletos o inválidos con mensajes claros"
+  },
+  {
+    "file": "tests/Unit/Catalog/ProductFormMapperTest.php",
+    "line": 66,
+    "test": "arma los cambios de edición exigiendo la versión"
+  },
+  {
+    "file": "tests/Unit/Filament/FormMappersTest.php",
+    "line": 24,
+    "test": "convierte el formulario de recepción en un documento del dominio"
+  },
+  {
+    "file": "tests/Unit/Filament/FormMappersTest.php",
+    "line": 41,
+    "test": "la recepción rechaza datos incompletos o inválidos con mensajes claros"
+  },
+  {
+    "file": "tests/Unit/Filament/FormMappersTest.php",
+    "line": 50,
+    "test": "convierte el formulario de transferencia y valida origen/destino"
+  },
+  {
+    "file": "tests/Unit/Filament/FormMappersTest.php",
+    "line": 61,
+    "test": "convierte el formulario de ajuste y exige explicación"
+  },
+  {
+    "file": "tests/Unit/Filament/SupplierMapperTest.php",
+    "line": 8,
+    "test": "convierte el formulario de proveedor en un alta del dominio"
+  },
+  {
+    "file": "tests/Unit/Filament/SupplierMapperTest.php",
+    "line": 21,
+    "test": "rechaza RUC inválido y plazos que no son números"
+  },
+  {
+    "file": "tests/Unit/Filament/SupplierMapperTest.php",
+    "line": 27,
+    "test": "en la edición solo viajan los cambios con valor"
+  },
+  {
+    "file": "tests/Unit/Iam/LockoutPolicyTest.php",
+    "line": 8,
+    "test": "cuenta los fallos y bloquea al quinto por 15 minutos"
+  },
+  {
+    "file": "tests/Unit/Iam/LockoutPolicyTest.php",
+    "line": 24,
+    "test": "el bloqueo expira solo"
+  },
+  {
+    "file": "tests/Unit/Iam/PasswordPolicyTest.php",
+    "line": 7,
+    "test": "acepta una contraseña larga y razonable"
+  },
+  {
+    "file": "tests/Unit/Iam/PasswordPolicyTest.php",
+    "line": 11,
+    "test": "rechaza contraseñas cortas"
+  },
+  {
+    "file": "tests/Unit/Iam/PasswordPolicyTest.php",
+    "line": 15,
+    "test": "rechaza contraseñas que contienen el usuario o el correo"
+  },
+  {
+    "file": "tests/Unit/Iam/PasswordPolicyTest.php",
+    "line": 20,
+    "test": "rechaza contraseñas comunes o repetitivas"
+  },
+  {
+    "file": "tests/Unit/Iam/PermissionsTest.php",
+    "line": 9,
+    "test": "el administrador tiene todos los permisos"
+  },
+  {
+    "file": "tests/Unit/Iam/PermissionsTest.php",
+    "line": 13,
+    "test": "ningún rol referencia permisos inexistentes ni repetidos"
+  },
+  {
+    "file": "tests/Unit/Iam/PermissionsTest.php",
+    "line": 23,
+    "test": "el almacenero opera pero no aprueba ajustes ni administra"
+  },
+  {
+    "file": "tests/Unit/Iam/PermissionsTest.php",
+    "line": 33,
+    "test": "compras y lectura no escriben en inventario"
+  },
+  {
+    "file": "tests/Unit/Iam/PermissionsTest.php",
+    "line": 42,
+    "test": "solo el administrador carga el saldo inicial y gestiona usuarios"
+  },
+  {
+    "file": "tests/Unit/Iam/PermissionsTest.php",
+    "line": 51,
+    "test": "todo permiso que exige el módulo Inventory existe y lo tiene algún rol"
+  },
+  {
+    "file": "tests/Unit/Iam/ResetUserPasswordTest.php",
+    "line": 26,
+    "test": "el administrador fija una contraseña nueva, que se guarda cifrada y desbloquea la cuenta"
+  },
+  {
+    "file": "tests/Unit/Iam/ResetUserPasswordTest.php",
+    "line": 37,
+    "test": "la auditoría registra el cambio sin guardar la contraseña"
+  },
+  {
+    "file": "tests/Unit/Iam/ResetUserPasswordTest.php",
+    "line": 48,
+    "test": "rechaza contraseñas débiles o que contienen el usuario o el correo, y usuarios inexistentes"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 36,
+    "test": "crea un usuario normalizado, con hash y auditoría sin contraseña"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 50,
+    "test": "rechaza usuario o correo repetidos"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 58,
+    "test": "valida los datos del usuario y la contraseña"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 65,
+    "test": "no permite desactivarse a sí mismo"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 72,
+    "test": "no permite desactivar al último administrador, pero sí a uno de varios"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 84,
+    "test": "desactivar es idempotente y audita una sola vez"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 96,
+    "test": "desactivar un usuario inexistente falla"
+  },
+  {
+    "file": "tests/Unit/Iam/UserUseCasesTest.php",
+    "line": 102,
+    "test": "el quinto fallo bloquea y un login correcto limpia el estado"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 17,
+    "test": "acepta movimientos con la forma correcta"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 24,
+    "test": "una entrada exige solo destino"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 29,
+    "test": "una salida exige solo origen"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 34,
+    "test": "una transferencia exige origen y destino distintos"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 39,
+    "test": "exige motivo en mermas y ajustes"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 46,
+    "test": "exige costo en compras y saldo inicial, y lo prohíbe en el resto"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 52,
+    "test": "rechaza cantidad cero, uuid y clave de idempotencia inválidos"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 58,
+    "test": "cada tipo es entrada, salida o transferencia (nunca dos a la vez)"
+  },
+  {
+    "file": "tests/Unit/Inventory/NewMovementTest.php",
+    "line": 65,
+    "test": "cada tipo declara el permiso requerido"
+  },
+  {
+    "file": "tests/Unit/Inventory/QuantityTest.php",
+    "line": 8,
+    "test": "normaliza a 3 decimales"
+  },
+  {
+    "file": "tests/Unit/Inventory/QuantityTest.php",
+    "line": 14,
+    "test": "rechaza valores inválidos"
+  },
+  {
+    "file": "tests/Unit/Inventory/QuantityTest.php",
+    "line": 20,
+    "test": "suma con precisión decimal (sin errores de float)"
+  },
+  {
+    "file": "tests/Unit/Inventory/QuantityTest.php",
+    "line": 24,
+    "test": "resta y no permite resultados negativos"
+  },
+  {
+    "file": "tests/Unit/Inventory/QuantityTest.php",
+    "line": 29,
+    "test": "compara cantidades"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 12,
+    "test": "una compra aumenta el saldo y recalcula el costo promedio"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 22,
+    "test": "una salida descuenta y se valoriza al costo promedio vigente"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 32,
+    "test": "rechaza stock insuficiente sin dejar rastro"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 44,
+    "test": "permite vaciar exactamente el saldo"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 52,
+    "test": "una transferencia mueve el stock entre ubicaciones"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 62,
+    "test": "una transferencia que falla a medias se revierte por completo"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 75,
+    "test": "es idempotente: el mismo movimiento no se registra dos veces"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 90,
+    "test": "rechaza reutilizar una clave de idempotencia con otro movimiento"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 99,
+    "test": "rechaza productos inexistentes"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 106,
+    "test": "rechaza ubicaciones inexistentes, desactivadas o congeladas"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 115,
+    "test": "los ajustes de un conteo sí pueden operar sobre ubicaciones congeladas"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 123,
+    "test": "publica StockChanged una sola vez por movimiento y solo si tuvo éxito"
+  },
+  {
+    "file": "tests/Unit/Inventory/RegisterMovementTest.php",
+    "line": 135,
+    "test": "una merma se valoriza al promedio vigente y descuenta"
+  },
+  {
+    "file": "tests/Unit/Inventory/WeightedAverageCostTest.php",
+    "line": 9,
+    "test": "calcula el promedio ponderado con redondeo a 4 decimales"
+  },
+  {
+    "file": "tests/Unit/Inventory/WeightedAverageCostTest.php",
+    "line": 16,
+    "test": "con stock cero el promedio es el costo de la compra"
+  },
+  {
+    "file": "tests/Unit/Inventory/WeightedAverageCostTest.php",
+    "line": 22,
+    "test": "redondea half-up en el límite"
+  },
+  {
+    "file": "tests/Unit/Inventory/WeightedAverageCostTest.php",
+    "line": 29,
+    "test": "mantiene el promedio si el costo entrante es igual"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationCodeAndBatchTest.php",
+    "line": 9,
+    "test": "arma el código legible de una ubicación"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationCodeAndBatchTest.php",
+    "line": 14,
+    "test": "rechaza valores fuera de rango"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationCodeAndBatchTest.php",
+    "line": 21,
+    "test": "normaliza lo escaneado o digitado"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationCodeAndBatchTest.php",
+    "line": 25,
+    "test": "el lote genera pasillos x anaqueles x niveles"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationCodeAndBatchTest.php",
+    "line": 38,
+    "test": "rechaza rangos invertidos, lotes enormes y capacidades inválidas"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 24,
+    "test": "genera las ubicaciones del lote y audita"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 36,
+    "test": "repetir el lote no duplica: crea solo lo que falta"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 46,
+    "test": "no genera en almacenes inexistentes o desactivados"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 53,
+    "test": "congela y descongela de forma idempotente, auditando una vez por cambio"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 70,
+    "test": "no desactiva ubicaciones con stock, de paso o congeladas"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 83,
+    "test": "desactiva y reactiva una ubicación vacía"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 94,
+    "test": "congela y descongela en masa con una sola auditoría"
+  },
+  {
+    "file": "tests/Unit/Locations/LocationUseCasesTest.php",
+    "line": 108,
+    "test": "el congelamiento masivo es todo o nada"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 32,
+    "test": "solicitar no toca el stock y deja la solicitud pendiente"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 44,
+    "test": "valida motivo, tipo, ubicación y producto al solicitar"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 55,
+    "test": "otra persona aprueba y se registra el movimiento con quién lo pidió y quién lo aprobó"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 74,
+    "test": "un ajuste positivo entra por la ubicación de destino"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 86,
+    "test": "quien solicita no puede aprobar ni rechazar su propia solicitud"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 96,
+    "test": "aprobar dos veces es idempotente y no duplica el movimiento"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 108,
+    "test": "si el almacén rechaza el ajuste, la solicitud sigue pendiente"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 119,
+    "test": "rechazar exige explicación y bloquea la aprobación posterior"
+  },
+  {
+    "file": "tests/Unit/Operations/AdjustmentsTest.php",
+    "line": 133,
+    "test": "el registro directo solo funciona dentro del límite configurado"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 56,
+    "test": "al iniciar fija el stock esperado, congela las ubicaciones y numera el conteo"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 66,
+    "test": "no se inicia un conteo sobre ubicaciones ya congeladas, ni con alcance vacío o sin valor"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 78,
+    "test": "contar reemplaza el valor anterior y exige ubicaciones del conteo"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 90,
+    "test": "un hallazgo (producto sin saldo esperado) crea la línea con esperado cero; un producto inexistente se rechaza"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 102,
+    "test": "no se envía a revisión con líneas sin contar (no contar NO es cero)"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 111,
+    "test": "al enviar a revisión marca para reconteo solo las líneas con diferencia"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 123,
+    "test": "en revisión solo se recuentan las líneas marcadas y el reconteo limpia la marca"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 136,
+    "test": "no se cierra con reconteos pendientes ni lo cierra quien contó las diferencias"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 149,
+    "test": "al cerrar aplica las diferencias como ajustes ligados al conteo, descongela y calcula la exactitud"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 184,
+    "test": "un conteo sin diferencias se cierra con exactitud 100 % y sin ajustes"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 194,
+    "test": "cerrar dos veces no vuelve a ajustar"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 207,
+    "test": "si el ledger rechaza un ajuste, el conteo sigue en revisión y las ubicaciones congeladas"
+  },
+  {
+    "file": "tests/Unit/Operations/CountsTest.php",
+    "line": 222,
+    "test": "anular descongela sin ajustar; un conteo cerrado no se anula"
+  },
+  {
+    "file": "tests/Unit/Operations/OperationsDomainTest.php",
+    "line": 22,
+    "test": "el UUID derivado de la clave es estable y válido"
+  },
+  {
+    "file": "tests/Unit/Operations/OperationsDomainTest.php",
+    "line": 31,
+    "test": "convierte una recepción por presentación a unidad base"
+  },
+  {
+    "file": "tests/Unit/Operations/OperationsDomainTest.php",
+    "line": 43,
+    "test": "redondea el costo por unidad base half-up a 4 decimales"
+  },
+  {
+    "file": "tests/Unit/Operations/OperationsDomainTest.php",
+    "line": 50,
+    "test": "detecta diferencias solo si había cantidad esperada"
+  },
+  {
+    "file": "tests/Unit/Operations/OperationsDomainTest.php",
+    "line": 57,
+    "test": "valida el documento de la recepción"
+  },
+  {
+    "file": "tests/Unit/Operations/OperationsDomainTest.php",
+    "line": 67,
+    "test": "valida las líneas de transferencia y los ajustes"
+  },
+  {
+    "file": "tests/Unit/Operations/PosSalesTest.php",
+    "line": 27,
+    "test": "lee el CSV con coma, punto y coma o tabulador, con BOM y encabezados con acentos"
+  },
+  {
+    "file": "tests/Unit/Operations/PosSalesTest.php",
+    "line": 39,
+    "test": "reporta por fila los códigos vacíos y las cantidades inválidas, y exige las columnas"
+  },
+  {
+    "file": "tests/Unit/Operations/PosSalesTest.php",
+    "line": 51,
+    "test": "la simulación calcula todo sin tocar el stock"
+  },
+  {
+    "file": "tests/Unit/Operations/PosSalesTest.php",
+    "line": 64,
+    "test": "al confirmar descuenta del piso, agrupa los SKU repetidos y los mismos por código de barras"
+  },
+  {
+    "file": "tests/Unit/Operations/PosSalesTest.php",
+    "line": 82,
+    "test": "las filas con problema van al reporte y las demás se aplican"
+  },
+  {
+    "file": "tests/Unit/Operations/PosSalesTest.php",
+    "line": 96,
+    "test": "el mismo archivo no se confirma dos veces, pero sí se puede simular o corregir con otro"
+  },
+  {
+    "file": "tests/Unit/Operations/PosSalesTest.php",
+    "line": 108,
+    "test": "valida la fecha y el nombre del archivo"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 39,
+    "test": "crea el borrador con código correlativo y lo audita"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 53,
+    "test": "rechaza proveedor inactivo, almacén inválido, ubicación ajena, fecha futura y factura repetida"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 66,
+    "test": "una factura anulada permite volver a registrar el mismo documento"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 76,
+    "test": "al confirmar registra una entrada por línea, ordenadas por producto, con clave estable"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 96,
+    "test": "confirmar dos veces no registra nada más"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 108,
+    "test": "las líneas con cantidad cero no generan movimiento; si todas son cero no se confirma"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 118,
+    "test": "si una línea es rechazada no entra NINGUNA y la recepción sigue en borrador"
+  },
+  {
+    "file": "tests/Unit/Operations/ReceiptsTest.php",
+    "line": 136,
+    "test": "solo se anula o modifica un borrador"
+  },
+  {
+    "file": "tests/Unit/Operations/TransfersTest.php",
+    "line": 30,
+    "test": "completa la transferencia registrando un movimiento por línea, en orden fijo"
+  },
+  {
+    "file": "tests/Unit/Operations/TransfersTest.php",
+    "line": 46,
+    "test": "completar dos veces no mueve nada de nuevo"
+  },
+  {
+    "file": "tests/Unit/Operations/TransfersTest.php",
+    "line": 57,
+    "test": "si una línea no tiene stock, no se mueve ninguna"
+  },
+  {
+    "file": "tests/Unit/Operations/TransfersTest.php",
+    "line": 69,
+    "test": "valida ubicaciones y permite anular solo borradores"
+  },
+  {
+    "file": "tests/Unit/Suppliers/SupplierTest.php",
+    "line": 32,
+    "test": "valida el RUC con su dígito verificador"
+  },
+  {
+    "file": "tests/Unit/Suppliers/SupplierTest.php",
+    "line": 40,
+    "test": "normaliza y valida los datos del proveedor"
+  },
+  {
+    "file": "tests/Unit/Suppliers/SupplierTest.php",
+    "line": 54,
+    "test": "crea un proveedor y rechaza el RUC repetido"
+  },
+  {
+    "file": "tests/Unit/Suppliers/SupplierTest.php",
+    "line": 64,
+    "test": "actualiza solo lo que cambió y audita antes/después"
+  },
+  {
+    "file": "tests/Unit/Suppliers/SupplierTest.php",
+    "line": 78,
+    "test": "activar y desactivar son idempotentes"
+  },
+  {
+    "file": "tests/Unit/Suppliers/SupplierTest.php",
+    "line": 90,
+    "test": "vincula productos con un solo proveedor preferido y rechaza proveedores inactivos"
+  }
+]

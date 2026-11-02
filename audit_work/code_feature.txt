@@ -1,0 +1,1864 @@
+
+FILE tests\Feature\Audit\AuditTrailTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Audit\Domain\AuditEntry;
+6: use App\Modules\Audit\Domain\AuditTrail;
+7: use Illuminate\Database\QueryException;
+8: use Illuminate\Support\Facades\DB;
+9: use Tests\Support\Fixtures;
+10: 
+11: it('registra una entrada con valores antes y después', function () {
+12:     $actor = Fixtures::user();
+13: 
+14:     app(AuditTrail::class)->record(new AuditEntry('product.updated', 'product', 10, $actor, ['name' => 'A'], ['name' => 'B']));
+15: 
+16:     $row = DB::table('audit_logs')->where('entity_id', 10)->where('action', 'product.updated')->first();
+17:     expect($row->actor_id)->toBe($actor);
+18:     expect(json_decode((string) $row->old_values, true))->toBe(['name' => 'A']);
+19:     expect(json_decode((string) $row->new_values, true))->toBe(['name' => 'B']);
+20: });
+21: 
+22: it('la auditoría es inmutable: UPDATE y DELETE son rechazados por la BD', function () {
+23:     app(AuditTrail::class)->record(new AuditEntry('x.created', 'x', 1));
+24: 
+25:     expect(fn () => DB::transaction(fn () => DB::table('audit_logs')->update(['action' => 'borrado'])))
+26:         ->toThrow(QueryException::class, 'inmutable');
+27:     expect(fn () => DB::transaction(fn () => DB::table('audit_logs')->delete()))
+28:         ->toThrow(QueryException::class, 'inmutable');
+29: });
+
+
+FILE tests\Feature\Catalog\CatalogDatabaseTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Catalog\Application\CreateProduct;
+6: use App\Modules\Catalog\Application\DeactivateProduct;
+7: use App\Modules\Catalog\Application\FindSimilarProducts;
+8: use App\Modules\Catalog\Application\LookupProduct;
+9: use App\Modules\Catalog\Application\UpdateProduct;
+10: use App\Modules\Catalog\Domain\Barcode;
+11: use App\Modules\Catalog\Domain\BarcodeInput;
+12: use App\Modules\Catalog\Domain\CatalogException;
+13: use App\Modules\Catalog\Domain\Factor;
+14: use App\Modules\Catalog\Domain\NewProduct;
+15: use App\Modules\Catalog\Domain\PresentationInput;
+16: use App\Modules\Catalog\Domain\ProductChanges;
+17: use App\Modules\Catalog\Domain\StockPolicy;
+18: use App\Modules\Catalog\Domain\Symbology;
+19: use App\Modules\Inventory\Application\RegisterMovement;
+20: use Illuminate\Support\Facades\DB;
+21: use Tests\Support\Fixtures;
+22: use Tests\Support\MovementFactory as M;
+23: 
+24: function unitId(string $code): int
+25: {
+26:     return (int) DB::table('units')->where('code', $code)->value('id');
+27: }
+28: 
+29: function categoryId(string $code): int
+30: {
+31:     return (int) DB::table('categories')->whereNull('parent_id')->where('code', $code)->value('id');
+32: }
+33: 
+34: function newProduct(string $name, int $actor, array $over = []): NewProduct
+35: {
+36:     return new NewProduct(
+37:         $name, $over['category'] ?? categoryId('LIB'), unitId('UND'), $actor, null, null, null,
+38:         $over['presentations'] ?? [], $over['barcodes'] ?? [], $over['policies'] ?? [],
+39:     );
+40: }
+41: 
+42: it('crea producto con presentaciones, códigos y políticas en una sola transacción', function () {
+43:     $actor = Fixtures::user();
+44:     $bodega = (int) DB::table('warehouses')->where('code', 'BOD')->value('id');
+45: 
+46:     $result = app(CreateProduct::class)(newProduct('Cuaderno A4 100 hojas', $actor, [
+47:         'presentations' => [new PresentationInput(unitId('DOC'), Factor::of(12), true)],
+48:         'barcodes' => [
+49:             new BarcodeInput(Barcode::of('4006381333931', Symbology::Ean13)),
+50:             new BarcodeInput(Barcode::of('CAJA-000231', Symbology::Internal), unitId('DOC')),
+51:         ],
+52:         'policies' => [new StockPolicy($bodega, 10, 100, 50)],
+53:     ]));
+54: 
+55:     expect($result['sku'])->toBe('LIB-000001');
+56:     expect(DB::table('product_units')->where('product_id', $result['id'])->count())->toBe(2);
+57:     expect(DB::table('product_barcodes')->where('product_id', $result['id'])->count())->toBe(2);
+58:     expect(DB::table('product_barcodes')->where('product_id', $result['id'])->where('is_primary', true)->count())->toBe(1);
+59:     expect(DB::table('product_stock_policies')->where('product_id', $result['id'])->count())->toBe(1);
+60:     expect(DB::table('audit_logs')->where('action', 'product.created')->where('entity_id', $result['id'])->count())->toBe(1);
+61: });
+62: 
+63: it('los SKU son correlativos por categoría raíz, también desde subcategorías', function () {
+64:     $actor = Fixtures::user();
+65:     $lib = categoryId('LIB');
+66:     $childId = (int) DB::table('categories')->insertGetId(
+67:         ['parent_id' => $lib, 'code' => 'CUA', 'name' => 'Cuadernos', 'depth' => 2], 'id',
+68:     );
+69:     $create = app(CreateProduct::class);
+70: 
+71:     $a = $create(newProduct('Producto uno', $actor));
+72:     $b = $create(newProduct('Producto dos', $actor, ['category' => $childId]));
+73:     $c = $create(newProduct('Pelota grande', $actor, ['category' => categoryId('JUG')]));
+74: 
+75:     expect($a['sku'])->toBe('LIB-000001');
+76:     expect($b['sku'])->toBe('LIB-000002');
+77:     expect($c['sku'])->toBe('JUG-000001');
+78: });
+79: 
+80: it('rechaza un código de barras ya usado y no deja el producto a medias', function () {
+81:     $actor = Fixtures::user();
+82:     $create = app(CreateProduct::class);
+83:     $code = new BarcodeInput(Barcode::of('4006381333931', Symbology::Ean13));
+84:     $create(newProduct('Primero', $actor, ['barcodes' => [$code]]));
+85:     $before = DB::table('products')->count();
+86: 
+87:     expect(fn () => $create(newProduct('Segundo', $actor, ['barcodes' => [$code]])))->toThrow(CatalogException::class, 'ya pertenece');
+88:     expect(DB::table('products')->count())->toBe($before);
+89: });
+90: 
+91: it('escanear devuelve producto, factor de la presentación y stock por ubicación', function () {
+92:     $actor = Fixtures::user();
+93:     $created = app(CreateProduct::class)(newProduct('Lápiz HB', $actor, [
+94:         'presentations' => [new PresentationInput(unitId('DOC'), Factor::of(12))],
+95:         'barcodes' => [
+96:             new BarcodeInput(Barcode::of('4006381333931', Symbology::Ean13)),
+97:             new BarcodeInput(Barcode::of('DOCENA-0001', Symbology::Internal), unitId('DOC')),
+98:         ],
+99:     ]));
+100:     $bodega = Fixtures::location('BOD');
+101:     app(RegisterMovement::class)(M::purchase($created['id'], $bodega, 10, '2', $actor));
+102:     $lookup = app(LookupProduct::class);
+103: 
+104:     $unit = $lookup('4006381333931');
+105:     $dozen = $lookup('DOCENA-0001');
+106:     $bySku = $lookup('lib-000001');
+107: 
+108:     expect($unit->presentationFactor)->toBe('1.000');
+109:     expect($dozen->presentationFactor)->toBe('12.000');
+110:     expect($bySku->productId)->toBe($created['id']);
+111:     expect($unit->stock)->toHaveCount(1);
+112:     expect($unit->stock[0]['quantity'])->toBe('10.000');
+113:     expect($unit->costAvg)->toBe('2.0000');
+114:     expect($lookup('no-existe'))->toBeNull();
+115:     expect($lookup('   '))->toBeNull();
+116: });
+117: 
+118: it('detecta posibles duplicados por similitud de nombre', function () {
+119:     $actor = Fixtures::user();
+120:     app(CreateProduct::class)(newProduct('Cuaderno A4 100 hojas', $actor));
+121: 
+122:     $matches = app(FindSimilarProducts::class)('  CUADERNO   A4 100 HOJAS ');
+123: 
+124:     expect($matches)->toHaveCount(1);
+125:     expect($matches[0]->similarity >= 0.8)->toBeTrue();
+126:     expect(app(FindSimilarProducts::class)('Pelota de fútbol número 5'))->toHaveCount(0);
+127: });
+128: 
+129: it('actualiza con control optimista de versión', function () {
+130:     $actor = Fixtures::user();
+131:     $id = app(CreateProduct::class)(newProduct('Cuaderno A4', $actor))['id'];
+132:     $update = app(UpdateProduct::class);
+133: 
+134:     $update($id, new ProductChanges(1, $actor, 'Cuaderno A4 rayado'));
+135: 
+136:     expect(DB::table('products')->where('id', $id)->value('name'))->toBe('Cuaderno A4 rayado');
+137:     expect((int) DB::table('products')->where('id', $id)->value('version'))->toBe(2);
+138:     expect(fn () => $update($id, new ProductChanges(1, $actor, 'Otro nombre')))->toThrow(CatalogException::class, 'modificado por otra persona');
+139: });
+140: 
+141: it('no da de baja con stock; con stock en cero sí', function () {
+142:     $actor = Fixtures::user();
+143:     $id = app(CreateProduct::class)(newProduct('Borrador', $actor))['id'];
+144:     $loc = Fixtures::location('BOD');
+145:     $register = app(RegisterMovement::class);
+146:     $register(M::purchase($id, $loc, 5, '1', $actor));
+147: 
+148:     expect(fn () => app(DeactivateProduct::class)($id, $actor))->toThrow(CatalogException::class, 'stock');
+149: 
+150:     $register(M::sale($id, $loc, 5, $actor));
+151:     app(DeactivateProduct::class)($id, $actor);
+152: 
+153:     expect(DB::table('products')->where('id', $id)->value('status'))->toBe('INACTIVE');
+154: });
+
+
+FILE tests\Feature\Iam\AdminCommandsTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Models\User;
+6: use App\Modules\Iam\Domain\RoleName;
+7: use Illuminate\Support\Facades\Hash;
+8: use Tests\Support\PanelUsers;
+9: 
+10: beforeEach(function () {
+11:     PanelUsers::seedRoles();
+12: });
+13: 
+14: it('wms:admin-reset crea al administrador si no existe', function () {
+15:     $this->artisan('wms:admin-reset', ['--username' => 'admin', '--email' => 'admin@cityofertas.test'])
+16:         ->expectsQuestion('Nueva contraseña (mínimo 12 caracteres)', 'caballo-azul-lluvia-77')
+17:         ->expectsQuestion('Repita la contraseña', 'caballo-azul-lluvia-77')
+18:         ->assertExitCode(0);
+19: 
+20:     $user = User::query()->where('email', 'admin@cityofertas.test')->firstOrFail();
+21:     expect(Hash::check('caballo-azul-lluvia-77', $user->password))->toBeTrue();
+22:     expect($user->hasRole('admin'))->toBeTrue();
+23: });
+24: 
+25: it('wms:admin-reset recupera una cuenta bloqueada o desactivada', function () {
+26:     $user = PanelUsers::withRole(RoleName::Supervisor, ['username' => 'admin', 'email' => 'admin@cityofertas.test', 'is_active' => false]);
+27:     $user->forceFill(['failed_attempts' => 3, 'locked_until' => now()->addMinutes(10)])->save();
+28: 
+29:     $this->artisan('wms:admin-reset', ['--username' => 'admin', '--email' => 'admin@cityofertas.test'])
+30:         ->expectsQuestion('Nueva contraseña (mínimo 12 caracteres)', 'otra-clave-larga-segura-9')
+31:         ->expectsQuestion('Repita la contraseña', 'otra-clave-larga-segura-9')
+32:         ->assertExitCode(0);
+33: 
+34:     $user->refresh();
+35:     expect($user->is_active)->toBeTrue();
+36:     expect($user->locked_until)->toBeNull();
+37:     expect((int) $user->getAttribute('failed_attempts'))->toBe(0);
+38:     expect(Hash::check('otra-clave-larga-segura-9', $user->password))->toBeTrue();
+39:     expect($user->hasRole('admin'))->toBeTrue();
+40: });
+41: 
+42: it('wms:admin-reset rechaza contraseñas distintas o débiles', function () {
+43:     $this->artisan('wms:admin-reset', ['--username' => 'admin', '--email' => 'admin@cityofertas.test'])
+44:         ->expectsQuestion('Nueva contraseña (mínimo 12 caracteres)', 'caballo-azul-lluvia-77')
+45:         ->expectsQuestion('Repita la contraseña', 'no-coincide')
+46:         ->assertExitCode(1);
+47: 
+48:     $this->artisan('wms:admin-reset', ['--username' => 'admin', '--email' => 'admin@cityofertas.test'])
+49:         ->expectsQuestion('Nueva contraseña (mínimo 12 caracteres)', 'corta')
+50:         ->expectsQuestion('Repita la contraseña', 'corta')
+51:         ->assertExitCode(1);
+52: 
+53:     expect(User::query()->where('email', 'admin@cityofertas.test')->exists())->toBeFalse();
+54: });
+55: 
+56: it('wms:users lista los usuarios con su estado', function () {
+57:     PanelUsers::withRole(RoleName::Almacenero, ['username' => 'luis', 'email' => 'luis@cityofertas.test']);
+58: 
+59:     $this->artisan('wms:users')->expectsOutputToContain('luis@cityofertas.test')->assertExitCode(0);
+60: });
+
+
+FILE tests\Feature\Iam\RolesAndPermissionsTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Iam\Domain\Permissions;
+6: use App\Modules\Iam\Domain\RoleName;
+7: use Database\Seeders\RolesAndPermissionsSeeder;
+8: use Spatie\Permission\Models\Permission;
+9: use Spatie\Permission\Models\Role;
+10: 
+11: it('el seeder crea los 5 roles con exactamente los permisos de la matriz', function () {
+12:     $this->seed(RolesAndPermissionsSeeder::class);
+13: 
+14:     foreach (RoleName::cases() as $role) {
+15:         $actual = Role::findByName($role->value, 'web')->permissions->pluck('name')->all();
+16:         $expected = Permissions::forRole($role);
+17:         sort($actual);
+18:         sort($expected);
+19: 
+20:         expect($actual)->toBe($expected);
+21:     }
+22: });
+23: 
+24: it('el seeder es idempotente', function () {
+25:     $this->seed(RolesAndPermissionsSeeder::class);
+26:     $this->seed(RolesAndPermissionsSeeder::class);
+27: 
+28:     expect(Permission::query()->count())->toBe(count(Permissions::all()));
+29:     expect(Role::query()->count())->toBe(count(RoleName::cases()));
+30: });
+
+
+FILE tests\Feature\Iam\UserManagementTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Models\User;
+6: use App\Modules\Iam\Application\CreateUser;
+7: use App\Modules\Iam\Application\DeactivateUser;
+8: use App\Modules\Iam\Application\RecordLoginFailure;
+9: use App\Modules\Iam\Domain\IamException;
+10: use App\Modules\Iam\Domain\NewUser;
+11: use App\Modules\Iam\Domain\RoleName;
+12: use Database\Seeders\RolesAndPermissionsSeeder;
+13: use Illuminate\Support\Facades\DB;
+14: use Illuminate\Support\Facades\Hash;
+15: 
+16: function makeUser(string $username, RoleName $role, ?string $email = null): int
+17: {
+18:     return app(CreateUser::class)(new NewUser('Usuario Prueba', $username, $email ?? "{$username}@cityofertas.test", 'caballo-azul-lluvia-77', $role));
+19: }
+20: 
+21: beforeEach(function () {
+22:     $this->seed(RolesAndPermissionsSeeder::class);
+23: });
+24: 
+25: it('crea el usuario con hash, rol y permisos efectivos', function () {
+26:     $id = makeUser('almacenero1', RoleName::Almacenero);
+27: 
+28:     $user = User::query()->findOrFail($id);
+29:     expect(Hash::check('caballo-azul-lluvia-77', $user->password))->toBeTrue();
+30:     expect($user->hasRole('almacenero'))->toBeTrue();
+31:     expect($user->can('inventory.receive'))->toBeTrue();
+32:     expect($user->can('inventory.adjust.approve'))->toBeFalse();
+33:     expect($user->can('users.manage'))->toBeFalse();
+34: });
+35: 
+36: it('audita la creación sin guardar la contraseña', function () {
+37:     $id = makeUser('supervisor1', RoleName::Supervisor);
+38: 
+39:     $new = (string) DB::table('audit_logs')->where('action', 'user.created')->where('entity_id', $id)->value('new_values');
+40: 
+41:     expect($new)->toContain('supervisor1');
+42:     expect($new)->not->toContain('caballo');
+43:     expect($new)->not->toContain('password');
+44: });
+45: 
+46: it('rechaza usuario repetido sin distinguir mayúsculas', function () {
+47:     makeUser('ana', RoleName::Lectura);
+48: 
+49:     expect(fn () => makeUser('ANA', RoleName::Lectura, 'otra@cityofertas.test'))->toThrow(IamException::class, 'ya existe');
+50: });
+51: 
+52: it('protege al último administrador activo', function () {
+53:     $admin1 = makeUser('admin1', RoleName::Admin);
+54:     $supervisor = makeUser('super1', RoleName::Supervisor);
+55:     $deactivate = app(DeactivateUser::class);
+56: 
+57:     expect(fn () => $deactivate($admin1, $supervisor))->toThrow(IamException::class, 'último administrador');
+58: 
+59:     $admin2 = makeUser('admin2', RoleName::Admin);
+60:     $deactivate($admin1, $admin2);
+61: 
+62:     expect((bool) DB::table('users')->where('id', $admin1)->value('is_active'))->toBeFalse();
+63: });
+64: 
+65: it('bloquea la cuenta tras 5 intentos fallidos', function () {
+66:     $id = makeUser('luis', RoleName::Almacenero);
+67:     $fail = app(RecordLoginFailure::class);
+68: 
+69:     for ($i = 0; $i < 5; $i++) {
+70:         $fail($id);
+71:     }
+72: 
+73:     expect(DB::table('users')->where('id', $id)->value('locked_until'))->not->toBeNull();
+74:     expect((int) DB::table('users')->where('id', $id)->value('failed_attempts'))->toBe(0);
+75: });
+
+
+FILE tests\Feature\Inventory\PostgresLedgerTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Inventory\Application\RegisterMovement;
+6: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+7: use Illuminate\Database\QueryException;
+8: use Illuminate\Support\Facades\DB;
+9: use Illuminate\Support\Str;
+10: use Tests\Support\Fixtures;
+11: use Tests\Support\MovementFactory as M;
+12: 
+13: it('registra una compra, actualiza saldo y costo promedio en la BD real', function () {
+14:     $user = Fixtures::user();
+15:     $product = Fixtures::product();
+16:     $loc = Fixtures::location();
+17:     $register = app(RegisterMovement::class);
+18: 
+19:     $register(M::purchase($product, $loc, 100, '2.5', $user));
+20:     $register(M::purchase($product, $loc, 50, '3', $user));
+21: 
+22:     expect(Fixtures::balance($product, $loc))->toBe('150.000');
+23:     expect((string) DB::table('products')->where('id', $product)->value('cost_avg'))->toBe('2.6667');
+24:     expect((string) DB::table('products')->where('id', $product)->value('last_cost'))->toBe('3.0000');
+25: });
+26: 
+27: it('la transferencia es atómica y el ledger cuadra con los saldos', function () {
+28:     $user = Fixtures::user();
+29:     $product = Fixtures::product();
+30:     $bodega = Fixtures::location('BOD');
+31:     $piso = Fixtures::location('PIS');
+32:     $register = app(RegisterMovement::class);
+33: 
+34:     $register(M::purchase($product, $bodega, 20, '1', $user));
+35:     $register(M::transfer($product, $bodega, $piso, 5, $user));
+36: 
+37:     expect(Fixtures::balance($product, $bodega))->toBe('15.000');
+38:     expect(Fixtures::balance($product, $piso))->toBe('5.000');
+39:     expect(DB::select('SELECT * FROM fn_reconcile_ledger()'))->toHaveCount(0);
+40: });
+41: 
+42: it('rechaza stock insuficiente sin dejar rastro en el ledger', function () {
+43:     $user = Fixtures::user();
+44:     $product = Fixtures::product();
+45:     $loc = Fixtures::location();
+46:     $register = app(RegisterMovement::class);
+47:     $register(M::purchase($product, $loc, 3, '1', $user));
+48:     $before = DB::table('stock_movements')->count();
+49: 
+50:     expect(fn () => $register(M::sale($product, $loc, 5, $user)))->toThrow(InventoryException::class, 'Stock insuficiente');
+51: 
+52:     expect(DB::table('stock_movements')->count())->toBe($before);
+53:     expect(Fixtures::balance($product, $loc))->toBe('3.000');
+54: });
+55: 
+56: it('es idempotente contra la BD real', function () {
+57:     $user = Fixtures::user();
+58:     $product = Fixtures::product();
+59:     $loc = Fixtures::location();
+60:     $register = app(RegisterMovement::class);
+61:     $movement = M::purchase($product, $loc, 10, '2', $user);
+62: 
+63:     $first = $register($movement);
+64:     $again = $register($movement);
+65: 
+66:     expect($again->duplicate)->toBeTrue();
+67:     expect($again->movementId)->toBe($first->movementId);
+68:     expect(DB::table('stock_movements')->where('product_id', $product)->count())->toBe(1);
+69:     expect(Fixtures::balance($product, $loc))->toBe('10.000');
+70: });
+71: 
+72: it('rechaza ubicaciones congeladas salvo ajustes de conteo', function () {
+73:     $user = Fixtures::user();
+74:     $product = Fixtures::product();
+75:     $frozen = Fixtures::location('BOD', ['is_frozen' => true]);
+76:     $register = app(RegisterMovement::class);
+77: 
+78:     expect(fn () => $register(M::purchase($product, $frozen, 1, '1', $user)))->toThrow(InventoryException::class, 'congelada');
+79: 
+80:     $register(M::purchase($product, $frozen, 4, '1', $user, sourceType: 'COUNT'));
+81:     expect(Fixtures::balance($product, $frozen))->toBe('4.000');
+82: });
+83: 
+84: it('el historial es inmutable: UPDATE y DELETE son rechazados por la BD', function () {
+85:     $user = Fixtures::user();
+86:     $product = Fixtures::product();
+87:     $loc = Fixtures::location();
+88:     app(RegisterMovement::class)(M::purchase($product, $loc, 1, '1', $user));
+89: 
+90:     // DB::transaction anidada = savepoint, para no abortar la transacción del test.
+91:     expect(fn () => DB::transaction(fn () => DB::table('stock_movements')->where('product_id', $product)->update(['quantity' => 99])))
+92:         ->toThrow(QueryException::class, 'inmutable');
+93:     expect(fn () => DB::transaction(fn () => DB::table('stock_movements')->where('product_id', $product)->delete()))
+94:         ->toThrow(QueryException::class, 'inmutable');
+95: });
+96: 
+97: it('la BD rechaza stock negativo aunque el código fallara', function () {
+98:     $product = Fixtures::product();
+99:     $loc = Fixtures::location();
+100: 
+101:     expect(fn () => DB::transaction(fn () => DB::table('stock_balances')->insert([
+102:         'product_id' => $product, 'location_id' => $loc, 'quantity' => '-1',
+103:     ])))->toThrow(QueryException::class);
+104: });
+105: 
+106: it('la BD rechaza movimientos mal formados y claves de idempotencia repetidas', function () {
+107:     $user = Fixtures::user();
+108:     $product = Fixtures::product();
+109:     $loc = Fixtures::location();
+110:     $base = [
+111:         'uuid' => (string) Str::uuid(), 'type' => 'ENTRADA_COMPRA', 'product_id' => $product,
+112:         'to_location_id' => $loc, 'quantity' => 1, 'unit_cost' => 1, 'user_id' => $user, 'idempotency_key' => 'dup-'.$product,
+113:     ];
+114:     DB::table('stock_movements')->insert($base);
+115: 
+116:     // entrada sin costo
+117:     expect(fn () => DB::transaction(fn () => DB::table('stock_movements')->insert(
+118:         ['uuid' => (string) Str::uuid(), 'idempotency_key' => 'x-'.$product, 'unit_cost' => null] + $base,
+119:     )))->toThrow(QueryException::class);
+120: 
+121:     // misma clave de idempotencia
+122:     expect(fn () => DB::transaction(fn () => DB::table('stock_movements')->insert(
+123:         ['uuid' => (string) Str::uuid()] + $base,
+124:     )))->toThrow(QueryException::class);
+125: });
+
+
+FILE tests\Feature\Locations\LocationsDatabaseTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Inventory\Application\RegisterMovement;
+6: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+7: use App\Modules\Locations\Application\ChangeLocationState;
+8: use App\Modules\Locations\Application\GenerateLocations;
+9: use App\Modules\Locations\Domain\LocationBatch;
+10: use App\Modules\Locations\Domain\LocationException;
+11: use Illuminate\Support\Facades\DB;
+12: use Tests\Support\Fixtures;
+13: use Tests\Support\MovementFactory as M;
+14: 
+15: function bodegaId(): int
+16: {
+17:     return (int) DB::table('warehouses')->where('code', 'BOD')->value('id');
+18: }
+19: 
+20: it('genera ubicaciones en lote con zona, pasillo, anaquel y nivel', function () {
+21:     $result = app(GenerateLocations::class)(new LocationBatch(bodegaId(), 1, 1, 2, 1, 3, 1, 2));
+22: 
+23:     expect($result)->toBe(['created' => 12, 'skipped' => 0]);
+24:     $first = DB::table('locations')->where('code', 'BOD-Z1-P01-A01-N1')->first();
+25:     expect($first->zone)->toBe('Z1');
+26:     expect($first->aisle)->toBe('P01');
+27:     expect($first->rack)->toBe('A01');
+28:     expect((int) $first->level)->toBe(1);
+29:     expect(DB::table('locations')->where('code', 'like', 'BOD-Z1-%')->count())->toBe(12);
+30:     expect(DB::table('audit_logs')->where('action', 'location.generated')->count())->toBe(1);
+31: });
+32: 
+33: it('repetir el lote no duplica ubicaciones', function () {
+34:     $generate = app(GenerateLocations::class);
+35:     $generate(new LocationBatch(bodegaId(), 2, 1, 1, 1, 2, 1, 1));
+36: 
+37:     $again = $generate(new LocationBatch(bodegaId(), 2, 1, 2, 1, 2, 1, 1));
+38: 
+39:     expect($again)->toBe(['created' => 2, 'skipped' => 2]);
+40:     expect(DB::table('locations')->where('code', 'like', 'BOD-Z2-%')->count())->toBe(4);
+41: });
+42: 
+43: it('una ubicación congelada rechaza movimientos hasta que se descongela', function () {
+44:     $actor = Fixtures::user();
+45:     $product = Fixtures::product();
+46:     app(GenerateLocations::class)(new LocationBatch(bodegaId(), 3, 1, 1, 1, 1, 1, 1));
+47:     $loc = (int) DB::table('locations')->where('code', 'BOD-Z3-P01-A01-N1')->value('id');
+48:     $state = app(ChangeLocationState::class);
+49:     $register = app(RegisterMovement::class);
+50: 
+51:     $state->freeze($loc, $actor);
+52:     expect(fn () => $register(M::purchase($product, $loc, 5, '1', $actor)))->toThrow(InventoryException::class, 'congelada');
+53: 
+54:     $state->unfreeze($loc, $actor);
+55:     $register(M::purchase($product, $loc, 5, '1', $actor));
+56:     expect(Fixtures::balance($product, $loc))->toBe('5.000');
+57: });
+58: 
+59: it('no se desactiva una ubicación con stock ni una de recepción', function () {
+60:     $actor = Fixtures::user();
+61:     $product = Fixtures::product();
+62:     $loc = Fixtures::location('BOD');
+63:     app(RegisterMovement::class)(M::purchase($product, $loc, 3, '1', $actor));
+64:     $state = app(ChangeLocationState::class);
+65:     $staging = (int) DB::table('locations')->where('code', 'BOD-REC')->value('id');
+66: 
+67:     expect(fn () => $state->deactivate($loc, $actor))->toThrow(LocationException::class, 'aún tiene');
+68:     expect(fn () => $state->deactivate($staging, $actor))->toThrow(LocationException::class, 'de paso');
+69: 
+70:     app(RegisterMovement::class)(M::sale($product, $loc, 3, $actor));
+71:     $state->deactivate($loc, $actor);
+72:     expect((bool) DB::table('locations')->where('id', $loc)->value('is_active'))->toBeFalse();
+73: });
+
+
+FILE tests\Feature\Operations\CountsAndPosDatabaseTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Inventory\Application\RegisterMovement;
+6: use App\Modules\Inventory\Domain\Exceptions\InventoryException;
+7: use App\Modules\Inventory\Domain\Quantity;
+8: use App\Modules\Operations\Application\CancelCount;
+9: use App\Modules\Operations\Application\CloseCount;
+10: use App\Modules\Operations\Application\ImportPosSales;
+11: use App\Modules\Operations\Application\RecordCount;
+12: use App\Modules\Operations\Application\StartCount;
+13: use App\Modules\Operations\Application\SubmitCountForReview;
+14: use App\Modules\Operations\Domain\CountScopeType;
+15: use App\Modules\Operations\Domain\NewCount;
+16: use App\Modules\Operations\Domain\OperationsException;
+17: use Illuminate\Support\Facades\DB;
+18: use Tests\Support\Fixtures;
+19: use Tests\Support\MovementFactory as M;
+20: 
+21: function countBodega(): int
+22: {
+23:     return (int) DB::table('warehouses')->where('code', 'BOD')->value('id');
+24: }
+25: 
+26: function zoneLocation(string $zone, string $warehouse = 'BOD'): int
+27: {
+28:     return Fixtures::location($warehouse, ['zone' => $zone]);
+29: }
+30: 
+31: it('conteo completo: congela, cuenta, recuenta, cierra con ajustes y deja el ledger cuadrado', function () {
+32:     $counter = Fixtures::user();
+33:     $supervisor = Fixtures::user();
+34:     $p1 = Fixtures::product();
+35:     $p2 = Fixtures::product();
+36:     $a = zoneLocation('ZT1');
+37:     $b = zoneLocation('ZT1');
+38:     $empty = zoneLocation('ZT1');
+39:     $register = app(RegisterMovement::class);
+40:     $register(M::purchase($p1, $a, 10, '2', $supervisor));
+41:     $register(M::purchase($p2, $b, 4, '5', $supervisor));
+42: 
+43:     $started = app(StartCount::class)(new NewCount(countBodega(), CountScopeType::Zone, 'ZT1', $supervisor));
+44:     expect($started['locations'])->toBe(3);
+45:     expect($started['lines'])->toBe(2);
+46:     expect((bool) DB::table('locations')->where('id', $a)->value('is_frozen'))->toBeTrue();
+47:     expect(fn () => $register(M::purchase($p1, $a, 1, '2', $supervisor)))->toThrow(InventoryException::class, 'congelada');
+48: 
+49:     $record = app(RecordCount::class);
+50:     $record($started['id'], $p1, $a, Quantity::of('10'), $counter);          // correcto
+51:     $record($started['id'], $p2, $b, Quantity::of('3'), $counter);           // falta 1
+52:     $record($started['id'], $p1, $empty, Quantity::of('2'), $counter);       // hallazgo: 2 que nadie tenía registrados
+53: 
+54:     $review = app(SubmitCountForReview::class)($started['id'], $counter);
+55:     expect($review)->toBe(['lines' => 3, 'withDifference' => 2]);
+56: 
+57:     $record($started['id'], $p2, $b, Quantity::of('3'), $counter);           // el reconteo confirma
+58:     $record($started['id'], $p1, $empty, Quantity::of('2'), $counter);
+59:     expect(fn () => app(CloseCount::class)($started['id'], $counter))->toThrow(OperationsException::class, 'otra persona');
+60: 
+61:     $result = app(CloseCount::class)($started['id'], $supervisor);
+62: 
+63:     expect($result)->toBe(['adjustments' => 2, 'lines' => 3, 'accuracyPct' => '33.33']);
+64:     expect(Fixtures::balance($p2, $b))->toBe('3.000');
+65:     expect(Fixtures::balance($p1, $empty))->toBe('2.000');
+66:     expect(Fixtures::balance($p1, $a))->toBe('10.000');
+67:     expect((bool) DB::table('locations')->where('id', $a)->value('is_frozen'))->toBeFalse();
+68:     expect(DB::table('stock_counts')->where('id', $started['id'])->value('status'))->toBe('CLOSED');
+69:     expect(DB::table('stock_count_lines')->where('count_id', $started['id'])->whereNotNull('adjustment_request_id')->count())->toBe(2);
+70:     expect(DB::table('stock_movements')->where('source_type', 'COUNT')->where('source_id', $started['id'])->count())->toBe(2);
+71:     expect((int) DB::table('stock_movements')->where('source_type', 'COUNT')->first()->approved_by)->toBe($supervisor);
+72:     expect(DB::select('SELECT * FROM fn_reconcile_ledger()'))->toHaveCount(0);
+73: 
+74:     // ya sin congelamiento, la operación normal se reanuda
+75:     $register(M::purchase($p1, $a, 1, '2', $supervisor));
+76:     expect(Fixtures::balance($p1, $a))->toBe('11.000');
+77: });
+78: 
+79: it('anular un conteo en curso descongela y no deja ajustes', function () {
+80:     $actor = Fixtures::user();
+81:     $product = Fixtures::product();
+82:     $loc = zoneLocation('ZT2');
+83:     app(RegisterMovement::class)(M::purchase($product, $loc, 5, '1', $actor));
+84:     $count = app(StartCount::class)(new NewCount(countBodega(), CountScopeType::Zone, 'ZT2', $actor));
+85:     expect((bool) DB::table('locations')->where('id', $loc)->value('is_frozen'))->toBeTrue();
+86: 
+87:     app(CancelCount::class)($count['id'], $actor);
+88: 
+89:     expect((bool) DB::table('locations')->where('id', $loc)->value('is_frozen'))->toBeFalse();
+90:     expect(DB::table('stock_counts')->where('id', $count['id'])->value('status'))->toBe('CANCELLED');
+91:     expect(DB::table('stock_movements')->where('source_type', 'COUNT')->count())->toBe(0);
+92: });
+93: 
+94: it('dos conteos no pueden congelar las mismas ubicaciones', function () {
+95:     $actor = Fixtures::user();
+96:     $loc = zoneLocation('ZT3');
+97:     app(RegisterMovement::class)(M::purchase(Fixtures::product(), $loc, 1, '1', $actor));
+98:     app(StartCount::class)(new NewCount(countBodega(), CountScopeType::Zone, 'ZT3', $actor));
+99: 
+100:     expect(fn () => app(StartCount::class)(new NewCount(countBodega(), CountScopeType::Location, DB::table('locations')->where('id', $loc)->value('code'), $actor)))
+101:         ->toThrow(OperationsException::class, 'congelada');
+102: });
+103: 
+104: it('el conteo de clase A incluye solo los productos que explican el 80 % de lo vendido', function () {
+105:     $actor = Fixtures::user();
+106:     $star = Fixtures::product();
+107:     $minor = Fixtures::product();
+108:     $loc = zoneLocation('ZT4');
+109:     $register = app(RegisterMovement::class);
+110:     $register(M::purchase($star, $loc, 200, '10', $actor));
+111:     $register(M::sale($star, $loc, 100, $actor));      // vendió 100 x 10 = S/ 1000
+112:     $register(M::purchase($minor, $loc, 10, '1', $actor));
+113:     $register(M::sale($minor, $loc, 1, $actor));       // vendió 1 x 1 = S/ 1
+114:     DB::statement('REFRESH MATERIALIZED VIEW mv_product_rotation_90d');
+115: 
+116:     $count = app(StartCount::class)(new NewCount(countBodega(), CountScopeType::AbcA, null, $actor));
+117: 
+118:     expect($count['lines'])->toBe(1);
+119:     expect(DB::table('stock_count_lines')->where('count_id', $count['id'])->value('product_id'))->toBe($star);
+120: });
+121: 
+122: it('por categoría incluye los productos de sus subcategorías', function () {
+123:     $actor = Fixtures::user();
+124:     $root = (int) DB::table('categories')->whereNull('parent_id')->where('code', 'LIB')->value('id');
+125:     $child = (int) DB::table('categories')->insertGetId(['parent_id' => $root, 'code' => '', 'name' => 'Cuadernos', 'depth' => 2], 'id');
+126:     $inChild = Fixtures::product();
+127:     $other = Fixtures::product();
+128:     DB::table('products')->where('id', $inChild)->update(['category_id' => $child]);
+129:     DB::table('products')->where('id', $other)->update(['category_id' => (int) DB::table('categories')->whereNull('parent_id')->where('code', 'JUG')->value('id')]);
+130:     $loc = zoneLocation('ZT5');
+131:     $register = app(RegisterMovement::class);
+132:     $register(M::purchase($inChild, $loc, 3, '1', $actor));
+133:     $register(M::purchase($other, $loc, 3, '1', $actor));
+134: 
+135:     $count = app(StartCount::class)(new NewCount(countBodega(), CountScopeType::Category, (string) $root, $actor));
+136: 
+137:     expect($count['lines'])->toBe(1);
+138:     expect(DB::table('stock_count_lines')->where('count_id', $count['id'])->value('product_id'))->toBe($inChild);
+139: });
+140: 
+141: // ----------------------------- Importación de ventas del POS -----------------------------
+142: 
+143: function posProduct(int $stockAtFloor, string $cost = '3'): array
+144: {
+145:     $actor = Fixtures::user();
+146:     $product = Fixtures::product();
+147:     $floor = Fixtures::location('PIS');
+148:     app(RegisterMovement::class)(M::purchase($product, $floor, $stockAtFloor, $cost, $actor));
+149:     DB::table('product_locations')->insert(['product_id' => $product, 'location_id' => $floor, 'is_primary' => true]);
+150:     DB::table('product_barcodes')->insert(['product_id' => $product, 'barcode' => 'POS'.random_int(100000, 999999), 'symbology' => 'INTERNAL', 'is_primary' => true]);
+151: 
+152:     return [$actor, $product, $floor, (string) DB::table('products')->where('id', $product)->value('sku'), (string) DB::table('product_barcodes')->where('product_id', $product)->value('barcode')];
+153: }
+154: 
+155: it('la importación descuenta del piso, acepta SKU o código de barras y registra el archivo', function () {
+156:     [$actor, $product, $floor, $sku, $barcode] = posProduct(10);
+157: 
+158:     $result = app(ImportPosSales::class)("sku,cantidad\n{$sku},2\n{$barcode},3\n", 'ventas-2026-10-09.csv', now('America/Lima')->format('Y-m-d'), $actor, true);
+159: 
+160:     expect($result->okRows)->toBe(1);
+161:     expect($result->units)->toBe('5.000');
+162:     expect(Fixtures::balance($product, $floor))->toBe('5.000');
+163:     $movement = DB::table('stock_movements')->where('product_id', $product)->where('type', 'SALIDA_VENTA')->first();
+164:     expect($movement->source_type)->toBe('POS_IMPORT');
+165:     expect((string) $movement->unit_cost)->toBe('3.0000'); // valorizada al costo promedio
+166:     $job = DB::table('import_jobs')->where('id', $result->importId)->first();
+167:     expect($job->kind)->toBe('POS_SALES');
+168:     expect($job->mode)->toBe('COMMIT');
+169:     expect((int) $job->ok_rows)->toBe(1);
+170:     expect(DB::select('SELECT * FROM fn_reconcile_ledger()'))->toHaveCount(0);
+171: });
+172: 
+173: it('el mismo archivo no se confirma dos veces y la simulación no toca el stock', function () {
+174:     [$actor, $product, $floor, $sku] = posProduct(10);
+175:     $csv = "sku,cantidad\n{$sku},4\n";
+176:     $import = app(ImportPosSales::class);
+177:     $today = now('America/Lima')->format('Y-m-d');
+178: 
+179:     $dry = $import($csv, 'v.csv', $today, $actor, false);
+180:     expect($dry->committed)->toBeFalse();
+181:     expect(Fixtures::balance($product, $floor))->toBe('10.000');
+182: 
+183:     $import($csv, 'v.csv', $today, $actor, true);
+184:     expect(fn () => $import($csv, 'copia.csv', $today, $actor, true))->toThrow(OperationsException::class, 'ya se importó');
+185:     expect(Fixtures::balance($product, $floor))->toBe('6.000');
+186: });
+187: 
+188: it('las filas con error van al reporte y las válidas se aplican', function () {
+189:     [$actor, $product, $floor, $sku] = posProduct(2);
+190: 
+191:     $result = app(ImportPosSales::class)("sku,cantidad\nNO-EXISTE,1\n{$sku},5\n", 'v.csv', now('America/Lima')->format('Y-m-d'), $actor, true);
+192: 
+193:     expect($result->okRows)->toBe(0);
+194:     expect($result->errors)->toHaveCount(2);
+195:     expect(Fixtures::balance($product, $floor))->toBe('2.000'); // stock insuficiente: no se descuenta
+196:     expect($result->errorReportCsv())->toContain('No se encontró');
+197: });
+
+
+FILE tests\Feature\Operations\OperationsDatabaseTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Inventory\Application\GetKardex;
+6: use App\Modules\Inventory\Application\RegisterMovement;
+7: use App\Modules\Inventory\Domain\KardexQuery;
+8: use App\Modules\Inventory\Domain\Quantity;
+9: use App\Modules\Inventory\Domain\UnitCost;
+10: use App\Modules\Operations\Application\ApproveAdjustment;
+11: use App\Modules\Operations\Application\CancelReceipt;
+12: use App\Modules\Operations\Application\CompleteTransfer;
+13: use App\Modules\Operations\Application\ConfirmReceipt;
+14: use App\Modules\Operations\Application\CreateReceiptDraft;
+15: use App\Modules\Operations\Application\CreateTransferDraft;
+16: use App\Modules\Operations\Application\RecordDirectAdjustment;
+17: use App\Modules\Operations\Application\RequestAdjustment;
+18: use App\Modules\Operations\Domain\AdjustmentKind;
+19: use App\Modules\Operations\Domain\DocumentType;
+20: use App\Modules\Operations\Domain\NewAdjustment;
+21: use App\Modules\Operations\Domain\NewReceipt;
+22: use App\Modules\Operations\Domain\NewTransfer;
+23: use App\Modules\Operations\Domain\OperationsException;
+24: use App\Modules\Operations\Domain\ReceiptLine;
+25: use App\Modules\Operations\Domain\TransferLine;
+26: use App\Modules\Suppliers\Application\CreateSupplier;
+27: use App\Modules\Suppliers\Domain\NewSupplier;
+28: use App\Modules\Suppliers\Domain\Ruc;
+29: use Illuminate\Support\Facades\DB;
+30: use Tests\Support\Fixtures;
+31: use Tests\Support\MovementFactory as M;
+32: 
+33: function opsSupplier(): int
+34: {
+35:     return app(CreateSupplier::class)(new NewSupplier(Ruc::of('20611519886'), 'Importadora Lima SAC'));
+36: }
+37: 
+38: function opsBodega(): int
+39: {
+40:     return (int) DB::table('warehouses')->where('code', 'BOD')->value('id');
+41: }
+42: 
+43: function opsReceipt(int $supplier, int $actor, array $lines, string $number = 'F001-234'): NewReceipt
+44: {
+45:     return new NewReceipt($supplier, opsBodega(), DocumentType::Invoice, $number, now('America/Lima')->format('Y-m-d'), $actor, $lines);
+46: }
+47: 
+48: function opsLine(int $product, int $loc, string $qty, string $cost = '2'): ReceiptLine
+49: {
+50:     return new ReceiptLine($product, $loc, Quantity::of($qty), UnitCost::of($cost));
+51: }
+52: 
+53: it('la recepción confirmada deja stock, costo promedio, movimientos enlazados y documento', function () {
+54:     $actor = Fixtures::user();
+55:     $product = Fixtures::product();
+56:     $loc = Fixtures::location('BOD');
+57:     $supplier = opsSupplier();
+58: 
+59:     $draft = app(CreateReceiptDraft::class)(opsReceipt($supplier, $actor, [opsLine($product, $loc, '30', '2.5')]));
+60:     expect($draft['code'])->toBe('REC-'.now('America/Lima')->format('Y').'-000001');
+61:     expect(Fixtures::balance($product, $loc))->toBe('0'); // el borrador no toca el stock
+62: 
+63:     $result = app(ConfirmReceipt::class)($draft['id'], $actor);
+64: 
+65:     expect($result)->toBe(['movements' => 1, 'discrepancies' => 0]);
+66:     expect(Fixtures::balance($product, $loc))->toBe('30.000');
+67:     expect((string) DB::table('products')->where('id', $product)->value('cost_avg'))->toBe('2.5000');
+68:     expect(DB::table('purchase_receipts')->where('id', $draft['id'])->value('status'))->toBe('CONFIRMED');
+69:     $item = DB::table('purchase_receipt_items')->where('receipt_id', $draft['id'])->first();
+70:     $movement = DB::table('stock_movements')->where('id', $item->movement_id)->first();
+71:     expect($movement->document_ref)->toBe('FACTURA F001-234');
+72:     expect($movement->source_type)->toBe('RECEIPT');
+73:     expect((int) $movement->source_id)->toBe($draft['id']);
+74: });
+75: 
+76: it('confirmar dos veces no duplica movimientos ni stock', function () {
+77:     $actor = Fixtures::user();
+78:     $product = Fixtures::product();
+79:     $loc = Fixtures::location('BOD');
+80:     $draft = app(CreateReceiptDraft::class)(opsReceipt(opsSupplier(), $actor, [opsLine($product, $loc, '10')]));
+81: 
+82:     app(ConfirmReceipt::class)($draft['id'], $actor);
+83:     app(ConfirmReceipt::class)($draft['id'], $actor);
+84: 
+85:     expect(DB::table('stock_movements')->where('product_id', $product)->count())->toBe(1);
+86:     expect(Fixtures::balance($product, $loc))->toBe('10.000');
+87: });
+88: 
+89: it('una recepción por cajas guarda la presentación y entra en unidad base', function () {
+90:     $actor = Fixtures::user();
+91:     $product = Fixtures::product();
+92:     $loc = Fixtures::location('BOD');
+93:     $presentationId = (int) DB::table('product_units')->insertGetId([
+94:         'product_id' => $product, 'unit_id' => DB::table('units')->where('code', 'DOC')->value('id'), 'factor_to_base' => '12',
+95:     ], 'id');
+96:     $line = ReceiptLine::fromPresentation($product, $loc, $presentationId, Quantity::of('5'), '12', '24', Quantity::of('6'));
+97:     $draft = app(CreateReceiptDraft::class)(opsReceipt(opsSupplier(), $actor, [$line]));
+98: 
+99:     $result = app(ConfirmReceipt::class)($draft['id'], $actor);
+100: 
+101:     expect($result['discrepancies'])->toBe(1); // esperaba 6 docenas, llegaron 5
+102:     expect(Fixtures::balance($product, $loc))->toBe('60.000');
+103:     expect((string) DB::table('products')->where('id', $product)->value('cost_avg'))->toBe('2.0000');
+104:     $movement = DB::table('stock_movements')->where('product_id', $product)->first();
+105:     expect((int) $movement->presentation_id)->toBe($presentationId);
+106:     expect((string) $movement->presentation_qty)->toBe('5.000');
+107: });
+108: 
+109: it('no se registra dos veces la misma factura del proveedor, salvo que se anule', function () {
+110:     $actor = Fixtures::user();
+111:     $product = Fixtures::product();
+112:     $loc = Fixtures::location('BOD');
+113:     $supplier = opsSupplier();
+114:     $create = app(CreateReceiptDraft::class);
+115: 
+116:     $first = $create(opsReceipt($supplier, $actor, [opsLine($product, $loc, '1')]));
+117:     expect(fn () => $create(opsReceipt($supplier, $actor, [opsLine($product, $loc, '1')])))->toThrow(OperationsException::class, 'Ya se registró');
+118: 
+119:     app(CancelReceipt::class)($first['id'], $actor);
+120:     expect($create(opsReceipt($supplier, $actor, [opsLine($product, $loc, '1')]))['code'])->toEndWith('-000002');
+121: });
+122: 
+123: it('si una línea de la transferencia no tiene stock, no se mueve ninguna', function () {
+124:     $actor = Fixtures::user();
+125:     $a = Fixtures::product();
+126:     $b = Fixtures::product();
+127:     $from = Fixtures::location('BOD');
+128:     $to = Fixtures::location('PIS');
+129:     $register = app(RegisterMovement::class);
+130:     $register(M::purchase($a, $from, 20, '1', $actor));
+131:     $register(M::purchase($b, $from, 1, '1', $actor));
+132: 
+133:     $transfer = app(CreateTransferDraft::class)(new NewTransfer($actor, [
+134:         new TransferLine($a, $from, $to, Quantity::of('5')),
+135:         new TransferLine($b, $from, $to, Quantity::of('9')), // solo hay 1
+136:     ]));
+137: 
+138:     expect(fn () => app(CompleteTransfer::class)($transfer['id'], $actor))->toThrow(OperationsException::class, 'Stock insuficiente');
+139: 
+140:     expect(Fixtures::balance($a, $from))->toBe('20.000');
+141:     expect(Fixtures::balance($a, $to))->toBe('0');
+142:     expect(DB::table('transfer_orders')->where('id', $transfer['id'])->value('status'))->toBe('DRAFT');
+143: });
+144: 
+145: it('la transferencia completa mueve el stock y enlaza los movimientos', function () {
+146:     $actor = Fixtures::user();
+147:     $product = Fixtures::product();
+148:     $from = Fixtures::location('BOD');
+149:     $to = Fixtures::location('PIS');
+150:     app(RegisterMovement::class)(M::purchase($product, $from, 20, '1', $actor));
+151:     $transfer = app(CreateTransferDraft::class)(new NewTransfer($actor, [new TransferLine($product, $from, $to, Quantity::of('5'))]));
+152: 
+153:     app(CompleteTransfer::class)($transfer['id'], $actor);
+154:     app(CompleteTransfer::class)($transfer['id'], $actor); // idempotente
+155: 
+156:     expect(Fixtures::balance($product, $from))->toBe('15.000');
+157:     expect(Fixtures::balance($product, $to))->toBe('5.000');
+158:     expect(DB::table('stock_movements')->where('product_id', $product)->where('type', 'TRANSFERENCIA')->count())->toBe(1);
+159:     expect(DB::table('transfer_order_items')->where('order_id', $transfer['id'])->value('movement_id'))->not->toBeNull();
+160:     expect(DB::table('transfer_orders')->where('id', $transfer['id'])->value('status'))->toBe('COMPLETED');
+161:     expect(DB::select('SELECT * FROM fn_reconcile_ledger()'))->toHaveCount(0);
+162: });
+163: 
+164: it('una merma solicitada por un almacenero solo descuenta cuando otra persona la aprueba', function () {
+165:     $requester = Fixtures::user();
+166:     $reviewer = Fixtures::user();
+167:     $product = Fixtures::product();
+168:     $loc = Fixtures::location('BOD');
+169:     app(RegisterMovement::class)(M::purchase($product, $loc, 10, '4', $requester));
+170:     $reason = (int) DB::table('movement_reasons')->where('code', 'MERMA_DANIO')->value('id');
+171: 
+172:     $request = app(RequestAdjustment::class)(new NewAdjustment(AdjustmentKind::WriteOff, $product, $loc, Quantity::of('3'), $reason, 'Se mojaron con la lluvia', $requester));
+173:     expect(Fixtures::balance($product, $loc))->toBe('10.000');
+174:     expect(fn () => app(ApproveAdjustment::class)($request['id'], $requester))->toThrow(OperationsException::class, 'otra persona');
+175: 
+176:     $movementId = app(ApproveAdjustment::class)($request['id'], $reviewer, 'Verificado en bodega');
+177: 
+178:     expect(Fixtures::balance($product, $loc))->toBe('7.000');
+179:     $movement = DB::table('stock_movements')->where('id', $movementId)->first();
+180:     expect($movement->type)->toBe('MERMA');
+181:     expect((int) $movement->user_id)->toBe($requester);
+182:     expect((int) $movement->approved_by)->toBe($reviewer);
+183:     expect((string) $movement->unit_cost)->toBe('4.0000'); // valorizada al costo promedio
+184:     expect(DB::table('stock_adjustment_requests')->where('id', $request['id'])->value('status'))->toBe('APPROVED');
+185: });
+186: 
+187: it('una merma sin stock suficiente no se aprueba y la solicitud queda pendiente', function () {
+188:     $requester = Fixtures::user();
+189:     $reviewer = Fixtures::user();
+190:     $product = Fixtures::product();
+191:     $loc = Fixtures::location('BOD');
+192:     app(RegisterMovement::class)(M::purchase($product, $loc, 2, '1', $requester));
+193:     $reason = (int) DB::table('movement_reasons')->where('code', 'MERMA_DANIO')->value('id');
+194:     $request = app(RequestAdjustment::class)(new NewAdjustment(AdjustmentKind::WriteOff, $product, $loc, Quantity::of('5'), $reason, 'Se dañaron todas', $requester));
+195: 
+196:     expect(fn () => app(ApproveAdjustment::class)($request['id'], $reviewer))->toThrow(OperationsException::class, 'Stock insuficiente');
+197: 
+198:     expect(DB::table('stock_adjustment_requests')->where('id', $request['id'])->value('status'))->toBe('PENDING');
+199:     expect(Fixtures::balance($product, $loc))->toBe('2.000');
+200: });
+201: 
+202: it('el registro directo respeta el límite configurado', function () {
+203:     $actor = Fixtures::user();
+204:     $product = Fixtures::product();
+205:     $loc = Fixtures::location('BOD');
+206:     app(RegisterMovement::class)(M::purchase($product, $loc, 10, '2', $actor));
+207:     $reason = (int) DB::table('movement_reasons')->where('code', 'AJU_ERROR_CONTEO')->value('id');
+208:     $adjustment = new NewAdjustment(AdjustmentKind::Negative, $product, $loc, Quantity::of('2'), $reason, 'Diferencia en el conteo', $actor);
+209:     $direct = app(RecordDirectAdjustment::class);
+210: 
+211:     expect(fn () => $direct($adjustment, 'DIRECT-TEST-0001'))->toThrow(OperationsException::class, 'límite'); // por defecto: deshabilitado
+212: 
+213:     DB::table('settings')->where('key', 'adjustment.auto_approve_limit_pen')->update(['value' => '50']);
+214:     $direct($adjustment, 'DIRECT-TEST-0001');
+215:     $direct($adjustment, 'DIRECT-TEST-0001'); // reintento: no duplica
+216: 
+217:     expect(Fixtures::balance($product, $loc))->toBe('8.000');
+218: });
+219: 
+220: it('el kardex muestra saldo inicial, movimientos con saldo corrido y saldo final', function () {
+221:     $actor = Fixtures::user();
+222:     $product = Fixtures::product();
+223:     $a = Fixtures::location('BOD');
+224:     $b = Fixtures::location('BOD');
+225:     $register = app(RegisterMovement::class);
+226:     $register(M::purchase($product, $a, 20, '2', $actor));
+227:     $register(M::transfer($product, $a, $b, 5, $actor));
+228:     $register(M::sale($product, $b, 3, $actor));
+229:     $kardex = app(GetKardex::class);
+230: 
+231:     $warehouse = $kardex(new KardexQuery($product, warehouseId: opsBodega()));
+232:     expect($warehouse->openingBalance)->toBe('0.000');
+233:     expect(array_map(static fn ($r) => $r->delta, $warehouse->rows))->toBe(['20.000', '-5.000', '5.000', '-3.000']);
+234:     expect(array_map(static fn ($r) => $r->runningBalance, $warehouse->rows))->toBe(['20.000', '15.000', '20.000', '17.000']);
+235:     expect($warehouse->closingBalance)->toBe('17.000');
+236:     expect($warehouse->rows[0]->type)->toBe('ENTRADA_COMPRA');
+237: 
+238:     $location = $kardex(new KardexQuery($product, locationId: $a));
+239:     expect(array_map(static fn ($r) => $r->runningBalance, $location->rows))->toBe(['20.000', '15.000']);
+240:     expect($location->closingBalance)->toBe('15.000');
+241: 
+242:     $later = $kardex(new KardexQuery($product, from: new DateTimeImmutable('+1 day')));
+243:     expect($later->rows)->toBe([]);
+244:     expect($later->openingBalance)->toBe('17.000');
+245:     expect($later->closingBalance)->toBe('17.000');
+246: });
+
+
+FILE tests\Feature\Panel\AlmacenPagesTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Filament\Resources\Adjustments\AdjustmentResource;
+6: use App\Filament\Resources\Adjustments\Pages\CreateAdjustment;
+7: use App\Filament\Resources\Adjustments\Pages\ListAdjustments;
+8: use App\Filament\Resources\Products\Pages\ListProducts;
+9: use App\Filament\Resources\Receipts\Pages\CreateReceipt;
+10: use App\Filament\Resources\Receipts\Pages\ListReceipts;
+11: use App\Filament\Resources\Receipts\ReceiptResource;
+12: use App\Filament\Resources\Transfers\Pages\CreateTransfer;
+13: use App\Filament\Resources\Transfers\Pages\ListTransfers;
+14: use App\Filament\Resources\Transfers\TransferResource;
+15: use App\Filament\Resources\Users\UserResource;
+16: use App\Models\Product;
+17: use App\Modules\Catalog\Application\LookupProduct;
+18: use App\Modules\Iam\Domain\RoleName;
+19: use App\Modules\Inventory\Application\GetKardex;
+20: use App\Modules\Inventory\Application\RegisterMovement;
+21: use App\Modules\Inventory\Domain\KardexQuery;
+22: use App\Modules\Inventory\Domain\Quantity;
+23: use App\Modules\Inventory\Domain\UnitCost;
+24: use App\Modules\Operations\Application\CreateReceiptDraft;
+25: use App\Modules\Operations\Application\CreateTransferDraft;
+26: use App\Modules\Operations\Application\RequestAdjustment;
+27: use App\Modules\Operations\Domain\AdjustmentKind;
+28: use App\Modules\Operations\Domain\DocumentType;
+29: use App\Modules\Operations\Domain\NewAdjustment;
+30: use App\Modules\Operations\Domain\NewReceipt;
+31: use App\Modules\Operations\Domain\NewTransfer;
+32: use App\Modules\Operations\Domain\ReceiptLine;
+33: use App\Modules\Operations\Domain\TransferLine;
+34: use App\Modules\Suppliers\Application\CreateSupplier;
+35: use App\Modules\Suppliers\Domain\NewSupplier;
+36: use App\Modules\Suppliers\Domain\Ruc;
+37: use Filament\Facades\Filament;
+38: use Illuminate\Support\Facades\DB;
+39: use Livewire\Livewire;
+40: use Tests\Support\Fixtures;
+41: use Tests\Support\MovementFactory as M;
+42: use Tests\Support\PanelUsers;
+43: 
+44: beforeEach(function () {
+45:     PanelUsers::seedRoles();
+46:     Filament::setCurrentPanel(Filament::getPanel('admin'));
+47: });
+48: 
+49: function almBodega(): int
+50: {
+51:     return (int) DB::table('warehouses')->where('code', 'BOD')->value('id');
+52: }
+53: 
+54: it('cada rol ve en el menú solo lo que le corresponde', function () {
+55:     $this->actingAs(PanelUsers::withRole(RoleName::Almacenero));
+56:     expect(ReceiptResource::canViewAny())->toBeTrue();
+57:     expect(ReceiptResource::canCreate())->toBeTrue();
+58:     expect(TransferResource::canCreate())->toBeTrue();
+59:     expect(AdjustmentResource::canCreate())->toBeTrue();
+60:     expect(UserResource::canViewAny())->toBeFalse();
+61: 
+62:     $this->actingAs(PanelUsers::withRole(RoleName::Compras));
+63:     expect(ReceiptResource::canViewAny())->toBeTrue();
+64:     expect(ReceiptResource::canCreate())->toBeFalse();
+65:     expect(AdjustmentResource::canCreate())->toBeFalse();
+66: 
+67:     $this->actingAs(PanelUsers::withRole(RoleName::Lectura));
+68:     expect(TransferResource::canViewAny())->toBeTrue();
+69:     expect(TransferResource::canCreate())->toBeFalse();
+70: 
+71:     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
+72:     expect(ReceiptResource::canCreate())->toBeTrue();
+73:     expect(AdjustmentResource::canViewAny())->toBeTrue();
+74: });
+75: 
+76: it('el almacenero abre las pantallas para registrar su trabajo', function () {
+77:     $this->actingAs(PanelUsers::withRole(RoleName::Almacenero));
+78: 
+79:     Livewire::test(CreateReceipt::class)->assertOk();
+80:     Livewire::test(CreateTransfer::class)->assertOk();
+81:     Livewire::test(CreateAdjustment::class)->assertOk();
+82:     Livewire::test(ListReceipts::class)->assertOk();
+83: });
+84: 
+85: it('solo lectura ve las listas pero no puede abrir las pantallas de registro', function () {
+86:     $this->actingAs(PanelUsers::withRole(RoleName::Lectura));
+87: 
+88:     Livewire::test(ListReceipts::class)->assertOk();
+89:     Livewire::test(ListTransfers::class)->assertOk();
+90:     Livewire::test(ListAdjustments::class)->assertOk();
+91:     Livewire::test(CreateReceipt::class)->assertForbidden();
+92:     Livewire::test(CreateTransfer::class)->assertForbidden();
+93:     Livewire::test(CreateAdjustment::class)->assertForbidden();
+94: });
+95: 
+96: it('confirmar una recepción desde la lista ingresa el stock', function () {
+97:     $worker = PanelUsers::withRole(RoleName::Almacenero);
+98:     $supplier = app(CreateSupplier::class)(new NewSupplier(Ruc::of('20611519886'), 'Importadora Lima SAC'));
+99:     $product = Fixtures::product();
+100:     $loc = Fixtures::location('BOD');
+101:     $draft = app(CreateReceiptDraft::class)(new NewReceipt(
+102:         $supplier, almBodega(), DocumentType::Invoice, 'F001-777', now('America/Lima')->format('Y-m-d'), $worker->id,
+103:         [new ReceiptLine($product, $loc, Quantity::of('12'), UnitCost::of('3'))],
+104:     ));
+105:     $this->actingAs($worker);
+106: 
+107:     Livewire::test(ListReceipts::class)
+108:         ->assertCanSeeTableRecords([$draft['id']])
+109:         ->callTableAction('confirm', $draft['id']);
+110: 
+111:     expect(Fixtures::balance($product, $loc))->toBe('12.000');
+112:     expect(DB::table('purchase_receipts')->where('id', $draft['id'])->value('status'))->toBe('CONFIRMED');
+113: });
+114: 
+115: it('completar una transferencia desde la lista mueve el stock', function () {
+116:     $worker = PanelUsers::withRole(RoleName::Almacenero);
+117:     $product = Fixtures::product();
+118:     $from = Fixtures::location('BOD');
+119:     $to = Fixtures::location('PIS');
+120:     app(RegisterMovement::class)(M::purchase($product, $from, 20, '1', $worker->id));
+121:     $draft = app(CreateTransferDraft::class)(new NewTransfer($worker->id, [new TransferLine($product, $from, $to, Quantity::of('5'))]));
+122:     $this->actingAs($worker);
+123: 
+124:     Livewire::test(ListTransfers::class)->callTableAction('complete', $draft['id']);
+125: 
+126:     expect(Fixtures::balance($product, $from))->toBe('15.000');
+127:     expect(Fixtures::balance($product, $to))->toBe('5.000');
+128: });
+129: 
+130: it('el supervisor aprueba la merma que pidió el almacenero; el almacenero no ve el botón', function () {
+131:     $worker = PanelUsers::withRole(RoleName::Almacenero);
+132:     $supervisor = PanelUsers::withRole(RoleName::Supervisor);
+133:     $product = Fixtures::product();
+134:     $loc = Fixtures::location('BOD');
+135:     app(RegisterMovement::class)(M::purchase($product, $loc, 10, '4', $supervisor->id));
+136:     $reason = (int) DB::table('movement_reasons')->where('code', 'MERMA_DANIO')->value('id');
+137:     $request = app(RequestAdjustment::class)(new NewAdjustment(AdjustmentKind::WriteOff, $product, $loc, Quantity::of('3'), $reason, 'Se mojaron con la lluvia', $worker->id));
+138: 
+139:     $this->actingAs($worker);
+140:     Livewire::test(ListAdjustments::class)->assertTableActionHidden('approve', $request['id']);
+141: 
+142:     $this->actingAs($supervisor);
+143:     Livewire::test(ListAdjustments::class)
+144:         ->assertTableActionVisible('approve', $request['id'])
+145:         ->callTableAction('approve', $request['id'], data: ['notes' => 'Visto bueno']);
+146: 
+147:     expect(Fixtures::balance($product, $loc))->toBe('7.000');
+148:     expect(DB::table('stock_adjustment_requests')->where('id', $request['id'])->value('status'))->toBe('APPROVED');
+149: });
+150: 
+151: it('el kardex de un producto muestra el stock actual y los movimientos', function () {
+152:     $admin = PanelUsers::withRole(RoleName::Admin);
+153:     $product = Fixtures::product();
+154:     $loc = Fixtures::location('BOD');
+155:     app(RegisterMovement::class)(M::purchase($product, $loc, 8, '2', $admin->id));
+156:     $sku = (string) DB::table('products')->where('id', $product)->value('sku');
+157: 
+158:     $html = view('filament.kardex', [
+159:         'lookup' => app(LookupProduct::class)($sku),
+160:         'kardex' => app(GetKardex::class)(new KardexQuery($product, limit: 50)),
+161:         'product' => Product::query()->findOrFail($product),
+162:     ])->render();
+163: 
+164:     expect($html)->toContain($sku)->toContain('Compra')->toContain('BOD-')->toContain('Saldo');
+165: 
+166:     $this->actingAs($admin);
+167:     Livewire::test(ListProducts::class)->assertTableActionExists('kardex');
+168: });
+
+
+FILE tests\Feature\Panel\CatalogModelsTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Models\Brand;
+6: use App\Models\Category;
+7: use Illuminate\Support\Facades\DB;
+8: use Illuminate\Validation\ValidationException;
+9: 
+10: it('una categoría de primer nivel exige código único y queda en nivel 1', function () {
+11:     $c = Category::query()->create(['name' => 'Papelería', 'code' => ' pap ']);
+12: 
+13:     expect($c->code)->toBe('PAP');
+14:     expect($c->depth)->toBe(1);
+15:     expect(fn () => Category::query()->create(['name' => 'Otra', 'code' => 'PAP']))->toThrow(ValidationException::class);
+16:     expect(fn () => Category::query()->create(['name' => 'Sin código', 'code' => '']))->toThrow(ValidationException::class);
+17: });
+18: 
+19: it('las subcategorías heredan el nivel y se limitan a 3 niveles', function () {
+20:     $root = Category::query()->create(['name' => 'Papelería', 'code' => 'PAP']);
+21:     $child = Category::query()->create(['name' => 'Cuadernos', 'parent_id' => $root->id, 'code' => '']);
+22:     $grandchild = Category::query()->create(['name' => 'Rayados', 'parent_id' => $child->id, 'code' => '']);
+23: 
+24:     expect($child->depth)->toBe(2);
+25:     expect($grandchild->depth)->toBe(3);
+26:     expect(fn () => Category::query()->create(['name' => 'Demasiado', 'parent_id' => $grandchild->id, 'code' => '']))
+27:         ->toThrow(ValidationException::class);
+28: });
+29: 
+30: it('categorías y marcas dejan rastro de auditoría con antes y después', function () {
+31:     $brand = Brand::query()->create(['name' => 'Faber']);
+32:     $brand->update(['name' => 'Faber-Castell']);
+33: 
+34:     expect(DB::table('audit_logs')->where('action', 'brand.created')->where('entity_id', $brand->id)->count())->toBe(1);
+35:     $row = DB::table('audit_logs')->where('action', 'brand.updated')->where('entity_id', $brand->id)->first();
+36:     expect(json_decode((string) $row->old_values, true))->toBe(['name' => 'Faber']);
+37:     expect(json_decode((string) $row->new_values, true))->toBe(['name' => 'Faber-Castell']);
+38: });
+
+
+FILE tests\Feature\Panel\ComprasPagesTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Filament\Resources\Replenishment\Pages\ListReplenishment;
+6: use App\Filament\Resources\Replenishment\ReplenishmentResource;
+7: use App\Filament\Resources\Suppliers\Pages\CreateSupplier;
+8: use App\Filament\Resources\Suppliers\Pages\EditSupplier;
+9: use App\Filament\Resources\Suppliers\Pages\ListSuppliers;
+10: use App\Filament\Resources\Suppliers\SupplierResource;
+11: use App\Filament\Widgets\CriticalStockTable;
+12: use App\Filament\Widgets\InventoryStats;
+13: use App\Modules\Iam\Domain\RoleName;
+14: use App\Modules\Inventory\Application\RegisterMovement;
+15: use Filament\Facades\Filament;
+16: use Illuminate\Support\Facades\DB;
+17: use Livewire\Livewire;
+18: use Tests\Support\Fixtures;
+19: use Tests\Support\MovementFactory as M;
+20: use Tests\Support\PanelUsers;
+21: 
+22: beforeEach(function () {
+23:     PanelUsers::seedRoles();
+24:     Filament::setCurrentPanel(Filament::getPanel('admin'));
+25: });
+26: 
+27: function compraPolicy(int $product, string $min = '10', string $max = '50', string $reorder = '20'): void
+28: {
+29:     DB::table('product_stock_policies')->insert([
+30:         'product_id' => $product, 'warehouse_id' => (int) DB::table('warehouses')->where('code', 'BOD')->value('id'),
+31:         'min_qty' => $min, 'max_qty' => $max, 'reorder_qty' => $reorder,
+32:     ]);
+33: }
+34: 
+35: it('los proveedores los gestionan compras y administración; las alertas las ven todos', function () {
+36:     $this->actingAs(PanelUsers::withRole(RoleName::Compras));
+37:     expect(SupplierResource::canViewAny())->toBeTrue();
+38:     expect(SupplierResource::canCreate())->toBeTrue();
+39:     expect(ReplenishmentResource::canViewAny())->toBeTrue();
+40: 
+41:     $this->actingAs(PanelUsers::withRole(RoleName::Almacenero));
+42:     expect(SupplierResource::canViewAny())->toBeFalse();
+43:     expect(ReplenishmentResource::canViewAny())->toBeTrue();
+44: 
+45:     $this->actingAs(PanelUsers::withRole(RoleName::Lectura));
+46:     expect(SupplierResource::canCreate())->toBeFalse();
+47:     expect(ReplenishmentResource::canViewAny())->toBeTrue();
+48: });
+49: 
+50: it('compras crea, edita y desactiva un proveedor desde las pantallas', function () {
+51:     $this->actingAs(PanelUsers::withRole(RoleName::Compras));
+52: 
+53:     Livewire::test(CreateSupplier::class)
+54:         ->set('data.ruc', '20611519886')
+55:         ->set('data.business_name', 'Importadora Lima SAC')
+56:         ->set('data.lead_time_days', '5')
+57:         ->call('create')
+58:         ->assertHasNoFormErrors();
+59: 
+60:     $id = (int) DB::table('suppliers')->where('ruc', '20611519886')->value('id');
+61:     expect(DB::table('suppliers')->where('id', $id)->value('lead_time_days'))->toBe(5);
+62: 
+63:     Livewire::test(EditSupplier::class, ['record' => $id])
+64:         ->set('data.business_name', 'Importadora Lima Norte SAC')
+65:         ->call('save')
+66:         ->assertHasNoFormErrors();
+67:     expect(DB::table('suppliers')->where('id', $id)->value('business_name'))->toBe('Importadora Lima Norte SAC');
+68: 
+69:     Livewire::test(ListSuppliers::class)->callTableAction('deactivate', $id);
+70:     expect((bool) DB::table('suppliers')->where('id', $id)->value('is_active'))->toBeFalse();
+71: });
+72: 
+73: it('la vista de reposición clasifica cada producto y sugiere cuánto pedir', function () {
+74:     $actor = Fixtures::user();
+75:     $loc = Fixtures::location('BOD');
+76:     $low = Fixtures::product();
+77:     $out = Fixtures::product();
+78:     $ok = Fixtures::product();
+79:     compraPolicy($low);
+80:     compraPolicy($out);
+81:     compraPolicy($ok);
+82:     app(RegisterMovement::class)(M::purchase($low, $loc, 4, '2', $actor));
+83:     app(RegisterMovement::class)(M::purchase($ok, $loc, 30, '2', $actor));
+84: 
+85:     $row = static fn (int $p): object => DB::table('v_replenishment')->where('product_id', $p)->firstOrFail();
+86: 
+87:     expect($row($low)->status)->toBe('LOW');
+88:     expect((string) $row($low)->suggested_qty)->toBe('46.000');   // máximo 50 - stock 4
+89:     expect($row($out)->status)->toBe('OUT');
+90:     expect((string) $row($out)->suggested_qty)->toBe('50.000');
+91:     expect($row($ok)->status)->toBe('OK');
+92:     expect((string) $row($ok)->suggested_qty)->toBe('0');
+93: });
+94: 
+95: it('la pantalla de reposición y el tablero abren para quien ve alertas', function () {
+96:     $this->actingAs(PanelUsers::withRole(RoleName::Compras));
+97: 
+98:     Livewire::test(ListReplenishment::class)->assertOk();
+99:     Livewire::test(InventoryStats::class)->assertOk()->assertSee('Valor del inventario');
+100:     Livewire::test(CriticalStockTable::class)->assertOk();
+101: });
+
+
+FILE tests\Feature\Panel\PanelAccessTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Models\User;
+6: use App\Modules\Iam\Domain\RoleName;
+7: use Filament\Facades\Filament;
+8: use Illuminate\Auth\Events\Failed;
+9: use Illuminate\Auth\Events\Login;
+10: use Illuminate\Support\Facades\DB;
+11: use Illuminate\Support\Facades\Event;
+12: use Tests\Support\PanelUsers;
+13: 
+14: beforeEach(function () {
+15:     PanelUsers::seedRoles();
+16: });
+17: 
+18: it('cada rol con cuenta activa puede entrar al panel', function () {
+19:     $panel = Filament::getPanel('admin');
+20: 
+21:     foreach (RoleName::cases() as $role) {
+22:         expect(PanelUsers::withRole($role)->canAccessPanel($panel))->toBeTrue();
+23:     }
+24: });
+25: 
+26: it('no entran las cuentas desactivadas, bloqueadas o sin rol', function () {
+27:     $panel = Filament::getPanel('admin');
+28: 
+29:     expect(PanelUsers::withRole(RoleName::Admin, ['is_active' => false])->canAccessPanel($panel))->toBeFalse();
+30: 
+31:     $locked = PanelUsers::withRole(RoleName::Admin);
+32:     $locked->forceFill(['locked_until' => now()->addMinutes(10)])->save();
+33:     expect($locked->refresh()->canAccessPanel($panel))->toBeFalse();
+34: 
+35:     $expired = PanelUsers::withRole(RoleName::Admin);
+36:     $expired->forceFill(['locked_until' => now()->subMinute()])->save();
+37:     expect($expired->refresh()->canAccessPanel($panel))->toBeTrue();
+38: 
+39:     expect(User::factory()->create()->canAccessPanel($panel))->toBeFalse();
+40: });
+41: 
+42: it('5 intentos fallidos bloquean la cuenta y un acierto durante el bloqueo no la libera', function () {
+43:     $user = PanelUsers::withRole(RoleName::Almacenero);
+44: 
+45:     for ($i = 0; $i < 5; $i++) {
+46:         Event::dispatch(new Failed('web', $user, ['email' => $user->email]));
+47:     }
+48:     expect(DB::table('users')->where('id', $user->id)->value('locked_until'))->not->toBeNull();
+49: 
+50:     Event::dispatch(new Login('web', $user->refresh(), false));
+51: 
+52:     expect(DB::table('users')->where('id', $user->id)->value('locked_until'))->not->toBeNull();
+53:     expect(DB::table('users')->where('id', $user->id)->value('last_login_at'))->toBeNull();
+54:     expect($user->refresh()->canAccessPanel(Filament::getPanel('admin')))->toBeFalse();
+55: });
+56: 
+57: it('un acceso correcto registra el último ingreso', function () {
+58:     $user = PanelUsers::withRole(RoleName::Supervisor);
+59: 
+60:     Event::dispatch(new Login('web', $user, false));
+61: 
+62:     expect(DB::table('users')->where('id', $user->id)->value('last_login_at'))->not->toBeNull();
+63: });
+
+
+FILE tests\Feature\Panel\PoliciesTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Models\Brand;
+6: use App\Models\Category;
+7: use App\Models\Product;
+8: use App\Models\User;
+9: use App\Modules\Iam\Domain\RoleName;
+10: use Tests\Support\Fixtures;
+11: use Tests\Support\PanelUsers;
+12: 
+13: beforeEach(function () {
+14:     PanelUsers::seedRoles();
+15: });
+16: 
+17: it('el catálogo se ve con catalog.view y se escribe solo con catalog.write', function () {
+18:     $almacenero = PanelUsers::withRole(RoleName::Almacenero);
+19:     $supervisor = PanelUsers::withRole(RoleName::Supervisor);
+20: 
+21:     foreach ([Product::class, Category::class, Brand::class] as $model) {
+22:         expect($almacenero->can('viewAny', $model))->toBeTrue();
+23:         expect($almacenero->can('create', $model))->toBeFalse();
+24:         expect($supervisor->can('viewAny', $model))->toBeTrue();
+25:         expect($supervisor->can('create', $model))->toBeTrue();
+26:     }
+27: });
+28: 
+29: it('nadie puede borrar productos: se dan de baja', function () {
+30:     $admin = PanelUsers::withRole(RoleName::Admin);
+31:     $product = Product::query()->findOrFail(Fixtures::product());
+32: 
+33:     expect($admin->can('delete', $product))->toBeFalse();
+34:     expect($admin->can('deleteAny', Product::class))->toBeFalse();
+35: });
+36: 
+37: it('solo el administrador gestiona usuarios y nadie los edita ni borra desde el panel', function () {
+38:     $admin = PanelUsers::withRole(RoleName::Admin);
+39:     $supervisor = PanelUsers::withRole(RoleName::Supervisor);
+40: 
+41:     expect($admin->can('viewAny', User::class))->toBeTrue();
+42:     expect($admin->can('create', User::class))->toBeTrue();
+43:     expect($admin->can('update', $supervisor))->toBeFalse();
+44:     expect($admin->can('delete', $supervisor))->toBeFalse();
+45:     expect($supervisor->can('viewAny', User::class))->toBeFalse();
+46:     expect($supervisor->can('create', User::class))->toBeFalse();
+47: });
+
+
+FILE tests\Feature\Panel\ReportesPagesTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Filament\Resources\Reports\Abc\AbcResource;
+6: use App\Filament\Resources\Reports\Abc\Pages\ListAbc;
+7: use App\Filament\Resources\Reports\ValuedStock\Pages\ListValuedStock;
+8: use App\Filament\Resources\Reports\ValuedStock\ValuedStockResource;
+9: use App\Filament\Resources\Reports\Waste\Pages\ListWaste;
+10: use App\Filament\Resources\Reports\Waste\WasteResource;
+11: use App\Modules\Iam\Domain\RoleName;
+12: use App\Modules\Inventory\Application\RegisterMovement;
+13: use App\Modules\Inventory\Domain\Quantity;
+14: use App\Modules\Operations\Application\ApproveAdjustment;
+15: use App\Modules\Operations\Application\RequestAdjustment;
+16: use App\Modules\Operations\Domain\AdjustmentKind;
+17: use App\Modules\Operations\Domain\NewAdjustment;
+18: use Filament\Facades\Filament;
+19: use Illuminate\Support\Facades\DB;
+20: use Livewire\Livewire;
+21: use Tests\Support\Fixtures;
+22: use Tests\Support\MovementFactory as M;
+23: use Tests\Support\PanelUsers;
+24: 
+25: beforeEach(function () {
+26:     PanelUsers::seedRoles();
+27:     Filament::setCurrentPanel(Filament::getPanel('admin'));
+28: });
+29: 
+30: it('las vistas de reportes calculan valor, clase ABC y mermas', function () {
+31:     $actor = Fixtures::user();
+32:     $loc = Fixtures::location('BOD');
+33:     $register = app(RegisterMovement::class);
+34:     $a = Fixtures::product();
+35:     $b = Fixtures::product();
+36:     $c = Fixtures::product();
+37:     $d = Fixtures::product();
+38:     foreach ([[$a, 100, 50], [$b, 20, 5], [$c, 20, 1]] as [$p, $buy, $sold]) {
+39:         $register(M::purchase($p, $loc, $buy, '2', $actor));
+40:         $register(M::sale($p, $loc, $sold, $actor));
+41:     }
+42:     $register(M::purchase($d, $loc, 5, '3', $actor));
+43: 
+44:     $class = static fn (int $p): string => (string) DB::table('v_report_abc')->where('product_id', $p)->value('abc_class');
+45:     expect($class($a))->toBe('A');
+46:     expect($class($b))->toBe('B');
+47:     expect($class($c))->toBe('C');
+48:     expect($class($d))->toBe('SIN_VENTAS');
+49:     expect((float) DB::table('v_report_abc')->where('product_id', $a)->value('value_90d'))->toBe(100.0);
+50: 
+51:     expect((float) DB::table('v_report_valued_stock')->where('product_id', $a)->sum('value'))->toBe(100.0); // 50 u. x S/ 2
+52:     expect((float) DB::table('v_report_valued_stock')->where('product_id', $d)->sum('value'))->toBe(15.0);  // 5 u. x S/ 3
+53: 
+54:     $worker = PanelUsers::withRole(RoleName::Almacenero);
+55:     $supervisor = PanelUsers::withRole(RoleName::Supervisor);
+56:     $reason = (int) DB::table('movement_reasons')->where('code', 'MERMA_DANIO')->value('id');
+57:     $req = app(RequestAdjustment::class)(new NewAdjustment(AdjustmentKind::WriteOff, $d, $loc, Quantity::of('2'), $reason, 'Se mojaron con la lluvia', $worker->id));
+58:     app(ApproveAdjustment::class)($req['id'], $supervisor->id, null);
+59: 
+60:     $waste = DB::table('v_report_waste')->where('sku', DB::table('products')->where('id', $d)->value('sku'))->first();
+61:     expect($waste)->not->toBeNull();
+62:     expect($waste->type)->toBe('MERMA');
+63:     expect((float) $waste->value)->toBe(6.0);
+64:     expect($waste->approver_name)->toBe($supervisor->name);
+65: });
+66: 
+67: it('las pantallas de reportes abren y el administrador puede descargar', function () {
+68:     $this->actingAs(PanelUsers::withRole(RoleName::Admin));
+69: 
+70:     Livewire::test(ListValuedStock::class)->assertOk()->assertActionVisible('export');
+71:     Livewire::test(ListAbc::class)->assertOk()->assertActionVisible('export');
+72:     Livewire::test(ListWaste::class)->assertOk()->assertActionVisible('export');
+73: });
+74: 
+75: it('solo lectura puede ver los reportes', function () {
+76:     $this->actingAs(PanelUsers::withRole(RoleName::Lectura));
+77: 
+78:     expect(ValuedStockResource::canViewAny())->toBeTrue();
+79:     expect(AbcResource::canViewAny())->toBeTrue();
+80:     expect(WasteResource::canViewAny())->toBeTrue();
+81: });
+
+
+FILE tests\Feature\Panel\ResourcePagesTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Filament\Resources\Products\Pages\CreateProduct;
+6: use App\Filament\Resources\Products\Pages\ListProducts;
+7: use App\Filament\Resources\Users\Pages\ListUsers;
+8: use App\Models\Product;
+9: use App\Modules\Iam\Domain\RoleName;
+10: use App\Modules\Inventory\Application\RegisterMovement;
+11: use Filament\Facades\Filament;
+12: use Illuminate\Support\Facades\DB;
+13: use Livewire\Livewire;
+14: use Tests\Support\Fixtures;
+15: use Tests\Support\MovementFactory as M;
+16: use Tests\Support\PanelUsers;
+17: 
+18: beforeEach(function () {
+19:     PanelUsers::seedRoles();
+20:     Filament::setCurrentPanel(Filament::getPanel('admin'));
+21: });
+22: 
+23: it('el administrador ve el listado de productos', function () {
+24:     $admin = PanelUsers::withRole(RoleName::Admin);
+25:     $productId = Fixtures::product();
+26:     $loc = Fixtures::location('BOD');
+27:     app(RegisterMovement::class)(M::purchase($productId, $loc, 7, '2', $admin->id));
+28: 
+29:     $this->actingAs($admin);
+30: 
+31:     Livewire::test(ListProducts::class)
+32:         ->assertOk()
+33:         ->assertCanSeeTableRecords(Product::query()->whereKey($productId)->get());
+34: });
+35: 
+36: it('el almacenero ve los productos pero no puede crearlos', function () {
+37:     $this->actingAs(PanelUsers::withRole(RoleName::Almacenero));
+38: 
+39:     Livewire::test(ListProducts::class)->assertOk();
+40:     Livewire::test(CreateProduct::class)->assertForbidden();
+41: });
+42: 
+43: it('solo el administrador entra a la lista de usuarios', function () {
+44:     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
+45:     Livewire::test(ListUsers::class)->assertForbidden();
+46: 
+47:     $this->actingAs(PanelUsers::withRole(RoleName::Admin));
+48:     Livewire::test(ListUsers::class)->assertOk();
+49: });
+50: 
+51: it('crear un producto desde el formulario pasa por el caso de uso y genera el SKU', function () {
+52:     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
+53: 
+54:     Livewire::test(CreateProduct::class)
+55:         ->set('data.name', 'Cuaderno A4 100 hojas')
+56:         ->set('data.category_id', (int) DB::table('categories')->whereNull('parent_id')->where('code', 'LIB')->value('id'))
+57:         ->set('data.base_unit_id', (int) DB::table('units')->where('code', 'UND')->value('id'))
+58:         ->call('create')
+59:         ->assertHasNoFormErrors();
+60: 
+61:     $product = Product::query()->where('name', 'Cuaderno A4 100 hojas')->firstOrFail();
+62:     expect($product->sku)->toBe('LIB-000001');
+63:     expect(DB::table('audit_logs')->where('action', 'product.created')->where('entity_id', $product->id)->count())->toBe(1);
+64: });
+
+
+FILE tests\Feature\Panel\SeguridadTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Filament\Resources\Audit\AuditResource;
+6: use App\Filament\Resources\Audit\Pages\ListAuditLogs;
+7: use App\Filament\Resources\Users\Pages\ListUsers;
+8: use App\Http\Middleware\EnforceTwoFactorForPrivilegedRoles;
+9: use App\Modules\Iam\Domain\RoleName;
+10: use Filament\Facades\Filament;
+11: use Illuminate\Http\Request;
+12: use Illuminate\Support\Facades\DB;
+13: use Illuminate\Support\Facades\Hash;
+14: use Livewire\Livewire;
+15: use Symfony\Component\HttpFoundation\Response;
+16: use Tests\Support\PanelUsers;
+17: 
+18: beforeEach(function () {
+19:     PanelUsers::seedRoles();
+20:     Filament::setCurrentPanel(Filament::getPanel('admin'));
+21: });
+22: 
+23: function segRun(string $uri, $user): Response
+24: {
+25:     $request = Request::create($uri);
+26:     $request->setUserResolver(static fn () => $user);
+27: 
+28:     return (new EnforceTwoFactorForPrivilegedRoles)->handle($request, static fn (): Response => new Response('ok'));
+29: }
+30: 
+31: it('el administrador restablece la contraseña de otra persona desde la lista y se desbloquea', function () {
+32:     $admin = PanelUsers::withRole(RoleName::Admin);
+33:     $worker = PanelUsers::withRole(RoleName::Almacenero);
+34:     $worker->forceFill(['failed_attempts' => 4, 'locked_until' => now()->addMinutes(10)])->save();
+35:     $this->actingAs($admin);
+36: 
+37:     Livewire::test(ListUsers::class)
+38:         ->mountTableAction('resetPassword', $worker->id)
+39:         ->set('mountedActions.0.data', ['password' => 'clave-nueva-muy-larga-55', 'password_confirmation' => 'clave-nueva-muy-larga-55'])
+40:         ->callMountedTableAction()
+41:         ->assertHasNoTableActionErrors();
+42: 
+43:     $worker->refresh();
+44:     expect(Hash::check('clave-nueva-muy-larga-55', $worker->password))->toBeTrue();
+45:     expect($worker->locked_until)->toBeNull();
+46:     expect(DB::table('audit_logs')->where('action', 'user.password_reset')->where('entity_id', $worker->id)->exists())->toBeTrue();
+47: });
+48: 
+49: it('la auditoría solo la ve quien tiene el permiso y la lista abre', function () {
+50:     $this->actingAs(PanelUsers::withRole(RoleName::Almacenero));
+51:     expect(AuditResource::canViewAny())->toBeFalse();
+52: 
+53:     $this->actingAs(PanelUsers::withRole(RoleName::Admin));
+54:     expect(AuditResource::canViewAny())->toBeTrue();
+55:     Livewire::test(ListAuditLogs::class)->assertOk();
+56: });
+57: 
+58: it('con la exigencia activa, admin y supervisor sin verificación en dos pasos solo ven su perfil', function () {
+59:     config(['security.require_2fa' => true]);
+60:     $admin = PanelUsers::withRole(RoleName::Admin);
+61:     $supervisor = PanelUsers::withRole(RoleName::Supervisor);
+62: 
+63:     expect(segRun('/admin/products', $admin)->isRedirect())->toBeTrue();
+64:     expect(segRun('/admin/products', $supervisor)->isRedirect())->toBeTrue();
+65:     expect(segRun('/admin/profile', $admin)->getContent())->toBe('ok');
+66:     expect(segRun('/livewire/update', $admin)->getContent())->toBe('ok');
+67:     expect(segRun('/admin/logout', $admin)->getContent())->toBe('ok');
+68: });
+69: 
+70: it('no afecta a otros roles, a quien ya la configuró ni cuando la exigencia está apagada', function () {
+71:     $admin = PanelUsers::withRole(RoleName::Admin);
+72:     $worker = PanelUsers::withRole(RoleName::Almacenero);
+73: 
+74:     config(['security.require_2fa' => false]);
+75:     expect(segRun('/admin/products', $admin)->getContent())->toBe('ok');
+76: 
+77:     config(['security.require_2fa' => true]);
+78:     expect(segRun('/admin/products', $worker)->getContent())->toBe('ok');
+79: 
+80:     $admin->forceFill(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP'])->save();
+81:     expect(segRun('/admin/products', $admin->refresh())->getContent())->toBe('ok');
+82: });
+
+
+FILE tests\Feature\Panel\SupervisorPagesTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Filament\Resources\Counts\CountResource;
+6: use App\Filament\Resources\Counts\Pages\ListCounts;
+7: use App\Filament\Resources\Imports\ImportResource;
+8: use App\Filament\Resources\Imports\Pages\ListImports;
+9: use App\Filament\Resources\Locations\LocationResource;
+10: use App\Filament\Resources\Locations\Pages\ListLocations;
+11: use App\Modules\Iam\Domain\RoleName;
+12: use App\Modules\Inventory\Application\RegisterMovement;
+13: use Filament\Facades\Filament;
+14: use Illuminate\Support\Facades\DB;
+15: use Livewire\Livewire;
+16: use Tests\Support\Fixtures;
+17: use Tests\Support\MovementFactory as M;
+18: use Tests\Support\PanelUsers;
+19: 
+20: beforeEach(function () {
+21:     PanelUsers::seedRoles();
+22:     Filament::setCurrentPanel(Filament::getPanel('admin'));
+23: });
+24: 
+25: function supBodega(): int
+26: {
+27:     return (int) DB::table('warehouses')->where('code', 'BOD')->value('id');
+28: }
+29: 
+30: it('cada rol ve en el menú solo lo que le corresponde (ubicaciones, conteos, ventas)', function () {
+31:     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
+32:     expect(LocationResource::canViewAny())->toBeTrue();
+33:     expect(CountResource::canViewAny())->toBeTrue();
+34:     expect(CountResource::canCreate())->toBeTrue();
+35:     expect(ImportResource::canViewAny())->toBeTrue();
+36: 
+37:     $this->actingAs(PanelUsers::withRole(RoleName::Almacenero));
+38:     expect(LocationResource::canViewAny())->toBeTrue();
+39:     expect(CountResource::canViewAny())->toBeTrue();
+40:     expect(CountResource::canCreate())->toBeFalse(); // contar sí, iniciar/cerrar no
+41:     expect(ImportResource::canViewAny())->toBeFalse();
+42: 
+43:     $this->actingAs(PanelUsers::withRole(RoleName::Lectura));
+44:     expect(LocationResource::canViewAny())->toBeTrue();
+45:     expect(ImportResource::canViewAny())->toBeFalse();
+46: });
+47: 
+48: it('el supervisor genera ubicaciones en lote desde la lista', function () {
+49:     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
+50: 
+51:     Livewire::test(ListLocations::class)
+52:         ->mountAction('generate')
+53:         ->set('mountedActions.0.data', [
+54:             'warehouse_id' => supBodega(), 'zone' => 7, 'aisle_from' => 1, 'aisle_to' => 2, 'rack_from' => 1, 'rack_to' => 2, 'level_from' => 1, 'level_to' => 1,
+55:         ])
+56:         ->callMountedAction()
+57:         ->assertHasNoActionErrors()
+58:         ->assertNotified('Ubicaciones generadas');
+59: 
+60:     expect(DB::table('locations')->where('code', 'like', 'BOD-Z7-%')->count())->toBe(4);
+61:     expect(DB::table('locations')->where('code', 'BOD-Z7-P02-A02-N1')->exists())->toBeTrue();
+62: });
+63: 
+64: it('conteo completo desde las pantallas: iniciar, contar, enviar y cerrar', function () {
+65:     $supervisor = PanelUsers::withRole(RoleName::Supervisor);
+66:     $worker = PanelUsers::withRole(RoleName::Almacenero);
+67:     $product = Fixtures::product();
+68:     $loc = Fixtures::location('BOD', ['zone' => 'ZS1']);
+69:     app(RegisterMovement::class)(M::purchase($product, $loc, 10, '2', $supervisor->id));
+70: 
+71:     $this->actingAs($supervisor);
+72:     Livewire::test(ListCounts::class)->mountAction('start')
+73:         ->set('mountedActions.0.data', ['warehouse_id' => supBodega(), 'scope_type' => 'ZONE', 'scope_value' => 'ZS1'])
+74:         ->callMountedAction()
+75:         ->assertHasNoActionErrors()
+76:         ->assertNotified();
+77:     $count = (int) DB::table('stock_counts')->orderByDesc('id')->value('id');
+78:     expect((bool) DB::table('locations')->where('id', $loc)->value('is_frozen'))->toBeTrue();
+79: 
+80:     $this->actingAs($worker);
+81:     Livewire::test(ListCounts::class)
+82:         ->assertTableActionHidden('close', $count)
+83:         ->mountTableAction('count', $count)
+84:         ->set('mountedActions.0.data', ['product_id' => $product, 'location_id' => $loc, 'quantity' => '10'])
+85:         ->callMountedTableAction()
+86:         ->assertHasNoTableActionErrors()
+87:         ->callTableAction('submit', $count);
+88:     expect(DB::table('stock_counts')->where('id', $count)->value('status'))->toBe('REVIEW');
+89: 
+90:     $this->actingAs($supervisor);
+91:     Livewire::test(ListCounts::class)->callTableAction('close', $count);
+92: 
+93:     expect(DB::table('stock_counts')->where('id', $count)->value('status'))->toBe('CLOSED');
+94:     expect((bool) DB::table('locations')->where('id', $loc)->value('is_frozen'))->toBeFalse();
+95: });
+96: 
+97: it('el supervisor ve la pantalla de ventas del POS con sus dos acciones; el almacenero no entra', function () {
+98:     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
+99:     Livewire::test(ListImports::class)->assertOk()->assertActionVisible('simulate')->assertActionVisible('commit');
+100: 
+101:     $this->actingAs(PanelUsers::withRole(RoleName::Almacenero));
+102:     Livewire::test(ListImports::class)->assertForbidden();
+103: });
+
+
+FILE tests\Feature\Suppliers\SuppliersDatabaseTest.php
+1: <?php
+2: 
+3: declare(strict_types=1);
+4: 
+5: use App\Modules\Suppliers\Application\ChangeSupplierState;
+6: use App\Modules\Suppliers\Application\CreateSupplier;
+7: use App\Modules\Suppliers\Application\LinkProductToSupplier;
+8: use App\Modules\Suppliers\Application\UpdateSupplier;
+9: use App\Modules\Suppliers\Domain\NewSupplier;
+10: use App\Modules\Suppliers\Domain\Ruc;
+11: use App\Modules\Suppliers\Domain\SupplierChanges;
+12: use App\Modules\Suppliers\Domain\SupplierException;
+13: use Illuminate\Support\Facades\DB;
+14: use Tests\Support\Fixtures;
+15: 
+16: it('crea el proveedor, rechaza el RUC repetido y audita', function () {
+17:     $actor = Fixtures::user();
+18:     $create = app(CreateSupplier::class);
+19: 
+20:     $id = $create(new NewSupplier(Ruc::of('20100070970'), 'Supermercados Peruanos SA', 'Ana', '999 888 777', 'ventas@sp.pe', null, 3, $actor));
+21: 
+22:     $row = DB::table('suppliers')->where('id', $id)->first();
+23:     expect(trim((string) $row->ruc))->toBe('20100070970');
+24:     expect((int) $row->lead_time_days)->toBe(3);
+25:     expect(fn () => $create(new NewSupplier(Ruc::of('20100070970'), 'Otro nombre')))->toThrow(SupplierException::class, 'Ya existe');
+26:     expect(DB::table('audit_logs')->where('action', 'supplier.created')->where('entity_id', $id)->count())->toBe(1);
+27: });
+28: 
+29: it('actualiza y desactiva sin borrar el proveedor', function () {
+30:     $actor = Fixtures::user();
+31:     $id = app(CreateSupplier::class)(new NewSupplier(Ruc::of('20100070970'), 'Supermercados Peruanos SA', null, '999 888 777'));
+32: 
+33:     app(UpdateSupplier::class)($id, new SupplierChanges(phone: '999 111 222', actorId: $actor));
+34:     app(ChangeSupplierState::class)->deactivate($id, $actor);
+35: 
+36:     $row = DB::table('suppliers')->where('id', $id)->first();
+37:     expect($row->phone)->toBe('999 111 222');
+38:     expect((bool) $row->is_active)->toBeFalse();
+39:     $audit = DB::table('audit_logs')->where('action', 'supplier.updated')->where('entity_id', $id)->first();
+40:     expect(json_decode((string) $audit->old_values, true))->toBe(['phone' => '999 888 777']);
+41: });
+42: 
+43: it('vincula productos, deja un solo proveedor preferido y conserva el último costo', function () {
+44:     $product = Fixtures::product();
+45:     $create = app(CreateSupplier::class);
+46:     $a = $create(new NewSupplier(Ruc::of('20611519886'), 'Proveedor A SAC'));
+47:     $b = $create(new NewSupplier(Ruc::of('20100070970'), 'Proveedor B SAC'));
+48:     $link = app(LinkProductToSupplier::class);
+49: 
+50:     $link($product, $a, 'A-001', '2.5', true);
+51:     $link($product, $b, null, '2.4', true);
+52:     $link($product, $b, 'B-777', null, true); // actualizar sin costo no borra el último costo
+53: 
+54:     $rows = DB::table('product_suppliers')->where('product_id', $product)->get()->keyBy('supplier_id');
+55:     expect((bool) $rows[$a]->is_preferred)->toBeFalse();
+56:     expect((bool) $rows[$b]->is_preferred)->toBeTrue();
+57:     expect($rows[$b]->supplier_sku)->toBe('B-777');
+58:     expect((string) $rows[$b]->last_cost)->toBe('2.4000');
+59:     expect(DB::table('product_suppliers')->where('product_id', $product)->where('is_preferred', true)->count())->toBe(1);
+60: });
+61: 
+62: it('no vincula con proveedores inactivos ni productos inexistentes', function () {
+63:     $product = Fixtures::product();
+64:     $id = app(CreateSupplier::class)(new NewSupplier(Ruc::of('20100070970'), 'Supermercados Peruanos SA'));
+65:     app(ChangeSupplierState::class)->deactivate($id);
+66:     $link = app(LinkProductToSupplier::class);
+67: 
+68:     expect(fn () => $link($product, $id))->toThrow(SupplierException::class, 'desactivado');
+69: 
+70:     app(ChangeSupplierState::class)->activate($id);
+71:     expect(fn () => $link(99999999, $id))->toThrow(SupplierException::class, 'no existe');
+72: });

@@ -3,6 +3,8 @@ ARG PHP_VERSION=8.4
 
 # ---------- Base: PHP + extensiones + Composer (dev y producción) ----------
 FROM dunglas/frankenphp:1-php${PHP_VERSION} AS base
+# Debian por HTTPS: algunos proxies (p. ej. el de Docker Desktop) responden 403 al apt por HTTP.
+RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources
 RUN install-php-extensions pdo_pgsql pgsql pcntl bcmath intl opcache zip @composer
 ENV COMPOSER_PROCESS_TIMEOUT=900 COMPOSER_ALLOW_SUPERUSER=1
 WORKDIR /app

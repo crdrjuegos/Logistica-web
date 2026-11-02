@@ -1,0 +1,223 @@
+P3 [normal] FACULTAD DE INGENIERÍA
+P4 [normal] ESCUELA PROFESIONAL DE INGENIERÍA DE SISTEMAS
+P6 [normal] TÍTULO DEL PROYECTO
+P8 [normal] Sistema Web de Control de Inventario y Gestión de Almacén aplicando Métricas de Calidad ISO 25010 para la empresa CITY OFERTAS E.I.R.L., Piura - 2026
+P11 [normal] INTEGRANTES:
+P12 [normal] Aquino Salcedo Maria Fernanda
+P13 [normal] Carrasco Chavez Yerry Ericson
+P14 [normal] Cortez Quito Abraham David
+P15 [normal] Zelada Chinga Eliana Jazmin
+P16 [normal] Torres Cavero Luis Augusto
+P17 [normal] Juarez Gabino Sandro David
+P21 [normal]         CURSO       : Calidad de Software
+P23 [normal]         DOCENTE  : Dr. Iván Michell Castillo Jiménez
+P26 [normal] PIURA - PERÚ
+P27 [normal] 2026
+P29 [normal] ÍNDICE
+P34 [Heading 1] CAPÍTULO 1:  INFORMACIÓN GENERAL
+P35 [Heading 2] Razón social
+P36 [normal] CITY OFERTAS IMPORTADORA E.I.R.L.
+P38 [Heading 3] Dirección
+P39 [normal] En el Óvalo Grau (cuadra 5), al costado de Entel y cerca de la zona comercial.
+P41 [Heading 3] RUC 
+P42 [normal] 20611519886
+P44 [Heading 3] Ubicación geográfica
+P45 [normal] Ubicada en la Av. Grau Cuadra 5, en la zona céntrica del Óvalo Grau. Se encuentra al costado de la tienda Tambo y Entel, en una esquina comercial frente a la Galería El Algarrobo.
+P47 [Heading 3] Imagen del frontis
+P50 [Heading 1] CAPÍTULO 2:  ASPECTOS GENERALES
+P51 [Heading 2] 2.1 Definición del Problema
+P52 [Heading 3] 2.1.1   Descripción del Problema
+P53 [normal] La empresa CITY OFERTAS IMPORTADORA E.I.R.L., ubicada en el centro de la ciudad de Piura, es un establecimiento comercial dedicado a la venta e importación al por mayor y menor de una amplia variedad de artículos de bazar, librería, juguetería, menaje y productos del hogar. Su modelo de negocio se caracteriza por manejar un volumen masivo de unidades y miles de referencias de productos (SKUs) con alta rotación diaria, recibiendo un flujo constante de clientes locales y distribuidores regionales.
+P55 [normal] Actualmente, el control y la gestión del inventario dentro de la organización se llevan a cabo mediante procesos semi-manuales y herramientas de hoja de cálculo no integradas. Esta forma de trabajo genera serias deficiencias operativas en la cadena de abastecimiento del local, identificándose los siguientes problemas principales:
+P57 [normal] Descuadres entre el stock físico y el registro digital: Debido a la rapidez con la que se comercializan las mercancías en el piso de venta, las entradas y salidas de almacén no se registran en tiempo real. Esto genera inconsistencias severas entre la cantidad de productos contabilizados en sistema y los productos realmente disponibles en los anaqueles.
+P59 [normal] Falta de trazabilidad y ubicación en almacén: Al no contar con una codificación por zonas, pasillos o anaqueles en la bodega central, el personal de almacenamiento pierde tiempo considerable buscando paquetes específicos para reponer la exhibición, reduciendo la eficiencia operativa de la tienda.
+P61 [normal] Rupturas de stock y pérdida de oportunidades de venta: La falta de alertas automáticas para los niveles de stock mínimo ocasiona que productos con alta demanda se agoten por completo sin que el área de compras lo note a tiempo para solicitar nuevas importaciones o pedidos a proveedores.
+P63 [normal] Ocurrencia de mermas y productos extraviados: El descontrol en el flujo de mercancías entre la bodega y la zona de caja dificulta la detección de pérdidas, daños o extravíos de productos, lo cual impacta directamente en la rentabilidad del negocio.
+P65 [normal] A nivel tecnológico, los intentos previos por sistematizar ciertos registros han fallado debido a la falta de un software robusto que garantice atributos de calidad como fiabilidad, rendimiento en horas punta y usabilidad para el personal de almacén. La caída constante de herramientas informáticas inadecuadas o la presencia de errores en el cálculo de inventarios incrementan la desconfianza del personal hacia las soluciones digitales.
+P67 [normal] Por lo tanto, se evidencia la urgencia de desarrollar e implementar un Sistema Web de Control de Inventario y Gestión de Almacén que no solo automatice estos procesos, sino que sea construido e implementado bajo rigurosos estándares y métricas de Calidad de Software (ISO/IEC 25010). Esto asegurará que el sistema sea mantenible, seguro, rápido y capaz de resolver las deficiencias operativas de CITY OFERTAS IMPORTADORA E.I.R.L. de manera sostenible.
+P69 [Heading 3] 2.1.2     Formulación del problema general
+P70 [normal] ¿De qué manera el desarrollo de un Sistema Web de Control de Inventarios y Almacén aplicando el modelo ISO 25010 optimizará la gestión de mercadería en la empresa CITY OFERTAS IMPORTADORA E.I.R.L.?
+P72 [Heading 3] 2.1.3     Formulación de problemas específicos
+P73 [normal] ¿Cómo estructurar un plan de pruebas unitarias e integración que garantice una cobertura de código adecuada en el registro de productos y movimientos de almacén?  
+P75 [normal]  ¿De qué manera la evaluación de las métricas de mantenibilidad, usabilidad y rendimiento de la ISO 25010 asegura la estabilidad del sistema?
+P77 [Heading 2] 2.2  Definición de los Objetivos
+P78 [Heading 3] 2.2.1   Objetivo General 
+P79 [normal] Desarrollar un Sistema Web de Control de Inventarios evaluado bajo el estándar ISO 25010 para optimizar el control de almacén en CITY OFERTAS IMPORTADORA E.I.R.L.
+P81 [Heading 3] 2.2.2   Objetivos Específicos
+P82 [normal] Implementar la gestión de inventario por categorías y zonas de almacenamiento con alertas de stock crítico.
+P83 [normal] Diseñar e implementar pruebas unitarias y de integración para verificar el correcto funcionamiento del registro de productos y movimientos de almacén.
+P84 [normal] Evaluar características de calidad como mantenibilidad, usabilidad y rendimiento mediante criterios establecidos en el modelo ISO/IEC 25010.
+P86 [Heading 1] CAPÍTULO 3:  METODOLOGÍA DE DESARROLLO  
+P87 [Heading 2]  3.1 Selección de Metodología
+P88 [normal] Para el diseño, desarrollo e implementación del Sistema Web de Control de Inventario y Gestión de Almacén, se ha seleccionado el marco de trabajo ágil Scrum. Esta elección responde a la necesidad de gestionar el proyecto mediante iteraciones adaptativas y ciclos de trabajo acotados denominados Sprints, los cuales facilitan una respuesta eficiente ante los requerimientos cambiantes de la empresa CITY OFERTAS IMPORTADORA E.I.R.L.
+P89 [normal] Scrum se fundamenta en el control empírico de procesos (transparencia, inspección y adaptación), permitiendo dividir la arquitectura del software en módulos funcionales independientes y de alto valor técnico. Esto garantiza la entrega continua de incrementos de software operativos y una evaluación constante de las métricas de calidad.
+P90 [Heading 3]  3.2 Justificación de la Metodología
+P91 [normal] La adopción de Scrum en el presente proyecto de ingeniería se justifica bajo los siguientes criterios:
+P92 [normal] Adaptabilidad operativa: Permite ajustar el comportamiento de los módulos del sistema según la dinámica real del establecimiento comercial en Piura, caracterizado por un alto flujo de ventas y miles de referencias de productos (SKUs).
+P93 [normal] Entregas incrementales de valor: Facilita la liberación por etapas de las funcionalidades más críticas (control de stock, zonas de almacenaje y alertas de reposición) sin tener que esperar a la conclusión total del sistema.
+P94 [normal] Alineación con la norma ISO/IEC 25010: Promueve la ejecución de pruebas funcionales, de rendimiento y usabilidad en cada iteración, mitigando fallos críticos tempranamente y reduciendo la acumulación de deuda técnica.
+P95 [normal] Distribución estructurada de responsabilidades: Asigna tareas claras y medibles a cada integrante del equipo, optimizando el tiempo de desarrollo y la revisión periódica del progreso.
+P100 [Heading 3]  3.3 Descripción de la Metodología
+P101 [normal] El desarrollo del proyecto se organiza en Sprints de dos (2) semanas de duración. El flujo de trabajo aborda de manera sistemática los siguientes componentes y módulos funcionales: 
+P102 [Heading 3] 3.3.1 Artefactos y Eventos Scrum
+P103 [normal] Product Backlog: Registro unificado y priorizado que contiene todas las historias de usuario, requerimientos funcionales y criterios de calidad ISO/IEC 25010 del sistema.
+P104 [normal] Sprint Planning: Reunión al inicio de cada iteración para definir los objetivos del Sprint, estimar el esfuerzo del equipo y consolidar el Sprint Backlog.
+P105 [normal] Daily Scrum: Sesiones de sincronización diaria de 15 minutos para inspeccionar el progreso, coordinar la integración de módulos y remover impedimentos técnicos.
+P106 [normal] Sprint Review y Retrospectiva: Demostración del software funcional al término de cada ciclo e inspección interna para implementar mejoras continuas en los procesos de desarrollo y QA.
+P108 [Heading 3] 3.3.2 Alcance Funcional por Sprints
+P109 [normal] Sprint 1 - Gestión de Catálogo e Inventarios: Desarrollo del registro, edición, baja y clasificación parametrizada de productos, incluyendo la administración de categorías y códigos SKU.
+P110 [normal] Sprint 2 - Control Físico y Zonas de Almacén: Implementación del mapa analítico del almacén para la asignación de ubicaciones por pasillos, zonas y anaqueles.
+P111 [normal] Sprint 3 - Movimientos de Inventario en Tiempo Real: Módulo para la automatización de las entradas, salidas, transferencias y ajustes de stock entre bodega y punto de venta.
+P112 [normal] Sprint 4 - Automatización, Alertas e Información de Gestión: Motor de notificaciones automáticas para niveles de stock crítico (mínimos) y generación de reportes e indicadores estratégicos para la toma de decisiones.
+P113 [Heading 3]  3.4 Roles y Responsabilidades según la Metodología
+P114 [normal] En concordancia con los integrantes del proyecto, la asignación formal de roles dentro del marco Scrum se define de la siguiente manera:
+P115 [normal] Product Owner (PO): Aquino Salcedo Maria Fernanda
+P116 [normal] Responsabilidad: Representa los intereses operativos del negocio (CITY OFERTAS E.I.R.L.), define y prioriza los ítems del Product Backlog, y válida formalmente los incrementos de software presentados al final de cada Sprint.
+P117 [normal] Scrum Master (SM): Carrasco Chavez Yerry Ericson
+P118 [normal] Responsabilidad: Velar por la correcta aplicación del marco Scrum, remover bloqueos operativos y técnicos del equipo, y coordinar la ejecución continua del Plan de Calidad.
+P119 [normal] Equipo de Desarrollo y Aseguramiento de Calidad (Development & QA Team):
+P120 [normal] Cortez Quito Abraham David (Lead Developer / Arquitectura Backend & API)
+P121 [normal] Zelada Chinga Eliana Jazmin (Developer / Interfaz de Usuario & Frontend)
+P122 [normal] Torres Cavero Luis Augusto (DBA / Modelamiento y Gestión de Base de Datos)
+P123 [normal] Juarez Gabino Sandro David (QA Engineer / Pruebas Unitarias y Métricas ISO 25010)
+P124 [normal] Responsabilidad conjunta: Diseñar, codificar, probar y documentar los incrementos funcionales, garantizando el cumplimiento de los criterios de calidad acordados.
+P125 [Heading 1]   CAPÍTULO 4: PLAN DE CALIDAD
+P126 [Heading 2] 4.1 Estrategia de Calidad
+P127 [Heading 3] 4.1.1 Modelos de Calidad 
+P128 [normal] El desarrollo del proyecto se rige bajo la norma ISO/IEC 25010 (SQuaRE), evaluando las siguientes características centrales del producto:
+P129 [normal] Adecuación Funcional: Verificación de que las funciones de registro, alertas y movimientos respondan con precisión a las necesidades operativas.
+P130 [normal] Eficiencia de Rendimiento: Garantía de tiempos de respuesta rápidos y estabilidad del sistema web durante horas pico de tráfico.
+P131 [normal] Usabilidad: Diseño de interfaces intuitivas para facilitar la rápida adopción por parte del personal de almacén.
+P132 [normal] Fiabilidad: Tolerancia a fallos e integridad de los datos de inventario en todo momento.
+P133 [normal] Mantenibilidad: Estructuración de código modular y bien documentado para facilitar futuras actualizaciones
+P134 [Heading 3] 4.1.2 Objetivos de Calidad
+P135 [normal] Obtener una cobertura de código ≥ 80% mediante la ejecución de pruebas unitarias y de integración.
+P136 [normal] Asegurar un tiempo de respuesta medio en transacciones ≤ 1.5 segundos.
+P137 [normal] Alcanzar una tasa de éxito en el plan de pruebas ≥ 95% antes del despliegue en producción.
+P138 [normal] Lograr una satisfacción de usuario ≥ 85% evaluada mediante la escala de usabilidad SUS.
+P140 [Heading 3] 4.1.3 Aseguramiento de la Calidad (QA)
+P141 [normal] El proceso de QA contempla la aplicación de buenas prácticas de codificación limpia (Clean Code), la integración continua de componentes y revisiones de código cruzadas (Peer Reviews) para evitar de forma preventiva la introducción de defectos 
+P142 [Heading 3] 4.1.4 Implementación de QA en el ciclo de vida del desarrollo 
+P143 [normal] Requisitos: Validación de criterios de aceptación por cada historia de usuario.
+P144 [normal] Diseño: Verificación del esquema relacional de datos y diseño UI/UX.
+P145 [normal] Codificación: Análisis estático de código y ejecución automatizada de unit tests.
+P146 [normal] Despliegue: Pruebas integrales, evaluaciones de carga y validación final de usuario
+P148 [Heading 2] 4.2 Herramientas y Técnicas
+P149 [Heading 3] 4.2.1 Herramientas de Desarrollo
+P150 [normal] Entorno de Desarrollo Integrado: Visual Studio Code.
+P151 [normal] Control de versiones: Git y repositorio remoto en GitHub.
+P152 [normal] Base de Datos: PostgreSQL / MySQL.
+P153 [normal] Entorno de Ejecución: Node.js / React (o stack equivalente seleccionado por el equipo).
+P158 [Heading 3] 4.2.2 Herramientas de Prueba
+P159 [normal] Pruebas Unitarias e Integración: Jest / Mocha / PyTest.
+P160 [normal] Pruebas de API REST: Postman.
+P161 [normal] Pruebas de Rendimiento: Apache JMeter.
+P162 [normal] Análisis Estático: SonarQube
+P163 [Heading 3] 4.2.3 Herramientas de Gestión
+P164 [normal] Gestión de Sprints: Trello / Jira Software.
+P165 [normal] Documentación: Google Docs / Workspace.
+P166 [Heading 3] 4.2.4 Técnicas de Calidad	
+P167 [normal] Pruebas de Caja Negra: Comprobación funcional del comportamiento de las vistas e interfaces sin evaluar la lógica interna.
+P168 [normal] Pruebas de Caja Blanca: Evaluación de cobertura de ramas, caminos y funciones del código backend.
+P169 [normal] Code Review: Revisión técnica obligatoria por al menos un desarrollador antes de autorizar un Pull Request a la rama principal.
+P170 [Heading 2] 4.3 Recursos necesarios
+P171 [normal] Humanos: Integrantes del equipo distribuidos en los roles de Product Owner, Scrum Master, Desarrolladores y Especialista en QA.
+P172 [normal] Hardware: Equipos de cómputo con procesador multinúcleo y mínimo 16 GB de memoria RAM; servidor local/nube para pruebas.
+P173 [normal] Software: Licencias académicas y entornos de desarrollo open-source.
+P174 [Heading 2] 4.4 Riesgos y mitigaciones
+P178 [Heading 2] 4.5 Criterios de éxito
+P179 [normal] Despliegue Funcional: Operatividad validada al 100% en los módulos de inventarios, zonas de almacenaje, alertas de stock e informes de gestión.
+P180 [normal] Conformidad ISO 25010: Cumplimiento de las métricas de rendimiento, usabilidad y mantenibilidad definidas.
+P181 [normal] Exactitud de Inventario: Eliminación de los descuadres entre el inventario físico y los datos del sistema web durante la fase de prueba en tienda.
+P182 [normal] Entrega a Tiempo: Cumplimiento de los hitos del cronograma dentro del ciclo lectivo 2026-II.
+P184 [Heading 2] 4.6 Plan de comunicación
+P185 [normal] Para asegurar un flujo de información eficiente, transparente y oportuno entre todos los integrantes del equipo y los roles del proyecto, se establece la siguiente matriz del plan de comunicación:
+P188 [Heading 2] 4.7 Cronograma del proyecto  
+P191 [Heading 1] CAPÍTULO 5: REQUISITOS Y ARQUITECTURA DEL SISTEMA
+P192 [normal] 5.1 Especificación de Requisitos
+P193 [normal] 5.1.1 Descripción del Sistema
+P194 [normal] 5.1.1.1 Propósito del sistema
+P195 [normal] 5.1.1.2 Alcance del Sistema
+P196 [normal] 5.1.2 Requerimientos Funcionales
+P197 [normal] 5.1.3 Requerimientos No Funcionales
+P198 [normal] 5.2 Arquitectura del Sistema
+P199 [normal] 5.2.1 Descripción
+P200 [normal] 5.2.2 Justificación
+P201 [normal] 5.2.3 Diagrama UML
+P202 [normal] 5.2.3.1 Arquitectura Lógica 
+P203 [normal] 5.2.3.1.1 Diagrama de componentes
+P204 [normal] 5.2.3.1.2 Diagrama de clases
+P205 [normal] 5.2.3.2 Arquitectura Física 
+P206 [normal] 5.2.3.2.1 Diagrama de Despliegue 
+P208 [normal] CAPÍTULO 6: ARTEFACTOS DE PRUEBA
+P209 [normal] 6.1 Casos de Prueba
+P210 [normal] 6.1.1 Pruebas Unitarias 
+P211 [normal] 6.1.2 Pruebas de Integración
+P212 [normal] 6.1.3 Pruebas de Sistemas
+P213 [normal] 6.1.4 Pruebas de Aceptación 
+P214 [normal] 6.2 Resultados de Pruebas
+P215 [normal] 6.2.1 Cobertura de código
+P216 [normal]   6.2.1.1 Cobertura de Declaraciones
+P217 [normal]   6.2.1.2 Cobertura de Ramas 
+P218 [normal]   6.2.1.3 Cobertura de Caminos
+P219 [normal]  6.2.2 Tasa de éxito en pruebas
+P220 [normal] 6.3 Métricas de Calidad
+P221 [normal] 6.3.1 Métricas estáticas
+P222 [normal] 6.3.2 Métricas Dinámicas 
+P223 [normal] 6.3.3 Análisis de resultados y conclusiones.               
+P224 [Heading 2] 6.4 Aseguramiento de la Calidad (QA) en el Proyecto
+P225 [normal]      6.4.1 Aplicación de la ISO 25010 en el Aseguramiento de la Calidad
+P226 [normal]      6.4.2 Evaluación de Atributos de Calidad del Sistema
+P227 [normal] 6.4.2.1 Funcionalidad
+6.4.2.2 Rendimiento
+6.4.2.3 Usabilidad
+6.4.2.4 Fiabilidad
+6.4.2.5 Mantenibilidad
+6.4.2.6 Portabilidad
+
+P228 [normal] CAPÍTULO 7 :  MANUALES Y CÓDIGO FUENTE
+P229 [normal] Manual de Usuario
+P230 [normal] .1 Guía de instalación
+P231 [Heading 3] 7.1.2 Guía de uso
+P232 [normal] 7.1.3 Resolución de problemas Comunes 
+P233 [normal] 7.2 Código  Fuente
+P234 [normal] 7.2.1 Repositorio de Proyecto
+P235 [normal] Estructura del Proyecto
+P236 [normal] 7.2.3 Comentarios y Documentación del Proyecto 
+P237 [Heading 1] CONCLUSIONES Y RECOMENDACIONES
+P238 [normal] BIBLIOGRAFÍA
+P239 [normal] ANEXOS 
+
+TABLE 0
+Riesgo | Impacto | Probabilidad | Mitigación
+Cambios en los requerimientos del sistema | Alto | Media | Validar los requerimientos con el equipo y registrar cualquier cambio antes de su implementación.
+Pérdida del código fuente o información | Alto | Baja | Realizar copias de seguridad y utilizar un repositorio para almacenar las versiones del proyecto.
+Errores en el registro de productos e inventario | Alto | Media | Implementar validaciones y realizar pruebas durante el desarrollo del sistema.
+Retraso en las actividades del proyecto | Medio | Media | Establecer responsables, fechas de entrega y realizar seguimiento periódico.
+Errores de programación | Alto | Media | Realizar revisiones de código y pruebas unitarias para detectar errores oportunamente.
+Problemas de rendimiento del sistema | Alto | Media | Realizar pruebas de rendimiento y optimizar las consultas y procesos del sistema.
+Dificultad de uso por parte del personal | Medio | Media | Realizar pruebas de usabilidad y considerar las observaciones de los usuarios.
+
+TABLE 1
+Actividad de comunicación | Participantes | Frecuencia | Medio
+Reunión de planificación | Todo el equipo | Semanal | Zoom / presencial
+Seguimiento de actividades | Equipo de desarrollo | Semanal | WhatsApp / Zoom
+Revisión del avance | Todo el equipo | Al finalizar cada sprint | Zoom / presencial
+Reporte de errores | Equipo de desarrollo y calidad | Cuando se detecte un error | Documento / GitHub
+Revisión del proyecto | Todo el equipo | Por cada sprint | Reunión virtual
+Entrega de documentación | Integrantes responsables | Según cronograma | Word / Google Drive
+
+TABLE 2
+Actividades | Semana 1 | Semana 2 | Semana 3 | Semana 4 | Semana 5 | Semana 6
+Levantamiento de información | X | X |  |  |  | 
+Análisis de requerimientos | X | X |  |  |  | 
+Diseño del sistema |  | X | X |  |  | 
+Diseño de la base de datos |  | X | X |  |  | 
+Desarrollo del sistema |  |  | X | X |  | 
+Implementación de módulos |  |  | X | X | X | 
+Pruebas unitarias |  |  |  | X | X | 
+Pruebas de integración |  |  |  |  | X | 
+Evaluación de calidad ISO 25010 |  |  |  |  | X | X
+Corrección de errores |  |  |  |  | X | X
+Elaboración de documentación |  |  | X | X | X | X
+Presentación final del proyecto |  |  |  |  |  | X
