@@ -58,7 +58,7 @@ use Tests\Support\Fixtures;
 use Tests\Support\MovementFactory as M;
 use Tests\Support\PanelUsers;
 
-beforeEach(fn() => PanelUsers::seedRoles());
+beforeEach(fn () => PanelUsers::seedRoles());
 
 function coreUser(string $username, string $email, string $password = 'caballo-azul-lluvia-77', RoleName $role = RoleName::Almacenero): int
 {
@@ -68,7 +68,7 @@ function coreUser(string $username, string $email, string $password = 'caballo-a
 function coreProduct(array $barcodes = [], ?int $actor = null): int
 {
     return app(CreateProduct::class)(new NewProduct(
-        'Producto ' . Str::random(6),
+        'Producto '.Str::random(6),
         (int) DB::table('categories')->where('code', 'LIB')->value('id'),
         (int) DB::table('units')->where('code', 'UND')->value('id'),
         $actor,
@@ -102,15 +102,15 @@ it('CA-001-1 usuario ANA, correo ANA@cityofertas.test, clave caballo-azul-lluvia
 it('CA-001-2 si ya existe ana, el usuario ANA o el correo repetido con mayúsculas se rechazan', function () {
     coreUser('ana', 'ana@cityofertas.test');
 
-    expect(fn() => coreUser('ANA', 'otra@cityofertas.test'))->toThrow(IamException::class, 'ya existe');
-    expect(fn() => coreUser('maria', 'ANA@CityOfertas.test'))->toThrow(IamException::class, 'ya está registrado');
+    expect(fn () => coreUser('ANA', 'otra@cityofertas.test'))->toThrow(IamException::class, 'ya existe');
+    expect(fn () => coreUser('maria', 'ANA@CityOfertas.test'))->toThrow(IamException::class, 'ya está registrado');
     expect(DB::table('users')->count())->toBe(1);
 });
 
 it('CA-001-3 las claves Abcdef!2345, 123456789012 y ana-clave-larga-2026 se rechazan indicando la regla', function () {
-    expect(fn() => coreUser('ana', 'ana@cityofertas.test', 'Abcdef!2345'))->toThrow(IamException::class, 'al menos 12');
-    expect(fn() => coreUser('ana', 'ana@cityofertas.test', '123456789012'))->toThrow(IamException::class, 'demasiado común');
-    expect(fn() => coreUser('ana', 'ana@cityofertas.test', 'ana-clave-larga-2026'))->toThrow(IamException::class, 'nombre de usuario');
+    expect(fn () => coreUser('ana', 'ana@cityofertas.test', 'Abcdef!2345'))->toThrow(IamException::class, 'al menos 12');
+    expect(fn () => coreUser('ana', 'ana@cityofertas.test', '123456789012'))->toThrow(IamException::class, 'demasiado común');
+    expect(fn () => coreUser('ana', 'ana@cityofertas.test', 'ana-clave-larga-2026'))->toThrow(IamException::class, 'nombre de usuario');
     expect(DB::table('users')->count())->toBe(0);
 });
 
@@ -156,13 +156,13 @@ it('CA-009-1 el EAN13 4006381333931 queda registrado como código del producto',
 });
 
 it('CA-009-2 el EAN13 4006381333932 se rechaza por dígito verificador incorrecto', function () {
-    expect(fn() => Barcode::of('4006381333932', Symbology::Ean13))->toThrow(CatalogException::class, 'dígito verificador');
+    expect(fn () => Barcode::of('4006381333932', Symbology::Ean13))->toThrow(CatalogException::class, 'dígito verificador');
 });
 
 it('CA-009-3 con 4006381333931 en el producto 1, el alta del producto 2 con ese código se rechaza sin producto a medias', function () {
     coreProduct([new BarcodeInput(Barcode::of('4006381333931', Symbology::Ean13))]);
 
-    expect(fn() => coreProduct([new BarcodeInput(Barcode::of('4006381333931', Symbology::Ean13))]))->toThrow(CatalogException::class, 'ya pertenece');
+    expect(fn () => coreProduct([new BarcodeInput(Barcode::of('4006381333931', Symbology::Ean13))]))->toThrow(CatalogException::class, 'ya pertenece');
     expect(DB::table('products')->count())->toBe(1);
 });
 
@@ -170,7 +170,7 @@ it('CA-009-3 con 4006381333931 en el producto 1, el alta del producto 2 con ese 
 
 it('CA-010-2 los factores 0, -1 y 1.0001 se rechazan', function () {
     foreach (['0', '-1', '1.0001'] as $factor) {
-        expect(fn() => Factor::of($factor))->toThrow(CatalogException::class, 'Factor de presentación inválido');
+        expect(fn () => Factor::of($factor))->toThrow(CatalogException::class, 'Factor de presentación inválido');
     }
 });
 
@@ -181,7 +181,7 @@ it('CA-012-1 producto 1 con stock 1.000 no se da de baja e indica que todavía h
     $id = coreProduct();
     app(RegisterMovement::class)(M::purchase($id, Fixtures::location('BOD'), 1, '1', $actor));
 
-    expect(fn() => app(DeactivateProduct::class)($id, $actor))->toThrow(CatalogException::class, 'stock');
+    expect(fn () => app(DeactivateProduct::class)($id, $actor))->toThrow(CatalogException::class, 'stock');
     expect(DB::table('products')->where('id', $id)->value('status'))->toBe('ACTIVE');
 });
 
@@ -211,7 +211,7 @@ it('CA-012-3 dar de baja dos veces no repite el cambio ni duplica la auditoría'
 // HU-016 Política de stock
 
 it('CA-016-2 mínimo 20 y máximo 10 se rechazan con mensaje claro', function () {
-    expect(fn() => new StockPolicy(1, 20, 10))->toThrow(CatalogException::class, 'no puede ser menor que el mínimo');
+    expect(fn () => new StockPolicy(1, 20, 10))->toThrow(CatalogException::class, 'no puede ser menor que el mínimo');
 });
 
 // HU-017 a HU-021 Ledger
@@ -248,7 +248,7 @@ it('CA-018-1 con saldo 10, una salida de 4 deja 6', function () {
 
 it('CA-018-2 con saldo 3, una salida de 5 se rechaza sin rastro en el historial', function () {
     [$actor, $p, $loc] = coreStock('3');
-    expect(fn() => app(RegisterMovement::class)(M::sale($p, $loc, 5, $actor)))->toThrow(InventoryException::class, 'Stock insuficiente');
+    expect(fn () => app(RegisterMovement::class)(M::sale($p, $loc, 5, $actor)))->toThrow(InventoryException::class, 'Stock insuficiente');
     expect(Fixtures::balance($p, $loc))->toBe('3.000');
     expect(DB::table('stock_movements')->where('product_id', $p)->where('type', 'SALIDA_VENTA')->count())->toBe(0);
 });
@@ -278,7 +278,7 @@ it('CA-019-2 repetir clave, UUID y carga útil devuelve el resultado anterior si
 it('CA-019-3 la misma clave con otro UUID y cantidad 99 se rechaza por conflicto de idempotencia', function () {
     [$actor, $p, $loc] = coreStock('0');
     app(RegisterMovement::class)(M::purchase($p, $loc, 10, '2', $actor, key: 'ca-019-3-clave'));
-    expect(fn() => app(RegisterMovement::class)(M::purchase($p, $loc, 99, '2', $actor, key: 'ca-019-3-clave')))
+    expect(fn () => app(RegisterMovement::class)(M::purchase($p, $loc, 99, '2', $actor, key: 'ca-019-3-clave')))
         ->toThrow(InventoryException::class, 'ya se usó');
     expect(Fixtures::balance($p, $loc))->toBe('10.000');
 });
@@ -372,7 +372,7 @@ it('CA-021-2 si falla el incremento del destino, se revierten origen, destino y 
     });
     app()->forgetInstance(RegisterMovement::class);
 
-    expect(fn() => app(RegisterMovement::class)(M::transfer($p, $bod, $pis, 5, $actor)))->toThrow(RuntimeException::class, 'fallo simulado');
+    expect(fn () => app(RegisterMovement::class)(M::transfer($p, $bod, $pis, 5, $actor)))->toThrow(RuntimeException::class, 'fallo simulado');
 
     expect([Fixtures::balance($p, $bod), Fixtures::balance($p, $pis)])->toBe(['20.000', '0']);
     expect(DB::table('stock_movements')->count())->toBe($before);
@@ -382,7 +382,7 @@ it('CA-021-3 una entrada ordinaria de 1 unidad a un destino congelado se rechaza
     $actor = Fixtures::user();
     $p = Fixtures::product();
     $frozen = Fixtures::location('BOD', ['is_frozen' => true]);
-    expect(fn() => app(RegisterMovement::class)(M::purchase($p, $frozen, 1, '1', $actor)))->toThrow(InventoryException::class, 'congelada');
+    expect(fn () => app(RegisterMovement::class)(M::purchase($p, $frozen, 1, '1', $actor)))->toThrow(InventoryException::class, 'congelada');
     app(RegisterMovement::class)(M::purchase($p, $frozen, 1, '1', $actor, sourceType: 'COUNT'));
     expect(Fixtures::balance($p, $frozen))->toBe('1.000');
 });
@@ -397,7 +397,7 @@ function coreReceipt(int $actor, array $lines): array
         $supplier,
         (int) DB::table('warehouses')->where('code', 'BOD')->value('id'),
         DocumentType::Invoice,
-        'F001-' . random_int(100, 999),
+        'F001-'.random_int(100, 999),
         now('America/Lima')->format('Y-m-d'),
         $actor,
         $lines
@@ -415,7 +415,7 @@ it('CA-025-1 un borrador de tres líneas 10, 4 y 2 confirmado por el actor 9 reg
     ]);
 
     expect(app(ConfirmReceipt::class)($draft['id'], 9))->toBe(['movements' => 3, 'discrepancies' => 0]);
-    expect(array_map(static fn(int $id): string => Fixtures::balance($id, $loc), $p))->toBe(['10.000', '4.000', '2.000']);
+    expect(array_map(static fn (int $id): string => Fixtures::balance($id, $loc), $p))->toBe(['10.000', '4.000', '2.000']);
     expect(DB::table('stock_movements')->where('source_type', 'RECEIPT')->where('source_id', $draft['id'])->where('user_id', 9)->count())->toBe(3);
 });
 
@@ -429,7 +429,7 @@ it('CA-025-2 si el registro rechaza el segundo producto, no entra ninguna línea
     ]);
     DB::table('products')->where('id', $b)->update(['deleted_at' => now()]); // el ledger lo rechazará
 
-    expect(fn() => app(ConfirmReceipt::class)($draft['id'], $actor))->toThrow(OperationsException::class);
+    expect(fn () => app(ConfirmReceipt::class)($draft['id'], $actor))->toThrow(OperationsException::class);
 
     expect([Fixtures::balance($a, $loc), Fixtures::balance($b, $loc)])->toBe(['0', '0']);
     expect(DB::table('purchase_receipts')->where('id', $draft['id'])->value('status'))->toBe('DRAFT');
@@ -488,7 +488,7 @@ it('CA-030-2 el solicitante 7 no puede aprobar su propia merma (separación de f
     PanelUsers::withRole(RoleName::Supervisor, ['id' => 7]);
     [$id, $p, $loc] = coreWaste(7);
 
-    expect(fn() => app(ApproveAdjustment::class)($id, 7))->toThrow(OperationsException::class, 'otra persona');
+    expect(fn () => app(ApproveAdjustment::class)($id, 7))->toThrow(OperationsException::class, 'otra persona');
     expect(Fixtures::balance($p, $loc))->toBe('10.000');
 });
 
@@ -497,7 +497,7 @@ it('CA-030-3 rechazar una solicitud pendiente sin explicación se exige y no cam
     PanelUsers::withRole(RoleName::Supervisor, ['id' => 9]);
     [$id, $p, $loc] = coreWaste(7);
 
-    expect(fn() => app(RejectAdjustment::class)($id, 9, ''))->toThrow(OperationsException::class, 'Explique');
+    expect(fn () => app(RejectAdjustment::class)($id, 9, ''))->toThrow(OperationsException::class, 'Explique');
     expect(DB::table('stock_adjustment_requests')->where('id', $id)->value('status'))->toBe('PENDING');
     expect(Fixtures::balance($p, $loc))->toBe('10.000');
 });
@@ -538,7 +538,7 @@ it('CA-035-1 esperados 10, 4, 2 y contados 10, 3, 2 con reconteo: cierre por 9 a
 it('CA-035-2 si cierra el contador 8 se rechaza y se pide que cierre otra persona', function () {
     [$countId] = coreCount();
 
-    expect(fn() => app(CloseCount::class)($countId, 8))->toThrow(OperationsException::class, 'otra persona');
+    expect(fn () => app(CloseCount::class)($countId, 8))->toThrow(OperationsException::class, 'otra persona');
     expect(DB::table('stock_counts')->where('id', $countId)->value('status'))->toBe('REVIEW');
 });
 
@@ -546,7 +546,7 @@ it('CA-035-3 si el ledger rechaza un ajuste, no se aplica ninguno y el conteo si
     [$countId, $loc, $p] = coreCount();
     DB::table('products')->where('id', $p[1])->update(['deleted_at' => now()]); // el ledger rechaza ese producto
 
-    expect(fn() => app(CloseCount::class)($countId, 9))->toThrow(OperationsException::class);
+    expect(fn () => app(CloseCount::class)($countId, 9))->toThrow(OperationsException::class);
 
     expect(DB::table('stock_counts')->where('id', $countId)->value('status'))->toBe('REVIEW');
     expect((bool) DB::table('locations')->where('id', $loc)->value('is_frozen'))->toBeTrue();
@@ -564,13 +564,13 @@ it('CA-042-1 RUC 20611519886 y razón social Proveedor de prueba crean un provee
 
 it('CA-042-2 los RUC 20611519887, 2061151988, 30611519886 y 2061151988A se rechazan', function () {
     foreach (['20611519887', '2061151988', '30611519886', '2061151988A'] as $ruc) {
-        expect(fn() => Ruc::of($ruc))->toThrow(SupplierException::class, 'RUC');
+        expect(fn () => Ruc::of($ruc))->toThrow(SupplierException::class, 'RUC');
     }
 });
 
 it('CA-042-3 un segundo proveedor con el RUC 20611519886 se rechaza por duplicado', function () {
     app(CreateSupplier::class)(new NewSupplier(Ruc::of('20611519886'), 'Proveedor de prueba'));
 
-    expect(fn() => app(CreateSupplier::class)(new NewSupplier(Ruc::of('20611519886'), 'Otro proveedor')))->toThrow(SupplierException::class);
+    expect(fn () => app(CreateSupplier::class)(new NewSupplier(Ruc::of('20611519886'), 'Otro proveedor')))->toThrow(SupplierException::class);
     expect(DB::table('suppliers')->count())->toBe(1);
 });

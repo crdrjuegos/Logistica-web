@@ -98,7 +98,7 @@ try {
             }
         }
 
-return 'Acción oculta al usuario sin permiso';
+        return 'Acción oculta al usuario sin permiso';
     });
 } finally {
     DB::rollBack();
