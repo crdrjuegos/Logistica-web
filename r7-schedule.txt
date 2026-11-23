@@ -1,0 +1,8 @@
+ Container city-ofertas-wms-db-1 Running 
+ Container city-ofertas-wms-db-1 Waiting 
+ Container city-ofertas-wms-db-1 Healthy 
+ Container city-ofertas-wms-tools-run-01704c6e23de Creating 
+ Container city-ofertas-wms-tools-run-01704c6e23de Created 
+
+  0 7 * * *  php artisan wms:reconcile .................. Next Due: en 2 horas
+

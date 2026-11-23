@@ -1,0 +1,6 @@
+ Container city-ofertas-wms-db-1 Running 
+ Container city-ofertas-wms-db-1 Waiting 
+ Container city-ofertas-wms-db-1 Healthy 
+ Container city-ofertas-wms-tools-run-e320b177617e Creating 
+ Container city-ofertas-wms-tools-run-e320b177617e Created 
+Reconciliación de las 22/11/2026 23:13: sin diferencias entre el ledger y los saldos.
