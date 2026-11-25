@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Replenishment\Pages;
 
 use App\Filament\Resources\Replenishment\ReplenishmentResource;
 use App\Filament\Support\CsvExport;
+use App\Filament\Support\ReportExport;
 use App\Models\ReplenishmentSuggestion;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
@@ -23,18 +24,23 @@ class ListReplenishment extends ListRecords
                 ->visible(static fn (): bool => CsvExport::allowed())
                 ->authorize(static fn (): bool => CsvExport::allowed())
                 ->action(fn (): StreamedResponse => $this->exportResponse()),
+            Action::make('exportPdf')->label('Descargar pedido sugerido (PDF)')->icon('heroicon-o-document-arrow-down')
+                ->visible(static fn (): bool => CsvExport::allowed())
+                ->authorize(static fn (): bool => CsvExport::allowed())
+                ->action(fn (): StreamedResponse => $this->exportResponse('pdf')),
         ];
     }
 
     /** Pedido sugerido por proveedor con los mismos filtros que la tabla (solo lo que hay que pedir). */
-    public function exportResponse(): StreamedResponse
+    public function exportResponse(string $format = 'csv'): StreamedResponse
     {
         CsvExport::authorize();
 
         /** @var Builder<ReplenishmentSuggestion> $query */
         $query = $this->getFilteredTableQuery() ?? ReplenishmentSuggestion::query();
 
-        return CsvExport::download(
+        return ReportExport::download(
+            $format,
             'pedido-sugerido',
             ['Proveedor', 'SKU', 'Producto', 'Almacén', 'Stock', 'Mínimo', 'Máximo', 'Pedir', 'Plazo (días)'],
             $query->where('suggested_qty', '>', 0)->reorder()

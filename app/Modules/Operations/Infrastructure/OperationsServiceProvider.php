@@ -10,6 +10,7 @@ use App\Modules\Operations\Domain\CountRepository;
 use App\Modules\Operations\Domain\CountScopeResolver;
 use App\Modules\Operations\Domain\DocumentNumbers;
 use App\Modules\Operations\Domain\ImportJobs;
+use App\Modules\Operations\Domain\OpeningBalanceLookup;
 use App\Modules\Operations\Domain\OperationsLookup;
 use App\Modules\Operations\Domain\ReceiptRepository;
 use App\Modules\Operations\Domain\SalesTargets;
@@ -32,5 +33,6 @@ final class OperationsServiceProvider extends ServiceProvider
         $this->app->bind(CountLocations::class, LocationsCountLocations::class);
         $this->app->bind(SalesTargets::class, DatabaseSalesTargets::class);
         $this->app->bind(ImportJobs::class, DatabaseImportJobs::class);
+        $this->app->bind(OpeningBalanceLookup::class, DatabaseOpeningBalanceLookup::class);
     }
 }

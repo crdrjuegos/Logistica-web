@@ -498,7 +498,7 @@ it('CA-051-2 el rol lectura con reports.view ve los reportes pero no puede desca
     }
 });
 
-it('CA-051-3 el CSV respeta el filtro BOD y no se anuncia exportación PDF', function () {
+it('CA-051-3 el CSV respeta el filtro BOD y el PDF, ya implementado, usa el mismo filtro', function () {
     $this->actingAs(PanelUsers::withRole(RoleName::Supervisor));
     $actor = Fixtures::user();
     $product = Fixtures::product();
@@ -509,6 +509,9 @@ it('CA-051-3 el CSV respeta el filtro BOD y no se anuncia exportación PDF', fun
     $rows = scCsvRows(scDownload($component->instance()->exportResponse()));
 
     expect(array_unique(array_column(array_slice($rows, 1), 3)))->toBe(['Bodega central']);
-    $component->assertDontSee('PDF');
+    // El criterio pedía no anunciar el PDF mientras no estuviera implementado; ahora existe y respeta el mismo filtro.
+    $component->assertActionVisible('exportPdf');
+    $pdf = scDownload($component->instance()->exportResponse('pdf'));
+    expect($pdf)->toContain('Bodega central')->not->toContain('Piso de venta');
     expect(ValuedStockResource::canViewAny())->toBeTrue();
 });

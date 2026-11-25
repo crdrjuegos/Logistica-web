@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Reports\ValuedStock\Pages;
 
 use App\Filament\Resources\Reports\ValuedStock\ValuedStockResource;
 use App\Filament\Support\CsvExport;
+use App\Filament\Support\ReportExport;
 use App\Models\ValuedStockRow;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
@@ -23,17 +24,22 @@ class ListValuedStock extends ListRecords
                 ->visible(static fn (): bool => CsvExport::allowed())
                 ->authorize(static fn (): bool => CsvExport::allowed())
                 ->action(fn (): StreamedResponse => $this->exportResponse()),
+            Action::make('exportPdf')->label('Descargar PDF (con los filtros aplicados)')->icon('heroicon-o-document-arrow-down')
+                ->visible(static fn (): bool => CsvExport::allowed())
+                ->authorize(static fn (): bool => CsvExport::allowed())
+                ->action(fn (): StreamedResponse => $this->exportResponse('pdf')),
         ];
     }
 
-    public function exportResponse(): StreamedResponse
+    public function exportResponse(string $format = 'csv'): StreamedResponse
     {
         CsvExport::authorize();
 
         /** @var Builder<ValuedStockRow> $query */
         $query = $this->getFilteredSortedTableQuery() ?? ValuedStockRow::query();
 
-        return CsvExport::download(
+        return ReportExport::download(
+            $format,
             'inventario-valorizado',
             ['SKU', 'Producto', 'Categoría', 'Almacén', 'Unidades', 'Costo promedio', 'Valor'],
             $query->cursor()->map(static fn (ValuedStockRow $r): array => [

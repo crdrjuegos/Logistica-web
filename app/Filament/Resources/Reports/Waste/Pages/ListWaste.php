@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Reports\Waste\Pages;
 
 use App\Filament\Resources\Reports\Waste\WasteResource;
 use App\Filament\Support\CsvExport;
+use App\Filament\Support\ReportExport;
 use App\Models\WasteRow;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
@@ -23,18 +24,23 @@ class ListWaste extends ListRecords
                 ->visible(static fn (): bool => CsvExport::allowed())
                 ->authorize(static fn (): bool => CsvExport::allowed())
                 ->action(fn (): StreamedResponse => $this->exportResponse()),
+            Action::make('exportPdf')->label('Descargar PDF (con los filtros aplicados)')->icon('heroicon-o-document-arrow-down')
+                ->visible(static fn (): bool => CsvExport::allowed())
+                ->authorize(static fn (): bool => CsvExport::allowed())
+                ->action(fn (): StreamedResponse => $this->exportResponse('pdf')),
         ];
     }
 
     /** Usa los filtros de la tabla (período, tipo y motivo). */
-    public function exportResponse(): StreamedResponse
+    public function exportResponse(string $format = 'csv'): StreamedResponse
     {
         CsvExport::authorize();
 
         /** @var Builder<WasteRow> $query */
         $query = $this->getFilteredTableQuery() ?? WasteRow::query();
 
-        return CsvExport::download(
+        return ReportExport::download(
+            $format,
             'mermas',
             ['Fecha', 'Tipo', 'SKU', 'Producto', 'Ubicación', 'Motivo', 'Cantidad', 'Costo unit.', 'Valor', 'Registró', 'Aprobó', 'Documento', 'Explicación'],
             $query->reorder()->orderBy('created_at')->orderBy('id')->cursor()->map(static fn (WasteRow $r): array => [

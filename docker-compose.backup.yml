@@ -1,0 +1,30 @@
+# Respaldo diario automático de PostgreSQL (HU-060). No modifica docker-compose.yml.
+#
+# Activar:      docker compose -f docker-compose.yml -f docker-compose.backup.yml up -d backup
+# Probar ya:    docker compose -f docker-compose.yml -f docker-compose.backup.yml run --rm --entrypoint bash backup /scripts/backup.sh
+# Restauración: docker compose -f docker-compose.yml -f docker-compose.backup.yml run --rm --entrypoint bash backup /scripts/restore-test.sh
+# Aceptación:   docker compose -f docker-compose.yml -f docker-compose.backup.yml run --rm --entrypoint bash backup /scripts/selftest.sh
+#
+# Variables opcionales en .env: BACKUP_HOUR (03:00), BACKUP_RETENTION_DAYS (14), BACKUP_ENCRYPTION_PASSWORD,
+# BACKUP_REQUIRE_EXTERNAL (0/1), BACKUP_EXTERNAL_PATH (carpeta de OTRO disco o unidad de red; por defecto ./respaldos-externos).
+services:
+  backup:
+    image: postgres:17
+    depends_on:
+      db: { condition: service_healthy }
+    restart: unless-stopped
+    command: ["bash", "/scripts/backup-loop.sh"]
+    environment:
+      TZ: America/Lima
+      PGHOST: db
+      PGUSER: wms_owner
+      PGPASSWORD: ${WMS_OWNER_PASSWORD:-wms_owner_dev}
+      PGDATABASE: wms
+      BACKUP_HOUR: ${BACKUP_HOUR:-03:00}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_ENCRYPTION_PASSWORD: ${BACKUP_ENCRYPTION_PASSWORD:-}
+      BACKUP_REQUIRE_EXTERNAL: ${BACKUP_REQUIRE_EXTERNAL:-0}
+    volumes:
+      - ./respaldos:/backups
+      - ${BACKUP_EXTERNAL_PATH:-./respaldos-externos}:/external
+      - ./scripts/backup:/scripts:ro

@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Reports\Abc\Pages;
 
 use App\Filament\Resources\Reports\Abc\AbcResource;
 use App\Filament\Support\CsvExport;
+use App\Filament\Support\ReportExport;
 use App\Models\AbcRow;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
@@ -23,17 +24,22 @@ class ListAbc extends ListRecords
                 ->visible(static fn (): bool => CsvExport::allowed())
                 ->authorize(static fn (): bool => CsvExport::allowed())
                 ->action(fn (): StreamedResponse => $this->exportResponse()),
+            Action::make('exportPdf')->label('Descargar PDF (con los filtros aplicados)')->icon('heroicon-o-document-arrow-down')
+                ->visible(static fn (): bool => CsvExport::allowed())
+                ->authorize(static fn (): bool => CsvExport::allowed())
+                ->action(fn (): StreamedResponse => $this->exportResponse('pdf')),
         ];
     }
 
-    public function exportResponse(): StreamedResponse
+    public function exportResponse(string $format = 'csv'): StreamedResponse
     {
         CsvExport::authorize();
 
         /** @var Builder<AbcRow> $query */
         $query = $this->getFilteredSortedTableQuery() ?? AbcRow::query();
 
-        return CsvExport::download(
+        return ReportExport::download(
+            $format,
             'rotacion-abc',
             ['Clase', 'SKU', 'Producto', 'Categoría', 'Vendido 90 d', 'Valor vendido', '% del total', 'Stock', 'Cobertura (días)'],
             $query->cursor()->map(static fn (AbcRow $r): array => [
